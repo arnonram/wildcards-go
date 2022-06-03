@@ -1,0 +1,34 @@
+import { BaseEntity } from "./BaseEntity.dto";
+import { Power } from "./Power.dto";
+import { Weapon } from "./Weapon.dto";
+import { Gear } from "./Gear.dto";
+import { Trait } from "./Trait.dto";
+import { Attributes, CoreSkills, Ranks } from "./wildcards-consts";
+import { DiceValues } from "../components/character-sheet/DiceDropdown";
+
+export class WildCardCharacter extends BaseEntity {
+  _id?: string;
+  race?: string;
+  rank?: Ranks;
+  bennies?: number;
+  conviction?: string;
+  bio?: string;
+  pace?: number;
+  parry?: number;
+  toughness?: number;
+  attributes?: Trait[] = Object.values(Attributes).map(
+    (attribute) => new Trait(attribute, DiceValues.d4)
+  );
+  skills?: Trait[] = Object.values(CoreSkills).map(
+    (skill) => new Trait(skill, DiceValues.d4)
+  );
+  gear?: Gear[];
+  hindrances?: BaseEntity[];
+  edges?: BaseEntity[];
+  weapons?: Weapon[];
+  powers?: Power[];
+
+  constructor(name?: string) {
+    super(name);
+  }
+}
