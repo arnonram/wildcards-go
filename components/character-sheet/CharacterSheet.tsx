@@ -9,6 +9,7 @@ import Table from "./Table";
 import { Weapon } from "../../dtos/Weapon.dto";
 import { WildCardCharacter } from "../../dtos/WildCardCharacter.dto";
 import { updateCharacter } from "../../helpers/api-actions";
+import { RankDropdown } from "./RankDropdown";
 
 export interface CharacterSheetProps {
   wildCard: WildCardCharacter;
@@ -18,6 +19,7 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
   const [wildCardData, setWildCardData] = useState(wildCard);
 
   const handleInputChange = (e: any) => {
+    console.log(e.target);
     const { name, value } = e.target;
     setWildCardData({
       ...wildCardData,
@@ -60,6 +62,11 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
             value={wildCardData.name}
             onChange={handleInputChange}
             onBlur={saveUpdate}
+          />
+          <RankDropdown
+            rank={wildCardData.rank}
+            updateChanges={handleInputChange}
+            saveChange={saveUpdate}
           />
           <TextField
             id="race"

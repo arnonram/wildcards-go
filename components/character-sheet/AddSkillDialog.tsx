@@ -9,6 +9,7 @@ import {
   TextField,
   DialogActions,
 } from "@mui/material";
+import { Trait } from "../../dtos/Trait.dto";
 
 export interface AddSkillDialogProps {}
 
@@ -45,7 +46,11 @@ export const AddSkillDialog = ({}) => {
             id="add-skill"
             variant="standard"
           ></TextField>
-          <DiceDropdown isSkill={true} dice={DiceValues.untrained} />
+          <DiceDropdown
+            isSkill={true}
+            trait={new Trait("", DiceValues.untrained)}
+            updateChanges={() => {}}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>

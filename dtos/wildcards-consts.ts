@@ -17,9 +17,9 @@ export enum CoreSkills {
 }
 
 export enum Ranks {
-  Novice,
-  Seasoned,
-  Veteran,
-  Heroic,
-  Legendary,
+  Novice = "Novice",
+  Seasoned = "Seasoned",
+  Veteran = "Veteran",
+  Heroic = "Heroic",
+  Legendary = "Legendary",
 }
