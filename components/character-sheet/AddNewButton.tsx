@@ -12,7 +12,7 @@ export default function AddNewButton(props: AddNewButtonProps) {
       startIcon={<AddIcon />}
       variant="contained"
       color="primary"
-      onClick={() => props.onClick}
+      onClick={props.onClick}
     >
       {props.buttonText}
     </Button>

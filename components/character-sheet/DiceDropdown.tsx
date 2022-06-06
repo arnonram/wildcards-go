@@ -1,28 +1,28 @@
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { FormControl, MenuItem, Select } from "@mui/material";
 import { useState } from "react";
-import { Trait } from "../../dtos/Trait.dto";
-import { merge } from "lodash";
 
 export interface DiceDropdownProps {
   isSkill?: boolean;
-  trait: Trait;
+  traitName: string;
+  dice: DiceValues;
   updateChanges: any;
 }
 
 export const DiceDropdown = (props: DiceDropdownProps) => {
-  const [diceValue, updateDice] = useState(props.trait);
+  const [diceValue, updateDice] = useState(props.dice);
 
-  const handleChange = (event) => {
-    updateDice(merge(diceValue, { dice: event.target.value }));
-    props.updateChanges(event, diceValue);
+  const handleChange = (event: any) => {
+    updateDice(event.target.value);
+    props.updateChanges(event, props.traitName);
   };
+
   return (
     <FormControl sx={{ m: 1, minWidth: 80 }}>
       <Select
-        labelId={`dice-${diceValue.name}`}
-        id={`dice-${diceValue.name}`}
+        labelId={`${props.traitName}-dice`}
+        id={`${props.traitName}-dice`}
         name={`dice`}
-        value={diceValue.dice}
+        value={diceValue}
         onChange={handleChange}
       >
         {props.isSkill && (

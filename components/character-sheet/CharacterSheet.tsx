@@ -18,19 +18,25 @@ export interface CharacterSheetProps {
 export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
   const [wildCardData, setWildCardData] = useState(wildCard);
 
-  const handleInputChange = (e: any) => {
-    console.log(e.target);
-    const { name, value } = e.target;
+  const handleCharacterUpdate = (event: any) => {
+    const { name, value } = event.target;
     setWildCardData({
       ...wildCardData,
       [name]: value,
     });
   };
 
+  const handleExternalUpdate = (data: {}) => {
+    setWildCardData({
+      ...wildCardData,
+      ...data,
+    });
+  };
+
   // let weapons: Weapon[] = [new Weapon("axe")];
 
-  const saveUpdate = async (e: any) => {
-    e.preventDefault();
+  const saveUpdate = async (event: any) => {
+    event.preventDefault();
     const response = await updateCharacter(wildCardData);
   };
 
@@ -51,32 +57,32 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
         Save Wild Card
       </Button>
       {/* <Table tableName="weapons" data={weapons} /> */}
-      <div>
+      <Box>
         <h3>Basics</h3>
-        <div>
+        <Box>
           <TextField
             id="name"
             name="name"
             label="Name"
-            type="text"
             value={wildCardData.name}
-            onChange={handleInputChange}
+            onChange={handleCharacterUpdate}
             onBlur={saveUpdate}
           />
           <RankDropdown
             rank={wildCardData.rank}
-            updateChanges={handleInputChange}
             saveChange={saveUpdate}
+            updateChanges={handleCharacterUpdate}
           />
           <TextField
             id="race"
             name="race"
             label="Race"
-            type="text"
             value={wildCardData.race}
-            onChange={handleInputChange}
+            onChange={handleCharacterUpdate}
             onBlur={saveUpdate}
           />
+        </Box>
+        <Box>
           <TextField
             id="bennies"
             name="bennies"
@@ -84,20 +90,19 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
             type="number"
             inputProps={{ min: 0 }}
             value={wildCardData.bennies}
-            onChange={handleInputChange}
+            onChange={handleCharacterUpdate}
             onBlur={saveUpdate}
           />
           <TextField
             id="conviction"
             name="conviction"
             label="Conviction"
-            type="text"
             value={wildCardData.conviction}
-            onChange={handleInputChange}
+            onChange={handleCharacterUpdate}
             onBlur={saveUpdate}
           />
-        </div>
-        <div>
+        </Box>
+        <Box>
           <TextField
             id="pace"
             name="pace"
@@ -105,7 +110,7 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
             type="number"
             inputProps={{ min: 0 }}
             value={wildCardData.pace}
-            onChange={handleInputChange}
+            onChange={handleCharacterUpdate}
             onBlur={saveUpdate}
           />
           <TextField
@@ -114,7 +119,7 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
             label="Parry"
             type="number"
             value={wildCardData.parry}
-            onChange={handleInputChange}
+            onChange={handleCharacterUpdate}
             onBlur={saveUpdate}
           />
           <TextField
@@ -123,46 +128,54 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
             label="Toughness"
             type="number"
             value={wildCardData.toughness}
-            onChange={handleInputChange}
+            onChange={handleCharacterUpdate}
             onBlur={saveUpdate}
           />
-        </div>
-      </div>
-      <div>
+        </Box>
+      </Box>
+      <Box>
         <h3>Attributes</h3>
-        <Traits traitsArray={wildCard.attributes} isAttributes={true} />
-      </div>
-      <div>
+        <Traits
+          traitsArray={wildCard.attributes}
+          isAttributes={true}
+          handleExternalUpdate={handleExternalUpdate}
+        />
+      </Box>
+      <Box>
         <h3>Skill</h3>
-        <Traits traitsArray={wildCardData.skills} isAttributes={false} />
-      </div>
+        <Traits
+          traitsArray={wildCardData.skills}
+          isAttributes={false}
+          handleExternalUpdate={handleExternalUpdate}
+        />
+      </Box>
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "repeat(2, 1fr)",
         }}
       >
-        <div>
+        <Box>
           <h3>Hindrances</h3>
           <EdgeHindrance />
-        </div>
-        <div>
+        </Box>
+        <Box>
           <h3>Edges</h3>
           <EdgeHindrance />
-        </div>
+        </Box>
       </Box>
-      <div>
+      <Box>
         <h3>Armor</h3>
-      </div>
-      <div>
+      </Box>
+      <Box>
         <h3>Weapons</h3>
-      </div>
-      <div>
+      </Box>
+      <Box>
         <h3>Powers</h3>
-      </div>
-      <div>
+      </Box>
+      <Box>
         <h3>Gear</h3>
-      </div>
+      </Box>
     </Box>
   );
 }

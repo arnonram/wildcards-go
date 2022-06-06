@@ -1,6 +1,6 @@
 import { DiceDropdown, DiceValues } from "./DiceDropdown";
 import AddIcon from "@mui/icons-material/Add";
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   Dialog,
@@ -10,11 +10,30 @@ import {
   DialogActions,
 } from "@mui/material";
 import { Trait } from "../../dtos/Trait.dto";
+import AddNewButton from "./AddNewButton";
 
-export interface AddSkillDialogProps {}
+export interface AddSkillDialogProps {
+  addSkill: any;
+}
 
-export const AddSkillDialog = ({}) => {
-  const [open, setOpen] = React.useState(false);
+export const AddSkillDialog = (props: AddSkillDialogProps) => {
+  const [open, setOpen] = useState(false);
+  const [newSkill, setNewSkill] = useState(new Trait("", DiceValues.untrained));
+
+  const handleDiceUpdate = (event: any) => {
+    setNewSkill({
+      ...newSkill,
+      dice: event.target.value,
+    });
+  };
+
+  const handleSkillNameUpdate = (event: any) => {
+    setNewSkill({
+      ...newSkill,
+      name: event.target.value,
+    });
+  };
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -23,38 +42,36 @@ export const AddSkillDialog = ({}) => {
     setOpen(false);
   };
 
-  const handleAdd = () => {
+  const handleAdd = (event: any) => {
+    event.preventDefault();
+    props.addSkill(newSkill as Trait);
     setOpen(false);
   };
 
   return (
     <div>
-      <Button
-        startIcon={<AddIcon />}
-        variant="contained"
-        color="primary"
-        onClick={handleClickOpen}
-      >
-        Add Skill
-      </Button>
+      <AddNewButton buttonText="Add skill" onClick={handleClickOpen} />
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add Skill</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
             margin="dense"
             id="add-skill"
             variant="standard"
+            onBlur={handleSkillNameUpdate}
           ></TextField>
           <DiceDropdown
             isSkill={true}
-            trait={new Trait("", DiceValues.untrained)}
-            updateChanges={() => {}}
+            traitName=""
+            dice={DiceValues.untrained}
+            updateChanges={handleDiceUpdate}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleAdd}>Add</Button>
+          <Button type="submit" onClick={handleAdd}>
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
