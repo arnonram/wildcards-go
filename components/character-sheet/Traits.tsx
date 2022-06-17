@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { AddSkillDialog } from "./AddSkillDialog";
 import { Trait } from "../../dtos/Trait.dto";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { handleArrayUpdate } from "../../helpers/array-helpers";
 
 export interface TraitsProps {
   isAttributes: boolean;
@@ -15,16 +16,8 @@ export default function Traits(props: TraitsProps) {
   const [traits, setTraits] = useState(props.traitsArray);
 
   const handleInputChange = (event: any, traitName: string) => {
-    const traitIndex = traits.findIndex((x) => traitName.includes(x.name));
     const { name, value } = event.target;
-    const updatedTrait = {
-      ...traits[traitIndex],
-      [name]: value,
-    } as Trait;
-    let traitsCopy = [...traits];
-    traitsCopy[traitIndex] = updatedTrait;
-
-    setTraits(traitsCopy);
+    setTraits(handleArrayUpdate(traits, traitName, name, value));
   };
 
   useEffect(() => {

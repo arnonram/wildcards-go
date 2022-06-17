@@ -4,12 +4,13 @@ import Traits from "./Traits";
 import { Attributes, CoreSkills } from "../../dtos/wildcards-consts";
 import SaveIcon from "@mui/icons-material/Save";
 import React, { useEffect, useState } from "react";
-import EdgeHindrance from "./EdgeHindrance";
+import Hindrances from "./hindrances/Hindrances";
 import Table from "./Table";
 import { Weapon } from "../../dtos/Weapon.dto";
 import { WildCardCharacter } from "../../dtos/WildCardCharacter.dto";
 import { updateCharacter } from "../../helpers/api-actions";
 import { RankDropdown } from "./RankDropdown";
+import { Hindrance } from "../../dtos/Hindrance.dto";
 
 export interface CharacterSheetProps {
   wildCard: WildCardCharacter;
@@ -157,12 +158,17 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
       >
         <Box>
           <h3>Hindrances</h3>
-          <EdgeHindrance />
+          <Hindrances
+            hindrances={[
+              new Hindrance("curious", true, "blurb"),
+              new Hindrance("bad breath asdasd as as d", false, "blurb"),
+            ]}
+          />
         </Box>
-        <Box>
+        {/* <Box>
           <h3>Edges</h3>
-          <EdgeHindrance />
-        </Box>
+          <Eges />
+        </Box> */}
       </Box>
       <Box>
         <h3>Armor</h3>

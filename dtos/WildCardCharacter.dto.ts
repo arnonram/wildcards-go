@@ -5,6 +5,8 @@ import { Gear } from "./Gear.dto";
 import { Trait } from "./Trait.dto";
 import { Attributes, CoreSkills, Ranks } from "./wildcards-consts";
 import { DiceValues } from "../components/character-sheet/DiceDropdown";
+import { Hindrance } from "./Hindrance.dto";
+import { Edge } from "./Edge";
 
 export class WildCardCharacter extends BaseEntity {
   _id?: string;
@@ -25,8 +27,8 @@ export class WildCardCharacter extends BaseEntity {
     (skill) => new Trait(skill, DiceValues.d4)
   );
   gear?: Gear[];
-  hindrances?: BaseEntity[];
-  edges?: BaseEntity[];
+  hindrances?: Hindrance[];
+  edges?: Edge[];
   weapons?: Weapon[];
   powers?: Power[];
 
