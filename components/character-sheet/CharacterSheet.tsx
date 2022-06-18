@@ -32,6 +32,7 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
       ...wildCardData,
       ...data,
     });
+    console.log(wildCardData);
   };
 
   // let weapons: Weapon[] = [new Weapon("axe")];
@@ -163,6 +164,7 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
               new Hindrance("curious", true, "blurb"),
               new Hindrance("bad breath asdasd as as d", false, "blurb"),
             ]}
+            handleExternalUpdate={handleExternalUpdate}
           />
         </Box>
         {/* <Box>
