@@ -21,7 +21,7 @@ import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 
 export interface HindraceCardProps {
   hindrance: Hindrance;
-  handleExternalUpdate: any;
+  updateHindrance: (hindrance: Hindrance) => {};
 }
 
 export default function HindranceCard(props: HindraceCardProps) {
@@ -30,7 +30,7 @@ export default function HindranceCard(props: HindraceCardProps) {
   const [hindrance, setHindrance] = useState<Hindrance>(props.hindrance);
 
   useEffect(() => {
-    props.handleExternalUpdate({ hindrance });
+    props.updateHindrance(hindrance);
   }, [hindrance]);
 
   const handleOpen = () => {
@@ -41,19 +41,17 @@ export default function HindranceCard(props: HindraceCardProps) {
     setOpen(false);
   };
 
-  const handleLock = () => {
-    props.handleExternalUpdate({ hindrance });
+  const handleSave = () => {
+    props.updateHindrance(hindrance);
     setEditMode(false);
   };
+
   const hindranceUpdate = (event: any) => {
     const { name, value, checked } = event.target;
-    console.log(name);
-    console.log(checked);
     setHindrance({
       ...hindrance,
       [name]: name === "isMajor" ? checked : value,
     });
-    console.log(hindrance);
   };
 
   const dialogTitle = () => {
@@ -180,9 +178,9 @@ export default function HindranceCard(props: HindraceCardProps) {
         <DialogActions>
           <Button sx={{ background: "red", color: "black" }}>Delete</Button>
           {!editMode ? (
-            <Button onClick={() => setEditMode(true)}>Unlock</Button>
+            <Button onClick={() => setEditMode(true)}>Edit</Button>
           ) : (
-            <Button onClick={handleLock}>Lock</Button>
+            <Button onClick={handleSave}>Save</Button>
           )}
           <Button onClick={handleClose}>Close</Button>
         </DialogActions>

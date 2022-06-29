@@ -1,32 +1,38 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Hindrance } from "../../../dtos/Hindrance.dto";
+import { useWildcard } from "../../../helpers/context/wildcard-context";
 import AddNewButton from "../AddNewButton";
 import HindranceCard from "./HindranceCard";
 
-export interface HindracesProps {
-  hindrances: Hindrance[];
-  handleExternalUpdate: any;
-}
-
-export default function Hindrances(props: HindracesProps) {
-  const [hindrances, setHindrances] = useState<Hindrance[]>(props.hindrances);
+export default function Hindrances() {
+  const { wildcardData, setWildcardData } = useWildcard();
+  const [hindrances, setHindrances] = useState<Hindrance[]>(
+    wildcardData?.hindrances || []
+  );
 
   useEffect(() => {
-    props.handleExternalUpdate({ hindrances });
+    setWildcardData({ ...wildcardData, hindrances });
   }, [hindrances]);
 
-  const addHindrance = () => {
+  const addHindrance = (): void => {
     setHindrances([...hindrances, new Hindrance("New Hindrance")]);
+  };
+
+  const handleUpdate = (updatedHindrance: Hindrance) => {
+    const hindranceIndex = hindrances.findIndex(
+      (x) => x._id === updatedHindrance._id
+    );
+    const currentHindrance = hindrances;
+    currentHindrance[hindranceIndex] = updatedHindrance;
+    setHindrances([...currentHindrance]);
   };
 
   return (
     <Box>
+      <h3>Hindrances</h3>
       {hindrances.map((hindrance) => (
-        <HindranceCard
-          hindrance={hindrance}
-          handleExternalUpdate={props.handleExternalUpdate}
-        />
+        <HindranceCard hindrance={hindrance} updateHindrance={handleUpdate} />
       ))}
       <AddNewButton buttonText="Add Hindrance" onClick={addHindrance} />
     </Box>

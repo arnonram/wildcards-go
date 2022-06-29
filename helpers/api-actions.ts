@@ -1,6 +1,7 @@
 import { WildCardCharacter } from "../dtos/WildCardCharacter.dto";
 
 export async function updateCharacter(wildCardData: WildCardCharacter) {
+  console.log(wildCardData._id?.toString());
   const response = await fetch(
     `http://localhost:3000/api/character/${wildCardData._id?.toString()}`,
     {

@@ -1,19 +1,22 @@
-import { FormLabel, TextField, Box, Button, IconButton } from "@mui/material";
+import { FormLabel, TextField, Box, IconButton } from "@mui/material";
 import { DiceDropdown, DiceValues } from "./DiceDropdown";
 import React, { useEffect, useState } from "react";
 import { AddSkillDialog } from "./AddSkillDialog";
 import { Trait } from "../../dtos/Trait.dto";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { handleArrayUpdate } from "../../helpers/array-helpers";
+import { useWildcard } from "../../helpers/context/wildcard-context";
 
 export interface TraitsProps {
+  title: string;
   isAttributes: boolean;
-  traitsArray: Trait[];
-  handleExternalUpdate: any;
 }
 
 export default function Traits(props: TraitsProps) {
-  const [traits, setTraits] = useState(props.traitsArray);
+  const { wildcardData, setWildcardData } = useWildcard();
+  const [traits, setTraits] = useState(
+    props.isAttributes ? wildcardData.attributes : wildcardData.skills
+  );
 
   const handleInputChange = (event: any, traitName: string) => {
     const { name, value } = event.target;
@@ -21,7 +24,8 @@ export default function Traits(props: TraitsProps) {
   };
 
   useEffect(() => {
-    props.handleExternalUpdate({
+    setWildcardData({
+      ...wildcardData,
       [props.isAttributes ? "attributes" : "skills"]: traits,
     });
   }, [traits]);
@@ -75,6 +79,7 @@ export default function Traits(props: TraitsProps) {
 
   return (
     <Box>
+      <h3>{props.title}</h3>
       <Box
         sx={{
           display: "grid",

@@ -27,10 +27,6 @@ const Home: NextPage = () => {
           <a href="/load-character" className={styles.card}>
             <h2>Load Character</h2>
           </a>
-
-          <a href="/export-characters" className={styles.card}>
-            <h2>Export Characters</h2>
-          </a>
         </div>
       </main>
 

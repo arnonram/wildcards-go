@@ -11,6 +11,9 @@ import { WildCardCharacter } from "../../dtos/WildCardCharacter.dto";
 import { updateCharacter } from "../../helpers/api-actions";
 import { RankDropdown } from "./RankDropdown";
 import { Hindrance } from "../../dtos/Hindrance.dto";
+import BasicDetails from "./BasicDetails";
+import { WildCardProvider } from "../../helpers/context/wildcard-context";
+import SaveButton from "./save-wildcard";
 
 export interface CharacterSheetProps {
   wildCard: WildCardCharacter;
@@ -32,7 +35,7 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
       ...wildCardData,
       ...data,
     });
-    console.log(wildCardData);
+    // console.log(wildCardData);
   };
 
   // let weapons: Weapon[] = [new Weapon("axe")];
@@ -43,147 +46,37 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
   };
 
   return (
-    <Box
-      component="form"
-      sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
-      noValidate
-      autoComplete="off"
-      onSubmit={saveUpdate}
-    >
-      <Button
-        startIcon={<SaveIcon />}
-        variant="contained"
-        color="secondary"
-        type="submit"
-      >
-        Save Wild Card
-      </Button>
-      {/* <Table tableName="weapons" data={weapons} /> */}
-      <Box>
-        <h3>Basics</h3>
-        <Box>
-          <TextField
-            id="name"
-            name="name"
-            label="Name"
-            value={wildCardData.name}
-            onChange={handleCharacterUpdate}
-            onBlur={saveUpdate}
-          />
-          <RankDropdown
-            rank={wildCardData.rank}
-            saveChange={saveUpdate}
-            updateChanges={handleCharacterUpdate}
-          />
-          <TextField
-            id="race"
-            name="race"
-            label="Race"
-            value={wildCardData.race}
-            onChange={handleCharacterUpdate}
-            onBlur={saveUpdate}
-          />
-        </Box>
-        <Box>
-          <TextField
-            id="bennies"
-            name="bennies"
-            label="Bennies"
-            type="number"
-            inputProps={{ min: 0 }}
-            value={wildCardData.bennies}
-            onChange={handleCharacterUpdate}
-            onBlur={saveUpdate}
-          />
-          <TextField
-            id="conviction"
-            name="conviction"
-            label="Conviction"
-            value={wildCardData.conviction}
-            onChange={handleCharacterUpdate}
-            onBlur={saveUpdate}
-          />
-        </Box>
-        <Box>
-          <TextField
-            id="pace"
-            name="pace"
-            label="Pace"
-            type="number"
-            inputProps={{ min: 0 }}
-            value={wildCardData.pace}
-            onChange={handleCharacterUpdate}
-            onBlur={saveUpdate}
-          />
-          <TextField
-            id="parry"
-            name="parry"
-            label="Parry"
-            type="number"
-            value={wildCardData.parry}
-            onChange={handleCharacterUpdate}
-            onBlur={saveUpdate}
-          />
-          <TextField
-            id="toughness"
-            name="toughness"
-            label="Toughness"
-            type="number"
-            value={wildCardData.toughness}
-            onChange={handleCharacterUpdate}
-            onBlur={saveUpdate}
-          />
-        </Box>
-      </Box>
-      <Box>
-        <h3>Attributes</h3>
-        <Traits
-          traitsArray={wildCard.attributes}
-          isAttributes={true}
-          handleExternalUpdate={handleExternalUpdate}
-        />
-      </Box>
-      <Box>
-        <h3>Skill</h3>
-        <Traits
-          traitsArray={wildCardData.skills}
-          isAttributes={false}
-          handleExternalUpdate={handleExternalUpdate}
-        />
-      </Box>
+    <WildCardProvider wildCard={wildCard}>
       <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-        }}
+        component="form"
+        sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
+        noValidate
+        autoComplete="off"
       >
-        <Box>
-          <h3>Hindrances</h3>
-          <Hindrances
-            hindrances={[
-              new Hindrance("curious", true, "blurb"),
-              new Hindrance("bad breath asdasd as as d", false, "blurb"),
-            ]}
-            handleExternalUpdate={handleExternalUpdate}
-          />
-        </Box>
+        <SaveButton buttonText="Save Wild Card" />
+        {/* <Table tableName="weapons" data={weapons} /> */}
+        <BasicDetails />
+        <Traits title="Attributes" isAttributes={true} />
+        <Traits title="Skills" isAttributes={false} />
+        <Hindrances />
         {/* <Box>
           <h3>Edges</h3>
           <Eges />
         </Box> */}
+        {/* </Box> */}
+        <Box>
+          <h3>Armor</h3>
+        </Box>
+        <Box>
+          <h3>Weapons</h3>
+        </Box>
+        <Box>
+          <h3>Powers</h3>
+        </Box>
+        <Box>
+          <h3>Gear</h3>
+        </Box>
       </Box>
-      <Box>
-        <h3>Armor</h3>
-      </Box>
-      <Box>
-        <h3>Weapons</h3>
-      </Box>
-      <Box>
-        <h3>Powers</h3>
-      </Box>
-      <Box>
-        <h3>Gear</h3>
-      </Box>
-    </Box>
+    </WildCardProvider>
   );
 }

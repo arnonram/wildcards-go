@@ -4,7 +4,7 @@ import { Ranks } from "../../dtos/wildcards-consts";
 
 export interface RankDropdownProps {
   rank?: Ranks;
-  saveChange: any;
+  // saveChange: any;
   updateChanges: any;
 }
 
@@ -17,7 +17,7 @@ export const RankDropdown = (props: RankDropdownProps) => {
         name={"rank"}
         value={props.rank || ""}
         onChange={props.updateChanges}
-        onBlur={props.saveChange}
+        // onBlur={props.saveChange}
       >
         {Object.values(Ranks).map((rank) => {
           return (
