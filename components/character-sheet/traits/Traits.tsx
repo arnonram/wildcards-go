@@ -1,11 +1,11 @@
 import { FormLabel, TextField, Box, IconButton, Grid } from "@mui/material";
-import { DiceDropdown, DiceValues } from "./DiceDropdown";
+import { DiceDropdown, DiceValues } from "../DiceDropdown";
 import React, { useEffect, useState } from "react";
 import { AddSkillDialog } from "./AddSkillDialog";
-import { Trait } from "../../dtos/Trait.dto";
+import { Trait } from "../../../dtos/Trait.dto";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { handleArrayUpdate } from "../../helpers/array-helpers";
-import { useWildcard } from "../../helpers/context/wildcard-context";
+import { handleArrayUpdate } from "../../../helpers/array-helpers";
+import { useWildcard } from "../../../helpers/context/wildcard-context";
 
 export interface TraitsProps {
   title: string;

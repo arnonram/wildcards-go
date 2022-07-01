@@ -1,6 +1,5 @@
 import { Alert, Box, Button, TextField } from "@mui/material";
-import { AddSkillDialog } from "./AddSkillDialog";
-import Traits from "./Traits";
+
 import { Attributes, CoreSkills } from "../../dtos/wildcards-consts";
 import SaveIcon from "@mui/icons-material/Save";
 import React, { useEffect, useState } from "react";
@@ -15,6 +14,7 @@ import BasicDetails from "./BasicDetails";
 import { WildCardProvider } from "../../helpers/context/wildcard-context";
 import SaveButton from "./save-wildcard";
 import Edges from "./edges/Edges";
+import Traits from "./traits/Traits";
 
 export interface CharacterSheetProps {
   wildCard: WildCardCharacter;
@@ -55,12 +55,12 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
         autoComplete="off"
         margin={3}
       >
-        {/* <Table tableName="weapons" data={weapons} /> */}
         <BasicDetails />
         <Traits title="Attributes" isAttributes={true} />
         <Traits title="Skills" isAttributes={false} />
         <Hindrances />
         <Edges />
+        {/* <Table tableName="weapons" data={weapons} /> */}
         <Box>
           <h3>Armor</h3>
         </Box>

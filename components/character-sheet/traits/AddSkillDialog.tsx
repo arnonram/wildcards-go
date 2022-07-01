@@ -1,4 +1,4 @@
-import { DiceDropdown, DiceValues } from "./DiceDropdown";
+import { DiceDropdown, DiceValues } from "../DiceDropdown";
 import AddIcon from "@mui/icons-material/Add";
 import React, { useState } from "react";
 import {
@@ -9,8 +9,8 @@ import {
   TextField,
   DialogActions,
 } from "@mui/material";
-import { Trait } from "../../dtos/Trait.dto";
-import AddNewButton from "./AddNewButton";
+import { Trait } from "../../../dtos/Trait.dto";
+import AddNewButton from "../AddNewButton";
 
 export interface AddSkillDialogProps {
   addSkill: any;
