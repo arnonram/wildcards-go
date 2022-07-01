@@ -1,4 +1,4 @@
-import { Box, TextField } from "@mui/material";
+import { Box, Grid, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { WildCardCharacter } from "../../dtos/WildCardCharacter.dto";
 import { saveUpdate } from "../../helpers/save-action";
@@ -17,78 +17,84 @@ export default function BasicDetails() {
   return (
     <Box>
       <h3>Basics</h3>
-      <Box>
-        <TextField
-          id="name"
-          name="name"
-          label="Name"
-          value={wildcardData.name}
-          onChange={handleChange}
-          //   onFocus={}
-          //   onBlur={}
-        />
-        <RankDropdown
-          rank={wildcardData.rank}
-          // saveChange={saveUpdate}
-          updateChanges={handleChange}
-        />
-        <TextField
-          id="race"
-          name="race"
-          label="Race"
-          value={wildcardData.race}
-          onChange={handleChange}
-          //   onBlur={saveUpdate}
-        />
-        <TextField
-          id="bennies"
-          name="bennies"
-          label="Bennies"
-          type="number"
-          inputProps={{ min: 0 }}
-          value={wildcardData.bennies}
-          onChange={handleChange}
-          //   onBlur={saveUpdate}
-        />
-        <TextField
-          id="conviction"
-          name="conviction"
-          label="Conviction"
-          value={wildcardData.conviction}
-          onChange={handleChange}
-          //   onBlur={saveUpdate}
-        />
-      </Box>
-      <Box>
-        <TextField
-          id="pace"
-          name="pace"
-          label="Pace"
-          type="number"
-          inputProps={{ min: 0 }}
-          value={wildcardData.pace}
-          onChange={handleChange}
-          //   onBlur={saveUpdate}
-        />
-        <TextField
-          id="parry"
-          name="parry"
-          label="Parry"
-          type="number"
-          value={wildcardData.parry}
-          onChange={handleChange}
-          //   onBlur={saveUpdate}
-        />
-        <TextField
-          id="toughness"
-          name="toughness"
-          label="Toughness"
-          type="number"
-          value={wildcardData.toughness}
-          onChange={handleChange}
-          //   onBlur={saveUpdate}
-        />
-      </Box>
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item>
+          <TextField
+            id="name"
+            name="name"
+            label="Name"
+            value={wildcardData.name}
+            onChange={handleChange}
+          />
+        </Grid>
+        <Grid item>
+          <RankDropdown rank={wildcardData.rank} updateChanges={handleChange} />
+        </Grid>
+        <Grid item>
+          <TextField
+            id="race"
+            name="race"
+            label="Race"
+            value={wildcardData.race}
+            onChange={handleChange}
+          />{" "}
+        </Grid>
+
+        <Grid item>
+          <TextField
+            id="bennies"
+            name="bennies"
+            label="Bennies"
+            type="number"
+            inputProps={{ min: 0 }}
+            value={wildcardData.bennies}
+            onChange={handleChange}
+          />
+        </Grid>
+
+        <Grid item>
+          <TextField
+            id="conviction"
+            name="conviction"
+            label="Conviction"
+            value={wildcardData.conviction}
+            onChange={handleChange}
+          />
+        </Grid>
+      </Grid>
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+        <Grid item>
+          <TextField
+            id="pace"
+            name="pace"
+            label="Pace"
+            type="number"
+            inputProps={{ min: 0 }}
+            value={wildcardData.pace}
+            onChange={handleChange}
+          />
+        </Grid>
+        <Grid item>
+          <TextField
+            id="parry"
+            name="parry"
+            label="Parry"
+            type="number"
+            value={wildcardData.parry}
+            onChange={handleChange}
+          />
+        </Grid>
+        <Grid item>
+          <TextField
+            id="toughness"
+            name="toughness"
+            label="Toughness"
+            type="number"
+            value={wildcardData.toughness}
+            onChange={handleChange}
+          />
+        </Grid>
+      </Grid>
     </Box>
   );
 }

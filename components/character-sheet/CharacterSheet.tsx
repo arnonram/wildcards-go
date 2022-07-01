@@ -14,6 +14,7 @@ import { Hindrance } from "../../dtos/Hindrance.dto";
 import BasicDetails from "./BasicDetails";
 import { WildCardProvider } from "../../helpers/context/wildcard-context";
 import SaveButton from "./save-wildcard";
+import Edges from "./edges/Edges";
 
 export interface CharacterSheetProps {
   wildCard: WildCardCharacter;
@@ -52,18 +53,14 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
         sx={{ "& .MuiTextField-root": { m: 1, width: "25ch" } }}
         noValidate
         autoComplete="off"
+        margin={3}
       >
-        <SaveButton buttonText="Save Wild Card" />
         {/* <Table tableName="weapons" data={weapons} /> */}
         <BasicDetails />
         <Traits title="Attributes" isAttributes={true} />
         <Traits title="Skills" isAttributes={false} />
         <Hindrances />
-        {/* <Box>
-          <h3>Edges</h3>
-          <Eges />
-        </Box> */}
-        {/* </Box> */}
+        <Edges />
         <Box>
           <h3>Armor</h3>
         </Box>

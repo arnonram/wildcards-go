@@ -14,7 +14,7 @@ export class Hindrance extends BaseEntity {
     description?: string
   ) {
     super(name);
-    this._id = uuidv4();
+    this._id = uuidv4().replaceAll("-", "");
     this.isMajor = isMajor;
     this.blurb = blurb;
     this.description = description;

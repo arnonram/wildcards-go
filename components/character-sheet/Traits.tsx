@@ -1,4 +1,4 @@
-import { FormLabel, TextField, Box, IconButton } from "@mui/material";
+import { FormLabel, TextField, Box, IconButton, Grid } from "@mui/material";
 import { DiceDropdown, DiceValues } from "./DiceDropdown";
 import React, { useEffect, useState } from "react";
 import { AddSkillDialog } from "./AddSkillDialog";
@@ -39,7 +39,7 @@ export default function Traits(props: TraitsProps) {
   };
 
   const addTrait = (trait: Trait) => (
-    <Box id={`trait-${trait.name}`} key={`trait-${trait.name}`}>
+    <Grid item id={`trait-${trait.name}`} key={`trait-${trait.name}`}>
       <FormLabel
         sx={{
           display: "block",
@@ -74,20 +74,15 @@ export default function Traits(props: TraitsProps) {
           <DeleteForeverIcon />
         </IconButton>
       )}
-    </Box>
+    </Grid>
   );
 
   return (
     <Box>
       <h3>{props.title}</h3>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-        }}
-      >
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         {traits.map((trait) => addTrait(trait))}
-      </Box>
+      </Grid>
       {!props.isAttributes && <AddSkillDialog addSkill={addNewSkill} />}
     </Box>
   );

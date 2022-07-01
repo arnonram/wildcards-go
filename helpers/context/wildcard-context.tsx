@@ -35,6 +35,7 @@ export function WildCardProvider({
 
   useEffect(() => {
     debouncedSave(wildcardData);
+    console.log(wildcardData);
   }, [wildcardData]);
 
   return (

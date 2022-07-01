@@ -12,6 +12,7 @@ import {
   DialogTitle,
   FormControlLabel,
   FormGroup,
+  Grid,
   IconButton,
   TextField,
 } from "@mui/material";
@@ -22,6 +23,7 @@ import { Hindrance } from "../../../dtos/Hindrance.dto";
 export interface HindraceCardProps {
   hindrance: Hindrance;
   updateHindrance: (hindrance: Hindrance) => void;
+  deleteHindrance: (id: string) => void;
 }
 
 export default function HindranceCard(props: HindraceCardProps) {
@@ -60,6 +62,10 @@ export default function HindranceCard(props: HindraceCardProps) {
     });
   };
 
+  const handleDelete = () => {
+    props.deleteHindrance(refHindrance.current._id);
+    setOpen(false);
+  };
   const dialogTitle = () => {
     if (!editMode) {
       return (
@@ -78,7 +84,6 @@ export default function HindranceCard(props: HindraceCardProps) {
             name="name"
             id="hindrance-name"
             margin="dense"
-            variant="standard"
             label="Hindrance Name"
             value={hindrance.name}
             onChange={hindranceUpdate}
@@ -152,21 +157,21 @@ export default function HindranceCard(props: HindraceCardProps) {
   };
 
   return (
-    <div>
+    <Grid item>
       <Card
         sx={{
-          maxWidth: 345,
+          maxWidth: 300,
           margin: 0.5,
           border: 1,
           borderRadius: 4,
         }}
-        key={`hindrance-card-${refHindrance.current.name}`}
+        id={`hindrance-card-${refHindrance.current._id}`}
         onClick={handleOpen}
         elevation={7}
       >
         <CardActionArea>
           <CardContent>
-            <Typography gutterBottom variant="h5" component="div">
+            <Typography gutterBottom variant="h6" component="div">
               {`${refHindrance.current.name} ${
                 refHindrance.current.isMajor ? "(major)" : ""
               }`}
@@ -178,16 +183,16 @@ export default function HindranceCard(props: HindraceCardProps) {
         </CardActionArea>
       </Card>
 
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        fullWidth
-        key={`hindrance-dialog-${refHindrance.current.name}`}
-      >
+      <Dialog open={open} onClose={handleClose} fullWidth>
         {dialogTitle()}
         <DialogContent>{hindranceBlurb()}</DialogContent>
         <DialogActions>
-          <Button sx={{ background: "red", color: "black" }}>Delete</Button>
+          <Button
+            sx={{ background: "red", color: "black" }}
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
           {!editMode ? (
             <Button onClick={() => setEditMode(true)}>Edit</Button>
           ) : (
@@ -196,6 +201,6 @@ export default function HindranceCard(props: HindraceCardProps) {
           <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Grid>
   );
 }
