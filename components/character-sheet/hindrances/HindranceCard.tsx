@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -15,35 +15,41 @@ import {
   IconButton,
   TextField,
 } from "@mui/material";
-import { Hindrance } from "../../../dtos/Hindrance.dto";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import { Hindrance } from "../../../dtos/Hindrance.dto";
 
 export interface HindraceCardProps {
   hindrance: Hindrance;
-  updateHindrance: (hindrance: Hindrance) => {};
+  updateHindrance: (hindrance: Hindrance) => void;
 }
 
 export default function HindranceCard(props: HindraceCardProps) {
+  let wasSaved: boolean = false;
   const [open, setOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [hindrance, setHindrance] = useState<Hindrance>(props.hindrance);
 
-  useEffect(() => {
-    props.updateHindrance(hindrance);
-  }, [hindrance]);
+  const refHindrance = useRef(props.hindrance);
+  const [hindrance, setHindrance] = useState<Hindrance>(props.hindrance);
 
   const handleOpen = () => {
     setOpen(true);
+    wasSaved = false;
   };
 
   const handleClose = () => {
+    if (!wasSaved) {
+      setHindrance(refHindrance.current);
+    }
+    setEditMode(false);
     setOpen(false);
   };
 
   const handleSave = () => {
+    refHindrance.current = hindrance;
     props.updateHindrance(hindrance);
     setEditMode(false);
+    wasSaved = true;
   };
 
   const hindranceUpdate = (event: any) => {
@@ -68,11 +74,12 @@ export default function HindranceCard(props: HindraceCardProps) {
       return (
         <FormGroup row>
           <TextField
-            sx={{ width: "70%", m: 1 }}
+            sx={{ width: "70%", ml: 3, mt: 2 }}
             name="name"
             id="hindrance-name"
             margin="dense"
-            // variant="standard"
+            variant="standard"
+            label="Hindrance Name"
             value={hindrance.name}
             onChange={hindranceUpdate}
           />
@@ -83,6 +90,7 @@ export default function HindranceCard(props: HindraceCardProps) {
                 id="isMajor"
                 checked={!!hindrance.isMajor}
                 onChange={hindranceUpdate}
+                sx={{ ml: 4 }}
               />
             }
             label="major?"
@@ -152,26 +160,29 @@ export default function HindranceCard(props: HindraceCardProps) {
           border: 1,
           borderRadius: 4,
         }}
-        key={`hindrance-card-${hindrance.name}`}
+        key={`hindrance-card-${refHindrance.current.name}`}
         onClick={handleOpen}
         elevation={7}
       >
         <CardActionArea>
           <CardContent>
             <Typography gutterBottom variant="h5" component="div">
-              {`${hindrance.name} ${hindrance.isMajor ? "(major)" : ""}`}
+              {`${refHindrance.current.name} ${
+                refHindrance.current.isMajor ? "(major)" : ""
+              }`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {hindrance.blurb}
+              {refHindrance.current.blurb}
             </Typography>
           </CardContent>
         </CardActionArea>
       </Card>
+
       <Dialog
         open={open}
         onClose={handleClose}
         fullWidth
-        key={`hindrance-dialog-${hindrance.name}`}
+        key={`hindrance-dialog-${refHindrance.current.name}`}
       >
         {dialogTitle()}
         <DialogContent>{hindranceBlurb()}</DialogContent>

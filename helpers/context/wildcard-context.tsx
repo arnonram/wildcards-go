@@ -1,19 +1,15 @@
-import { ActionTypes } from "@mui/base";
+import { debounce } from "lodash";
 import {
   createContext,
   useState,
   useContext,
   useMemo,
-  useReducer,
+  useEffect,
+  useCallback,
 } from "react";
 import { WildCardCharacter } from "../../dtos/WildCardCharacter.dto";
+import { saveToDb } from "../save-action";
 
-// type Action =
-//   | { type: "updateValue" }
-//   | { type: "addToArray" }
-//   | { type: "deleteFromArray" };
-// type Dispatch = (action: Action) => void;
-// type State = { wildcardData: WildCardCharacter };
 type WildcardProviderProps = {
   wildCard: WildCardCharacter;
   children: React.ReactNode;
@@ -23,32 +19,24 @@ export const WildcardContext = createContext<
   { wildcardData: WildCardCharacter; setWildcardData: any } | undefined
 >(undefined);
 
-// function reducer(state, action: Action) {
-//   switch (action.type) {
-//     case "updateValue":
-//       return {
-//         ...state,
-//       };
-//     case "addToArray":
-//       break;
-//     case "deleteFromArray":
-//       break;
-//   }
-// }
-
 export function WildCardProvider({
   wildCard,
   children,
 }: WildcardProviderProps) {
   const [wildcardData, setWildcardData] = useState(wildCard);
-  // const [wildcardData, setWildcardData] = useReducer(reducer, wildCard);
   const value = useMemo(
     () => ({ wildcardData, setWildcardData }),
     [wildcardData]
   );
+  const debouncedSave = useCallback(
+    debounce((nextValue) => saveToDb(nextValue), 1000),
+    []
+  );
 
-  // const value = { wildcardData, setWildcardData };
-  console.log(wildcardData);
+  useEffect(() => {
+    debouncedSave(wildcardData);
+  }, [wildcardData]);
+
   return (
     <WildcardContext.Provider value={value}>
       {children}
