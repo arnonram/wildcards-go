@@ -84,34 +84,38 @@ export default function EdgeCard(props: EdgeCardProps) {
       return (
         <div>
           <div>
-            <Typography
-              sx={{ fontStyle: "italic", m: 1 }}
-              variant="subtitle1"
-              display="inline"
-            >
-              Requirements:
-            </Typography>
-            <Typography
-              sx={{ fontWeight: "bold", m: 1 }}
-              variant="subtitle1"
-              display="inline"
-            >
-              {edge.requirements}
-            </Typography>
-            <Typography
-              sx={{ fontStyle: "italic", m: 1 }}
-              variant="subtitle1"
-              display="inline"
-            >
-              Edge Type:
-            </Typography>
-            <Typography
-              sx={{ fontWeight: "bold", m: 1 }}
-              variant="subtitle1"
-              display="inline"
-            >
-              {edge.edgeType}
-            </Typography>
+            <div>
+              <Typography
+                sx={{ fontStyle: "italic", m: 1 }}
+                variant="subtitle1"
+                display="inline"
+              >
+                Requirements:
+              </Typography>
+              <Typography
+                sx={{ fontWeight: "bold", m: 1 }}
+                variant="subtitle1"
+                display="inline"
+              >
+                {edge.requirements}
+              </Typography>
+            </div>
+            <div>
+              <Typography
+                sx={{ fontStyle: "italic", m: 1 }}
+                variant="subtitle1"
+                display="inline"
+              >
+                Edge Type:
+              </Typography>
+              <Typography
+                sx={{ fontWeight: "bold", m: 1 }}
+                variant="subtitle1"
+                display="inline"
+              >
+                {edge.edgeType}
+              </Typography>
+            </div>
           </div>
           <br />
           <Typography
@@ -190,7 +194,8 @@ export default function EdgeCard(props: EdgeCardProps) {
     <Grid item>
       <Card
         sx={{
-          maxWidth: 300,
+          width: 250,
+          minHeight: 85,
           margin: 0.5,
           border: 1,
           borderRadius: 4,

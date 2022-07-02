@@ -160,7 +160,8 @@ export default function HindranceCard(props: HindraceCardProps) {
     <Grid item>
       <Card
         sx={{
-          maxWidth: 300,
+          width: 250,
+          minHeight: 85,
           margin: 0.5,
           border: 1,
           borderRadius: 4,

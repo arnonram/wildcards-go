@@ -16,8 +16,11 @@ export class WildCardCharacter extends BaseEntity {
   conviction?: string;
   bio?: string;
   pace?: number;
+  paceMod?: number = 0;
   parry?: number;
+  parryMod?: number = 0;
   toughness?: number;
+  toughnessMod?: number = 0;
   wounds: number = 0;
   fatigue: number = 0;
   attributes: Trait[] = Object.values(Attributes).map(
