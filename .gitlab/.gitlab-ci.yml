@@ -1,17 +1,14 @@
 stages:
-  - quality
+  - lint
 
-lint:
-    image:
-      name: ghcr.io/biomejs/biome:latest
-      entrypoint: [""]
-    stage: quality
-    script:
-        - biome ci --reporter=gitlab --colors=off > /tmp/code-quality.json
-        - cp /tmp/code-quality.json code-quality.json
-    artifacts:
-      reports:
-        codequality:
-          - code-quality.json
-    rules:
-        - if: $CI_MERGE_REQUEST_ID # Run job for merge requests
+biome-ci:
+  stage: lint
+  image: ghcr.io/biomejs/biome:latest
+  script:
+    - biome ci --reporter=gitlab --colors=off > code-quality.json
+  artifacts:
+    reports:
+      codequality: code-quality.json
+    when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
