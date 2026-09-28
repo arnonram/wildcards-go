@@ -5,12 +5,12 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
-  CardMedia,
   Fade,
   Grid,
   Skeleton,
   Typography,
 } from '@mui/material';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import type { CharToLoad } from '../../dtos/CharToLoad';
@@ -121,24 +121,41 @@ export default function LoadCharactersGrid() {
                 }}
               >
                 <CardActionArea onClick={(e) => handleOpenChar(e, character._id)}>
-                  <CardMedia
-                    component="img"
-                    height="120"
-                    image="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6O694YvEuQNDxXMOr2UJqR1DLGXJUD8nAcw&usqp=CAU"
-                    alt={character.name}
-                    sx={{ objectFit: 'cover' }}
-                  />
-                  <CardContent>
-                    <Typography
-                      variant="h6"
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
+                    <Box
                       sx={{
-                        fontFamily: "'Cinzel', 'Georgia', 'serif'",
-                        fontWeight: 600,
+                        width: 60,
+                        height: 60,
+                        borderRadius: 1,
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        bgcolor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
                       }}
                     >
-                      {character.name || 'Unnamed Character'}
-                    </Typography>
-                  </CardContent>
+                      {character.imageUrl ? (
+                        <Image src={character.imageUrl} alt={character.name} width={60} height={60} style={{ objectFit: 'cover' }} />
+                      ) : (
+                        <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Typography variant="caption" color="text.secondary">
+                            No image
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                    <CardContent sx={{ flex: 1, p: 0 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontFamily: "'Cinzel', 'Georgia', 'serif'",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {character.name || 'Unnamed Character'}
+                      </Typography>
+                    </CardContent>
+                  </Box>
                 </CardActionArea>
                 <CardActions sx={{ justifyContent: 'flex-end' }}>
                   <Button size="small" color="error" onClick={() => handleDeleteClick(character)}>

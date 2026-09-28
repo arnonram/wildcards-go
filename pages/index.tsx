@@ -160,21 +160,44 @@ const Home: NextPage = () => {
                     onClick={() => handleOpenCharacter(char._id)}
                   >
                     <CardActionArea sx={{ height: '100%' }}>
-                      <CardContent>
-                        <Typography
-                          variant="h6"
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
+                        <Box
                           sx={{
-                            fontFamily: "'Cinzel', 'Georgia', 'serif'",
-                            fontWeight: 600,
-                            mb: 1,
+                            width: 60,
+                            height: 60,
+                            borderRadius: 1,
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                            bgcolor: 'background.paper',
+                            border: '1px solid',
+                            borderColor: 'divider',
                           }}
                         >
-                          {char.name || 'Unnamed Character'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Click to view character sheet
-                        </Typography>
-                      </CardContent>
+                          {char.imageUrl ? (
+                            <Image src={char.imageUrl} alt={char.name} width={60} height={60} style={{ objectFit: 'cover' }} />
+                          ) : (
+                            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Typography variant="caption" color="text.secondary">
+                                No image
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                        <CardContent sx={{ flex: 1, p: 0 }}>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontFamily: "'Cinzel', 'Georgia', 'serif'",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {char.name || 'Unnamed Character'}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Click to view
+                          </Typography>
+                        </CardContent>
+                      </Box>
                     </CardActionArea>
                   </Card>
                 </Fade>

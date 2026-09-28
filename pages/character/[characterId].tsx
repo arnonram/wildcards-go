@@ -88,9 +88,9 @@ export async function getStaticPaths() {
   const characters = await response.json();
 
   const paths = characters.map((char: Record<string, unknown>) => ({
-    params: { characterId: char._id },
+    params: { characterId: char._id as string },
   }));
-  return { paths, fallback: false };
+  return { paths, fallback: true };
 }
 
 export async function getStaticProps({ params }: { params: { characterId: string } }) {

@@ -38,11 +38,11 @@ export default function Traits(props: TraitsProps) {
   };
 
   useEffect(() => {
-    setWildcardData({
-      ...wildcardData,
+    setWildcardData((prev) => ({
+      ...prev,
       [props.isAttributes ? 'attributes' : 'skills']: traits,
-    });
-  }, [traits, wildcardData, setWildcardData, props.isAttributes]);
+    }));
+  }, [traits, props.isAttributes]);
 
   const addNewSkill = (newSkill: Trait) => {
     setTraits([...traits, newSkill]);

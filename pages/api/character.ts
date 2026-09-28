@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         Collections.Characters,
         new WildCardCharacter(),
       );
-      res.status(200).json({ characterId: createCharacter.insertedId });
+      res.status(200).json({ characterId: createCharacter.insertedId.toString() });
       break;
     }
     case 'GET': {

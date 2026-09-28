@@ -20,7 +20,7 @@ export class DbActions {
     await this.init();
     return this.dbConnection
       .collection(collection)
-      .find({}, { projection: { name: 1 } })
+      .find({}, { projection: { name: 1, imageUrl: 1 } })
       .toArray();
   }
 

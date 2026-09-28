@@ -1,4 +1,6 @@
-import { Box, Grid, TextField, Typography } from '@mui/material';
+import { Box, Grid, TextField } from '@mui/material';
+import Image from 'next/image';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { RankDropdown } from './RankDropdown';
 
@@ -10,11 +12,54 @@ export default function BasicDetails() {
     setWildcardData({ ...wildcardData, [name]: value });
   };
 
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setWildcardData({ ...wildcardData, imageUrl: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <Box>
-      <Typography variant="h3" align="center" sx={{ boxShadow: 3 }} fontFamily="fantasy">
-        {wildcardData.name || 'Jane Doe'}
-      </Typography>
+      <Box sx={{ mb: 2 }}>
+        <Box
+          sx={{
+            width: 120,
+            height: 120,
+            borderRadius: 2,
+            border: '2px solid',
+            borderColor: 'primary.main',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <label htmlFor="character-image-upload" style={{ cursor: 'pointer', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {wildcardData.imageUrl ? (
+              <Image src={wildcardData.imageUrl} alt="Character" width={120} height={120} style={{ objectFit: 'cover' }} />
+            ) : (
+              <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+                <PhotoCameraIcon sx={{ fontSize: 32, color: 'text.secondary' }} />
+                <Box sx={{ typography: 'body2', color: 'text.secondary' }}>
+                  Upload Image
+                </Box>
+              </Box>
+            )}
+          </label>
+          <input
+            id="character-image-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            style={{ display: 'none' }}
+          />
+        </Box>
+      </Box>
       <h3>Basics</h3>
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         <Grid item>
@@ -51,7 +96,6 @@ export default function BasicDetails() {
             sx={{ maxWidth: 80 }}
           />
         </Grid>
-
         <Grid item>
           <TextField
             id="conviction"
