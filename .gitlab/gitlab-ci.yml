@@ -1,0 +1,14 @@
+stages:
+  - lint
+
+biome-ci:
+  stage: lint
+  image: ghcr.io/biomejs/biome:latest
+  script:
+    - biome ci --reporter=gitlab --colors=off > code-quality.json
+  artifacts:
+    reports:
+      codequality: code-quality.json
+    when: always
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
