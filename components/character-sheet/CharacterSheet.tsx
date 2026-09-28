@@ -1,13 +1,15 @@
 import { Box } from "@mui/material";
 import React from "react";
-import Hindrances from "./hindrances/Hindrances";
-import Table from "./Table";
-import { Weapon } from "../../dtos/Weapon.dto";
 import { WildCardCharacter } from "../../dtos/WildCardCharacter.dto";
 import BasicDetails from "./BasicDetails";
 import { WildCardProvider } from "../../helpers/context/wildcard-context";
 import Edges from "./edges/Edges";
 import Traits from "./traits/Traits";
+import Hindrances from "./hindrances/Hindrances";
+import Armors from "./armor/Armors";
+import Weapons from "./weapons/Weapons";
+import Powers from "./powers/Powers";
+import GearList from "./gear/Gear";
 
 export interface CharacterSheetProps {
   wildCard: WildCardCharacter;
@@ -24,30 +26,14 @@ export default function CharacterSheet({ wildCard }: CharacterSheetProps) {
         margin={3}
       >
         <BasicDetails />
-        {/* <Table
-          tableName="weapons"
-          data={[
-            new Weapon("Axe", "10/20/40", "2d6+1"),
-            new Weapon("Gun", "10/20/40", "2d6+1"),
-          ]}
-        /> */}
-        {/* <Weapons /> */}
         <Traits title="Attributes" isAttributes={true} />
         <Traits title="Skills" isAttributes={false} />
         <Hindrances />
         <Edges />
-        <Box>
-          <h3>Armor</h3>
-        </Box>
-        <Box>
-          <h3>Weapons</h3>
-        </Box>
-        <Box>
-          <h3>Powers</h3>
-        </Box>
-        <Box>
-          <h3>Gear</h3>
-        </Box>
+        <Armors />
+        <Weapons />
+        <Powers />
+        <GearList />
       </Box>
     </WildCardProvider>
   );

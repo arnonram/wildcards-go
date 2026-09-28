@@ -1,6 +1,20 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Collections, DbActions } from "../../../helpers/db-actions";
 
+function ensureIds(character: any) {
+  if (!character) return character;
+  const idFields = ["weapons", "powers", "gear", "armors", "edges", "hindrances"];
+  for (const field of idFields) {
+    if (Array.isArray(character[field])) {
+      character[field] = character[field].map((item: any) => ({
+        ...item,
+        _id: item._id || crypto.randomUUID().replaceAll("-", ""),
+      }));
+    }
+  }
+  return character;
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -15,7 +29,7 @@ export default async function handler(
         Collections.Characters,
         characterId.toString()
       );
-      res.status(200).json(getCharacterRes);
+      res.status(200).json(ensureIds(getCharacterRes));
       break;
     case "PUT":
       const updatedData = req.body;

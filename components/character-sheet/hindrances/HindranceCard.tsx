@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -13,147 +13,50 @@ import {
   FormControlLabel,
   FormGroup,
   Grid,
-  IconButton,
   TextField,
 } from "@mui/material";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import { Hindrance } from "../../../dtos/Hindrance.dto";
 
-export interface HindraceCardProps {
+export interface HindranceCardProps {
   hindrance: Hindrance;
   updateHindrance: (hindrance: Hindrance) => void;
   deleteHindrance: (id: string) => void;
 }
 
-export default function HindranceCard(props: HindraceCardProps) {
-  let wasSaved: boolean = false;
+export default function HindranceCard(props: HindranceCardProps) {
   const [open, setOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState<Hindrance>(props.hindrance);
 
-  const refHindrance = useRef(props.hindrance);
-  const [hindrance, setHindrance] = useState<Hindrance>(props.hindrance);
+  useEffect(() => {
+    setEditData(props.hindrance);
+  }, [props.hindrance]);
 
   const handleOpen = () => {
+    setEditData(props.hindrance);
     setOpen(true);
-    wasSaved = false;
   };
 
   const handleClose = () => {
-    if (!wasSaved) {
-      setHindrance(refHindrance.current);
-    }
-    setEditMode(false);
+    setEditData(props.hindrance);
     setOpen(false);
   };
 
   const handleSave = () => {
-    refHindrance.current = hindrance;
-    props.updateHindrance(hindrance);
-    setEditMode(false);
-    wasSaved = true;
+    props.updateHindrance(editData);
+    setOpen(false);
   };
 
   const hindranceUpdate = (event: any) => {
     const { name, value, checked } = event.target;
-    setHindrance({
-      ...hindrance,
+    setEditData({
+      ...editData,
       [name]: name === "isMajor" ? checked : value,
     });
   };
 
   const handleDelete = () => {
-    props.deleteHindrance(refHindrance.current._id);
+    props.deleteHindrance(props.hindrance._id);
     setOpen(false);
-  };
-  const dialogTitle = () => {
-    if (!editMode) {
-      return (
-        <DialogTitle>
-          {`${hindrance.name} ${hindrance.isMajor ? "(major)" : ""}`}
-          <IconButton>
-            {hindrance.isMajor ? <ArrowUpwardIcon /> : <ArrowDownwardIcon />}
-          </IconButton>
-        </DialogTitle>
-      );
-    } else {
-      return (
-        <FormGroup row>
-          <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
-            name="name"
-            id="hindrance-name"
-            margin="dense"
-            label="Hindrance Name"
-            value={hindrance.name}
-            onChange={hindranceUpdate}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                name="isMajor"
-                id="isMajor"
-                checked={!!hindrance.isMajor}
-                onChange={hindranceUpdate}
-                sx={{ ml: 4 }}
-              />
-            }
-            label="major?"
-          />
-        </FormGroup>
-      );
-    }
-  };
-
-  const hindranceBlurb = () => {
-    if (!editMode) {
-      return (
-        <div>
-          <Typography
-            sx={{ fontStyle: "italic", fontWeight: "bold", m: 1 }}
-            variant="subtitle1"
-          >
-            {hindrance.blurb}
-          </Typography>
-          <br />
-          <Typography gutterBottom style={{ whiteSpace: "pre-line" }}>
-            {hindrance.description}
-          </Typography>
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <TextField
-            name="blurb"
-            id="hindrance-blurb"
-            margin="dense"
-            label="Blurb"
-            fullWidth
-            value={hindrance.blurb}
-            onChange={hindranceUpdate}
-            variant="standard"
-          >
-            {hindrance.blurb}
-          </TextField>
-          <br />
-          <TextField
-            multiline
-            name="description"
-            id="hindrance-description"
-            margin="dense"
-            label="Description"
-            fullWidth
-            autoComplete="off"
-            value={hindrance.description}
-            onChange={hindranceUpdate}
-            variant="standard"
-          >
-            {hindrance.description}
-          </TextField>
-        </div>
-      );
-    }
   };
 
   return (
@@ -166,39 +69,79 @@ export default function HindranceCard(props: HindraceCardProps) {
           border: 1,
           borderRadius: 4,
         }}
-        id={`hindrance-card-${refHindrance.current._id}`}
+        id={`hindrance-card-${props.hindrance._id}`}
         onClick={handleOpen}
         elevation={7}
       >
         <CardActionArea>
           <CardContent>
             <Typography gutterBottom variant="h6" component="div">
-              {`${refHindrance.current.name} ${
-                refHindrance.current.isMajor ? "(major)" : ""
-              }`}
+              {`${props.hindrance.name} ${props.hindrance.isMajor ? "(major)" : ""}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {refHindrance.current.blurb}
+              {props.hindrance.blurb}
             </Typography>
           </CardContent>
         </CardActionArea>
       </Card>
 
       <Dialog open={open} onClose={handleClose} fullWidth>
-        {dialogTitle()}
-        <DialogContent>{hindranceBlurb()}</DialogContent>
+        <DialogTitle>
+          <FormGroup row>
+            <TextField
+              sx={{ width: "70%", ml: 3, mt: 2 }}
+              name="name"
+              id="hindrance-name"
+              margin="dense"
+              label="Hindrance Name"
+              value={editData.name}
+              onChange={hindranceUpdate}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  name="isMajor"
+                  id="isMajor"
+                  checked={!!editData.isMajor}
+                  onChange={hindranceUpdate}
+                  sx={{ ml: 4 }}
+                />
+              }
+              label="major?"
+            />
+          </FormGroup>
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            name="blurb"
+            id="hindrance-blurb"
+            margin="dense"
+            label="Blurb"
+            fullWidth
+            value={editData.blurb}
+            onChange={hindranceUpdate}
+            variant="standard"
+          />
+          <TextField
+            multiline
+            name="description"
+            id="hindrance-description"
+            margin="dense"
+            label="Description"
+            fullWidth
+            autoComplete="off"
+            value={editData.description}
+            onChange={hindranceUpdate}
+            variant="standard"
+          />
+        </DialogContent>
         <DialogActions>
-          <Button
-            sx={{ background: "red", color: "black" }}
-            onClick={handleDelete}
-          >
+          <Button onClick={handleDelete} color="error">
             Delete
           </Button>
-          {!editMode ? (
-            <Button onClick={() => setEditMode(true)}>Edit</Button>
-          ) : (
-            <Button onClick={handleSave}>Save</Button>
-          )}
+          <Button onClick={handleSave} color="primary" variant="contained">
+            Save
+          </Button>
           <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog>

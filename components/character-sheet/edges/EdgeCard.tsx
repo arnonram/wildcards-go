@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -21,173 +21,39 @@ export interface EdgeCardProps {
 }
 
 export default function EdgeCard(props: EdgeCardProps) {
-  let wasSaved: boolean = false;
   const [open, setOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [editData, setEditData] = useState<Edge>(props.edge);
 
-  const refEdge = useRef(props.edge);
-  const [edge, setEdge] = useState<Edge>(props.edge);
+  useEffect(() => {
+    setEditData(props.edge);
+  }, [props.edge]);
 
   const handleOpen = () => {
+    setEditData(props.edge);
     setOpen(true);
-    wasSaved = false;
   };
 
   const handleClose = () => {
-    if (!wasSaved) {
-      setEdge(refEdge.current);
-    }
-    setEditMode(false);
+    setEditData(props.edge);
     setOpen(false);
   };
 
   const handleSave = () => {
-    refEdge.current = edge;
-    props.updateEdge(edge);
-    setEditMode(false);
-    wasSaved = true;
+    props.updateEdge(editData);
+    setOpen(false);
   };
 
   const edgeUpdate = (event: any) => {
-    const { name, value, checked } = event.target;
-    setEdge({
-      ...edge,
-      [name]: name === "isMajor" ? checked : value,
+    const { name, value } = event.target;
+    setEditData({
+      ...editData,
+      [name]: value,
     });
   };
 
   const handleDelete = () => {
-    props.deleteEdge(refEdge.current._id);
+    props.deleteEdge(props.edge._id);
     setOpen(false);
-  };
-
-  const dialogTitle = () => {
-    if (!editMode) {
-      return <DialogTitle>{edge.name}</DialogTitle>;
-    } else {
-      return (
-        <TextField
-          sx={{ width: "70%", ml: 3, mt: 2 }}
-          name="name"
-          id="edge-name"
-          margin="dense"
-          label="Edge Name"
-          value={edge.name}
-          onChange={edgeUpdate}
-        />
-      );
-    }
-  };
-
-  const edgeBody = () => {
-    if (!editMode) {
-      return (
-        <div>
-          <div>
-            <div>
-              <Typography
-                sx={{ fontStyle: "italic", m: 1 }}
-                variant="subtitle1"
-                display="inline"
-              >
-                Requirements:
-              </Typography>
-              <Typography
-                sx={{ fontWeight: "bold", m: 1 }}
-                variant="subtitle1"
-                display="inline"
-              >
-                {edge.requirements}
-              </Typography>
-            </div>
-            <div>
-              <Typography
-                sx={{ fontStyle: "italic", m: 1 }}
-                variant="subtitle1"
-                display="inline"
-              >
-                Edge Type:
-              </Typography>
-              <Typography
-                sx={{ fontWeight: "bold", m: 1 }}
-                variant="subtitle1"
-                display="inline"
-              >
-                {edge.edgeType}
-              </Typography>
-            </div>
-          </div>
-          <br />
-          <Typography
-            sx={{ fontStyle: "italic", fontWeight: "bold", m: 1 }}
-            variant="subtitle1"
-          >
-            {edge.blurb}
-          </Typography>
-          <br />
-          <Typography gutterBottom style={{ whiteSpace: "pre-line" }}>
-            {edge.description}
-          </Typography>
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <TextField
-            name="requirements"
-            id="edge-requirements"
-            margin="dense"
-            label="Requirements"
-            fullWidth
-            value={edge.requirements}
-            onChange={edgeUpdate}
-            variant="standard"
-          >
-            {edge.requirements}
-          </TextField>
-          <TextField
-            name="edgeType"
-            id="edge-edgeType"
-            margin="dense"
-            label="Edge Type"
-            fullWidth
-            value={edge.edgeType}
-            onChange={edgeUpdate}
-            variant="standard"
-          >
-            {edge.edgeType}
-          </TextField>
-          <TextField
-            name="blurb"
-            id="edge-blurb"
-            margin="dense"
-            label="Blurb"
-            fullWidth
-            value={edge.blurb}
-            onChange={edgeUpdate}
-            variant="standard"
-            sx={{ mt: 3 }}
-          >
-            {edge.blurb}
-          </TextField>
-          <TextField
-            multiline
-            name="description"
-            id="edge-description"
-            margin="dense"
-            label="Description"
-            fullWidth
-            autoComplete="off"
-            value={edge.description}
-            onChange={edgeUpdate}
-            variant="standard"
-            sx={{ mt: 3 }}
-          >
-            {edge.description}
-          </TextField>
-        </div>
-      );
-    }
   };
 
   return (
@@ -200,42 +66,87 @@ export default function EdgeCard(props: EdgeCardProps) {
           border: 1,
           borderRadius: 4,
         }}
-        key={`edge-card-${refEdge.current.name}`}
+        key={`edge-card-${props.edge._id}`}
         onClick={handleOpen}
         elevation={7}
       >
         <CardActionArea>
           <CardContent>
             <Typography gutterBottom variant="h6" component="div">
-              {refEdge.current.name}
+              {props.edge.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {refEdge.current.blurb}
+              {props.edge.blurb}
             </Typography>
           </CardContent>
         </CardActionArea>
       </Card>
 
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        fullWidth
-        key={`edge-dialog-${refEdge.current.name}`}
-      >
-        {dialogTitle()}
-        <DialogContent>{edgeBody()}</DialogContent>
+      <Dialog open={open} onClose={handleClose} fullWidth>
+        <DialogTitle>
+          <TextField
+            sx={{ width: "70%", ml: 3, mt: 2 }}
+            name="name"
+            id="edge-name"
+            margin="dense"
+            label="Edge Name"
+            value={editData.name}
+            onChange={edgeUpdate}
+          />
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            name="requirements"
+            id="edge-requirements"
+            margin="dense"
+            label="Requirements"
+            fullWidth
+            value={editData.requirements}
+            onChange={edgeUpdate}
+            variant="standard"
+          />
+          <TextField
+            name="edgeType"
+            id="edge-edgeType"
+            margin="dense"
+            label="Edge Type"
+            fullWidth
+            value={editData.edgeType}
+            onChange={edgeUpdate}
+            variant="standard"
+          />
+          <TextField
+            name="blurb"
+            id="edge-blurb"
+            margin="dense"
+            label="Blurb"
+            fullWidth
+            value={editData.blurb}
+            onChange={edgeUpdate}
+            variant="standard"
+            sx={{ mt: 3 }}
+          />
+          <TextField
+            multiline
+            name="description"
+            id="edge-description"
+            margin="dense"
+            label="Description"
+            fullWidth
+            autoComplete="off"
+            value={editData.description}
+            onChange={edgeUpdate}
+            variant="standard"
+            sx={{ mt: 3 }}
+          />
+        </DialogContent>
         <DialogActions>
-          <Button
-            sx={{ background: "red", color: "black" }}
-            onClick={handleDelete}
-          >
+          <Button onClick={handleDelete} color="error">
             Delete
           </Button>
-          {!editMode ? (
-            <Button onClick={() => setEditMode(true)}>Edit</Button>
-          ) : (
-            <Button onClick={handleSave}>Save</Button>
-          )}
+          <Button onClick={handleSave} color="primary" variant="contained">
+            Save
+          </Button>
           <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog>

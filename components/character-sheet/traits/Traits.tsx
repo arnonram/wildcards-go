@@ -1,4 +1,4 @@
-import { FormLabel, TextField, Box, IconButton, Grid } from "@mui/material";
+import { FormLabel, TextField, Box, IconButton, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
 import { DiceDropdown, DiceValues } from "../DiceDropdown";
 import React, { useEffect, useState } from "react";
 import { AddSkillDialog } from "./AddSkillDialog";
@@ -17,6 +17,8 @@ export default function Traits(props: TraitsProps) {
   const [traits, setTraits] = useState(
     props.isAttributes ? wildcardData.attributes : wildcardData.skills
   );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [skillToDelete, setSkillToDelete] = useState<string>("");
 
   const handleInputChange = (event: any, traitName: string) => {
     const { name, value } = event.target;
@@ -34,8 +36,20 @@ export default function Traits(props: TraitsProps) {
     setTraits([...traits, newSkill]);
   };
 
-  const deleteSkill = (skillToDelete: string) => {
+  const handleDeleteClick = (skillName: string) => {
+    setSkillToDelete(skillName);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
     setTraits(traits.filter((skill) => skill.name !== skillToDelete));
+    setDeleteDialogOpen(false);
+    setSkillToDelete("");
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setSkillToDelete("");
   };
 
   const addTrait = (trait: Trait) => (
@@ -69,7 +83,7 @@ export default function Traits(props: TraitsProps) {
           color="warning"
           aria-label="delete"
           edge="start"
-          onClick={() => deleteSkill(trait.name)}
+          onClick={() => handleDeleteClick(trait.name)}
         >
           <DeleteForeverIcon />
         </IconButton>
@@ -84,6 +98,23 @@ export default function Traits(props: TraitsProps) {
         {traits.map((trait) => addTrait(trait))}
       </Grid>
       {!props.isAttributes && <AddSkillDialog addSkill={addNewSkill} />}
+
+      <Dialog open={deleteDialogOpen} onClose={handleCancelDelete} maxWidth="xs" fullWidth>
+        <DialogTitle>Delete Skill</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete <strong>{skillToDelete}</strong>?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

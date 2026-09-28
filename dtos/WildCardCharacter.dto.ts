@@ -7,6 +7,7 @@ import { Attributes, CoreSkills, Ranks } from "./wildcards-consts";
 import { DiceValues } from "../components/character-sheet/DiceDropdown";
 import { Hindrance } from "./Hindrance.dto";
 import { Edge } from "./Edge";
+import { Armor } from "./Armor.dto";
 
 export class WildCardCharacter extends BaseEntity {
   _id?: string;
@@ -34,6 +35,7 @@ export class WildCardCharacter extends BaseEntity {
   edges?: Edge[];
   weapons?: Weapon[];
   powers?: Power[];
+  armors?: Armor[];
 
   constructor(name?: string) {
     super(name);
