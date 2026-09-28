@@ -42,7 +42,7 @@ export default function Traits(props: TraitsProps) {
       ...prev,
       [props.isAttributes ? 'attributes' : 'skills']: traits,
     }));
-  }, [traits, props.isAttributes]);
+  }, [traits, props.isAttributes, setWildcardData]);
 
   const addNewSkill = (newSkill: Trait) => {
     setTraits([...traits, newSkill]);

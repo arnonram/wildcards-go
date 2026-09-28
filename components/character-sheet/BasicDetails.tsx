@@ -1,6 +1,6 @@
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { Box, Grid, TextField } from '@mui/material';
 import Image from 'next/image';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { RankDropdown } from './RankDropdown';
 
@@ -39,15 +39,39 @@ export default function BasicDetails() {
             cursor: 'pointer',
           }}
         >
-          <label htmlFor="character-image-upload" style={{ cursor: 'pointer', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <label
+            htmlFor="character-image-upload"
+            style={{
+              cursor: 'pointer',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {wildcardData.imageUrl ? (
-              <Image src={wildcardData.imageUrl} alt="Character" width={120} height={120} style={{ objectFit: 'cover' }} />
+              <Image
+                src={wildcardData.imageUrl}
+                alt="Character"
+                width={120}
+                height={120}
+                style={{ objectFit: 'cover' }}
+              />
             ) : (
-              <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 1,
+                }}
+              >
                 <PhotoCameraIcon sx={{ fontSize: 32, color: 'text.secondary' }} />
-                <Box sx={{ typography: 'body2', color: 'text.secondary' }}>
-                  Upload Image
-                </Box>
+                <Box sx={{ typography: 'body2', color: 'text.secondary' }}>Upload Image</Box>
               </Box>
             )}
           </label>

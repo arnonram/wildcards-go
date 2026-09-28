@@ -135,9 +135,23 @@ export default function LoadCharactersGrid() {
                       }}
                     >
                       {character.imageUrl ? (
-                        <Image src={character.imageUrl} alt={character.name} width={60} height={60} style={{ objectFit: 'cover' }} />
+                        <Image
+                          src={character.imageUrl}
+                          alt={character.name}
+                          width={60}
+                          height={60}
+                          style={{ objectFit: 'cover' }}
+                        />
                       ) : (
-                        <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
                           <Typography variant="caption" color="text.secondary">
                             No image
                           </Typography>

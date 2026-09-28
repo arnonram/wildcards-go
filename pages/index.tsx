@@ -174,9 +174,23 @@ const Home: NextPage = () => {
                           }}
                         >
                           {char.imageUrl ? (
-                            <Image src={char.imageUrl} alt={char.name} width={60} height={60} style={{ objectFit: 'cover' }} />
+                            <Image
+                              src={char.imageUrl}
+                              alt={char.name}
+                              width={60}
+                              height={60}
+                              style={{ objectFit: 'cover' }}
+                            />
                           ) : (
-                            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
                               <Typography variant="caption" color="text.secondary">
                                 No image
                               </Typography>
