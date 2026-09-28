@@ -7,7 +7,8 @@ biome-ci:
     name: biome/biome:latest
     entrypoint: [""]
   script:
-    - biome ci --reporter=gitlab --colors=off > code-quality.json || true
+    - biome ci --reporter=gitlab --colors=off > code-quality.json 2>&1 || true
+    - cat code-quality.json
   artifacts:
     reports:
       codequality: code-quality.json
