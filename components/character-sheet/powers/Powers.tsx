@@ -1,18 +1,27 @@
-import { Box, Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
-import { useState } from "react";
-import { Power } from "../../../dtos/Power.dto";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
-import AddNewButton from "../AddNewButton";
-import PowerCard from "./PowerCard";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
+import { Power } from '../../../dtos/Power.dto';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import AddNewButton from '../AddNewButton';
+import PowerCard from './PowerCard';
 
 export default function Powers() {
   const { wildcardData, setWildcardData } = useWildcard();
   const [powers, setPowers] = useState<Power[]>(wildcardData?.powers || []);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newPower, setNewPower] = useState<Power>(new Power(""));
+  const [newPower, setNewPower] = useState<Power>(new Power(''));
 
   const handleOpenDialog = () => {
-    setNewPower(new Power(""));
+    setNewPower(new Power(''));
     setDialogOpen(true);
   };
 
@@ -39,7 +48,7 @@ export default function Powers() {
     setPowers([...cleanedPowers]);
   };
 
-  const powerUpdate = (event: any) => {
+  const powerUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewPower({
       ...newPower,
@@ -65,7 +74,7 @@ export default function Powers() {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="power-name"
             margin="dense"

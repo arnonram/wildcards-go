@@ -1,19 +1,17 @@
-import { get } from "lodash";
+import { get } from 'lodash';
 
 export function handleArrayUpdate<T>(
   someArray: T[],
   elementToFind: string,
   nameToUpdate: string,
-  valueToUpdate: string
+  valueToUpdate: string,
 ): T[] {
-  const traitIndex = someArray.findIndex((x) =>
-    elementToFind.includes(get(x, "name"))
-  );
+  const traitIndex = someArray.findIndex((x) => elementToFind.includes(get(x, 'name')));
   const updatedTrait = {
     ...someArray[traitIndex],
     [nameToUpdate]: valueToUpdate,
   } as T;
-  let someArrayCopy = [...someArray];
+  const someArrayCopy = [...someArray];
   someArrayCopy[traitIndex] = updatedTrait;
   return someArrayCopy;
 }

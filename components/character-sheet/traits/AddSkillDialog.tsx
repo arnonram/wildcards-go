@@ -1,33 +1,32 @@
-import { DiceDropdown, DiceValues } from "../DiceDropdown";
-import AddIcon from "@mui/icons-material/Add";
-import React, { useState } from "react";
 import {
   Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
   DialogActions,
-} from "@mui/material";
-import { Trait } from "../../../dtos/Trait.dto";
-import AddNewButton from "../AddNewButton";
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
+import { Trait } from '../../../dtos/Trait.dto';
+import AddNewButton from '../AddNewButton';
+import { DiceDropdown, DiceValues } from '../DiceDropdown';
 
 export interface AddSkillDialogProps {
-  addSkill: any;
+  addSkill: (skill: Trait) => void;
 }
 
 export const AddSkillDialog = (props: AddSkillDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState(new Trait("", DiceValues.untrained));
+  const [newSkill, setNewSkill] = useState(new Trait('', DiceValues.untrained));
 
-  const handleDiceUpdate = (event: any) => {
+  const handleDiceUpdate = (event: React.ChangeEvent<{ value: string }>) => {
     setNewSkill({
       ...newSkill,
       dice: event.target.value,
     });
   };
 
-  const handleSkillNameUpdate = (event: any) => {
+  const handleSkillNameUpdate = (event: React.FocusEvent<HTMLInputElement>) => {
     setNewSkill({
       ...newSkill,
       name: event.target.value,
@@ -42,7 +41,7 @@ export const AddSkillDialog = (props: AddSkillDialogProps) => {
     setOpen(false);
   };
 
-  const handleAdd = (event: any) => {
+  const handleAdd = (event: React.FormEvent) => {
     event.preventDefault();
     props.addSkill(newSkill as Trait);
     setOpen(false);

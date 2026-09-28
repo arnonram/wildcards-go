@@ -1,6 +1,6 @@
-import { Db, ObjectId } from "mongodb";
-import { connectToDb } from "./db-util";
-import { omit } from "lodash";
+import { omit } from 'lodash';
+import { type Db, ObjectId } from 'mongodb';
+import { connectToDb } from './db-util';
 
 export class DbActions {
   private dbConnection!: Db;
@@ -13,9 +13,7 @@ export class DbActions {
 
   async getById(collection: Collections, id: string) {
     await this.init();
-    return this.dbConnection
-      .collection(collection)
-      .findOne({ _id: new ObjectId(id) });
+    return this.dbConnection.collection(collection).findOne({ _id: new ObjectId(id) });
   }
 
   async getAllCharacters(collection: Collections) {
@@ -26,9 +24,9 @@ export class DbActions {
       .toArray();
   }
 
-  async updateById(collection: Collections, id: string, data: any) {
+  async updateById(collection: Collections, id: string, data: Record<string, unknown>) {
     await this.init();
-    const cleanedData = omit(data, "_id");
+    const cleanedData = omit(data, '_id');
     const response = await this.dbConnection
       .collection(collection)
       .updateOne({ _id: new ObjectId(id) }, { $set: { ...cleanedData } });
@@ -37,21 +35,19 @@ export class DbActions {
 
   async deleteById(collection: Collections, id: string) {
     await this.init();
-    return this.dbConnection
-      .collection(collection)
-      .deleteOne({ _id: new ObjectId(id) });
+    return this.dbConnection.collection(collection).deleteOne({ _id: new ObjectId(id) });
   }
 
-  async createNew(collection: Collections, createObject: any) {
+  async createNew(collection: Collections, createObject: Record<string, unknown>) {
     await this.init();
     return this.dbConnection.collection(collection).insertOne(createObject);
   }
 }
 
 export enum Collections {
-  Characters = "characters",
-  Edges = "edges",
-  Hindrances = "hindrances",
-  Powers = "powers",
-  Gear = "gear",
+  Characters = 'characters',
+  Edges = 'edges',
+  Hindrances = 'hindrances',
+  Powers = 'powers',
+  Gear = 'gear',
 }

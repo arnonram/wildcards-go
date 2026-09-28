@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
 import {
   Button,
   CardActionArea,
@@ -11,8 +7,12 @@ import {
   DialogTitle,
   Grid,
   TextField,
-} from "@mui/material";
-import { Armor } from "../../../dtos/Armor.dto";
+} from '@mui/material';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import type { Armor } from '../../../dtos/Armor.dto';
 
 export interface ArmorCardProps {
   armor: Armor;
@@ -43,7 +43,7 @@ export default function ArmorCard(props: ArmorCardProps) {
     setOpen(false);
   };
 
-  const armorUpdate = (event: any) => {
+  const armorUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setEditData({
       ...editData,
@@ -76,8 +76,8 @@ export default function ArmorCard(props: ArmorCardProps) {
               {props.armor.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {props.armor.armorBonus ? `+${props.armor.armorBonus}` : ""}
-              {props.armor.locations ? ` — ${props.armor.locations}` : ""}
+              {props.armor.armorBonus ? `+${props.armor.armorBonus}` : ''}
+              {props.armor.locations ? ` — ${props.armor.locations}` : ''}
             </Typography>
           </CardContent>
         </CardActionArea>
@@ -86,7 +86,7 @@ export default function ArmorCard(props: ArmorCardProps) {
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="armor-name"
             margin="dense"

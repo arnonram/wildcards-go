@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
 import {
   Button,
   CardActionArea,
@@ -11,8 +7,12 @@ import {
   DialogTitle,
   Grid,
   TextField,
-} from "@mui/material";
-import { Power } from "../../../dtos/Power.dto";
+} from '@mui/material';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import type { Power } from '../../../dtos/Power.dto';
 
 export interface PowerCardProps {
   power: Power;
@@ -43,7 +43,7 @@ export default function PowerCard(props: PowerCardProps) {
     setOpen(false);
   };
 
-  const powerUpdate = (event: any) => {
+  const powerUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setEditData({
       ...editData,
@@ -76,8 +76,8 @@ export default function PowerCard(props: PowerCardProps) {
               {props.power.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {props.power.pp ? `${props.power.pp} PP` : ""}
-              {props.power.range ? ` — ${props.power.range}` : ""}
+              {props.power.pp ? `${props.power.pp} PP` : ''}
+              {props.power.range ? ` — ${props.power.range}` : ''}
             </Typography>
           </CardContent>
         </CardActionArea>
@@ -86,7 +86,7 @@ export default function PowerCard(props: PowerCardProps) {
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="power-name"
             margin="dense"

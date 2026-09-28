@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
 import {
   Button,
   CardActionArea,
@@ -11,8 +7,12 @@ import {
   DialogTitle,
   Grid,
   TextField,
-} from "@mui/material";
-import { Gear } from "../../../dtos/Gear.dto";
+} from '@mui/material';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import type { Gear } from '../../../dtos/Gear.dto';
 
 export interface GearCardProps {
   gear: Gear;
@@ -43,7 +43,7 @@ export default function GearCard(props: GearCardProps) {
     setOpen(false);
   };
 
-  const gearUpdate = (event: any) => {
+  const gearUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setEditData({
       ...editData,
@@ -76,8 +76,8 @@ export default function GearCard(props: GearCardProps) {
               {props.gear.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {props.gear.weight ? `${props.gear.weight} lbs` : ""}
-              {props.gear.cost ? ` — $${props.gear.cost}` : ""}
+              {props.gear.weight ? `${props.gear.weight} lbs` : ''}
+              {props.gear.cost ? ` — $${props.gear.cost}` : ''}
             </Typography>
           </CardContent>
         </CardActionArea>
@@ -86,7 +86,7 @@ export default function GearCard(props: GearCardProps) {
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="gear-name"
             margin="dense"

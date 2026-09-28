@@ -1,14 +1,6 @@
-import {
-  Box,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-} from "@mui/material";
-import { Power } from "../../dtos/Power.dto";
-import { Weapon } from "../../dtos/Weapon.dto";
+import { Box, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import type { Power } from '../../dtos/Power.dto';
+import type { Weapon } from '../../dtos/Weapon.dto';
 
 export interface TableProps {
   tableName: string;
@@ -24,10 +16,11 @@ export default function Table(props: TableProps) {
           <TableRow key={props.tableName}>
             {Object.keys(props.data[0]).map((x) => (
               <TableCell
+                key={x}
                 sx={{
-                  fontWeight: "bold",
-                  fontSize: "medium",
-                  textTransform: "uppercase",
+                  fontWeight: 'bold',
+                  fontSize: 'medium',
+                  textTransform: 'uppercase',
                 }}
               >
                 {x}
@@ -37,7 +30,7 @@ export default function Table(props: TableProps) {
         </TableHead>
         <TableBody>
           {props.data.map((item: Weapon) => (
-            <TableRow>
+            <TableRow key={item._id}>
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.range}</TableCell>
               <TableCell>{item.damage}</TableCell>

@@ -1,20 +1,30 @@
-import { Box, Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Checkbox, FormControlLabel, FormGroup } from "@mui/material";
-import { useState } from "react";
-import { Hindrance } from "../../../dtos/Hindrance.dto";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
-import AddNewButton from "../AddNewButton";
-import HindranceCard from "./HindranceCard";
+import {
+  Box,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
+import { Hindrance } from '../../../dtos/Hindrance.dto';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import AddNewButton from '../AddNewButton';
+import HindranceCard from './HindranceCard';
 
 export default function Hindrances() {
   const { wildcardData, setWildcardData } = useWildcard();
-  const [hindrances, setHindrances] = useState<Hindrance[]>(
-    wildcardData?.hindrances || []
-  );
+  const [hindrances, setHindrances] = useState<Hindrance[]>(wildcardData?.hindrances || []);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newHindrance, setNewHindrance] = useState<Hindrance>(new Hindrance(""));
+  const [newHindrance, setNewHindrance] = useState<Hindrance>(new Hindrance(''));
 
   const handleOpenDialog = () => {
-    setNewHindrance(new Hindrance(""));
+    setNewHindrance(new Hindrance(''));
     setDialogOpen(true);
   };
 
@@ -30,9 +40,7 @@ export default function Hindrances() {
   };
 
   const handleUpdate = (updatedHindrance: Hindrance) => {
-    const hindranceIndex = hindrances.findIndex(
-      (x) => x._id === updatedHindrance._id
-    );
+    const hindranceIndex = hindrances.findIndex((x) => x._id === updatedHindrance._id);
     const currentHindrance = hindrances;
     currentHindrance[hindranceIndex] = updatedHindrance;
     setHindrances([...currentHindrance]);
@@ -43,11 +51,11 @@ export default function Hindrances() {
     setHindrances([...cleanedHindrances]);
   };
 
-  const hindranceUpdate = (event: any) => {
+  const hindranceUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = event.target;
     setNewHindrance({
       ...newHindrance,
-      [name]: name === "isMajor" ? checked : value,
+      [name]: name === 'isMajor' ? checked : value,
     });
   };
 
@@ -70,7 +78,7 @@ export default function Hindrances() {
         <DialogTitle>
           <FormGroup row>
             <TextField
-              sx={{ width: "70%", ml: 3, mt: 2 }}
+              sx={{ width: '70%', ml: 3, mt: 2 }}
               name="name"
               id="hindrance-name"
               margin="dense"

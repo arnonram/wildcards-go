@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
 import {
   Button,
   CardActionArea,
@@ -11,8 +7,12 @@ import {
   DialogTitle,
   Grid,
   TextField,
-} from "@mui/material";
-import { Edge } from "../../../dtos/Edge";
+} from '@mui/material';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import type { Edge } from '../../../dtos/Edge';
 
 export interface EdgeCardProps {
   edge: Edge;
@@ -43,7 +43,7 @@ export default function EdgeCard(props: EdgeCardProps) {
     setOpen(false);
   };
 
-  const edgeUpdate = (event: any) => {
+  const edgeUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setEditData({
       ...editData,
@@ -85,7 +85,7 @@ export default function EdgeCard(props: EdgeCardProps) {
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="edge-name"
             margin="dense"

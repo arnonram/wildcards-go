@@ -1,21 +1,18 @@
-import { WildCardCharacter } from "../dtos/WildCardCharacter.dto";
+import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
 
 export async function updateCharacter(wildCardData: WildCardCharacter) {
   console.log(wildCardData._id?.toString());
-  const response = await fetch(
-    `/api/character/${wildCardData._id?.toString()}`,
-    {
-      method: "PUT",
-      headers: { "Content-type": "application/json" },
-      body: JSON.stringify(wildCardData),
-    }
-  );
+  const _response = await fetch(`/api/character/${wildCardData._id?.toString()}`, {
+    method: 'PUT',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify(wildCardData),
+  });
 }
 
 export async function createNewCharacter() {
   const response = await fetch(`/api/character`, {
-    method: "POST",
-    headers: { "Content-type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-type': 'application/json' },
     body: JSON.stringify(new WildCardCharacter()),
   });
   return response.json();

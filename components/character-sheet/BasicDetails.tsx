@@ -1,24 +1,19 @@
-import { Box, Grid, TextField, Typography } from "@mui/material";
-import { useWildcard } from "../../helpers/context/wildcard-context";
-import { RankDropdown } from "./RankDropdown";
+import { Box, Grid, TextField, Typography } from '@mui/material';
+import { useWildcard } from '../../helpers/context/wildcard-context';
+import { RankDropdown } from './RankDropdown';
 
 export default function BasicDetails() {
   const { wildcardData, setWildcardData } = useWildcard();
 
-  const handleChange = (event: any) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setWildcardData({ ...wildcardData, [name]: value });
   };
 
   return (
     <Box>
-      <Typography
-        variant="h3"
-        align="center"
-        sx={{ boxShadow: 3 }}
-        fontFamily="fantasy"
-      >
-        {wildcardData.name || "Jane Doe"}
+      <Typography variant="h3" align="center" sx={{ boxShadow: 3 }} fontFamily="fantasy">
+        {wildcardData.name || 'Jane Doe'}
       </Typography>
       <h3>Basics</h3>
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>

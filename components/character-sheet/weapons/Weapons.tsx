@@ -1,18 +1,27 @@
-import { Box, Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
-import { useState } from "react";
-import { Weapon } from "../../../dtos/Weapon.dto";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
-import AddNewButton from "../AddNewButton";
-import WeaponCard from "./WeaponCard";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
+import { Weapon } from '../../../dtos/Weapon.dto';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import AddNewButton from '../AddNewButton';
+import WeaponCard from './WeaponCard';
 
 export default function Weapons() {
   const { wildcardData, setWildcardData } = useWildcard();
   const [weapons, setWeapons] = useState<Weapon[]>(wildcardData?.weapons || []);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newWeapon, setNewWeapon] = useState<Weapon>(new Weapon(""));
+  const [newWeapon, setNewWeapon] = useState<Weapon>(new Weapon(''));
 
   const handleOpenDialog = () => {
-    setNewWeapon(new Weapon(""));
+    setNewWeapon(new Weapon(''));
     setDialogOpen(true);
   };
 
@@ -39,7 +48,7 @@ export default function Weapons() {
     setWeapons([...cleanedWeapons]);
   };
 
-  const weaponUpdate = (event: any) => {
+  const weaponUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewWeapon({
       ...newWeapon,
@@ -65,7 +74,7 @@ export default function Weapons() {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="weapon-name"
             margin="dense"

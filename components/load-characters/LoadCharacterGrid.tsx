@@ -1,20 +1,20 @@
 import {
+  Box,
   Button,
   Card,
   CardActionArea,
   CardActions,
   CardContent,
   CardMedia,
-  Grid,
-  Typography,
-  Skeleton,
   Fade,
-  Box,
-} from "@mui/material";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { CharToLoad } from "../../dtos/CharToLoad";
-import DeleteConfirmationDialog from "../DeleteConfirmationDialog";
+  Grid,
+  Skeleton,
+  Typography,
+} from '@mui/material';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import type { CharToLoad } from '../../dtos/CharToLoad';
+import DeleteConfirmationDialog from '../DeleteConfirmationDialog';
 
 export default function LoadCharactersGrid() {
   const router = useRouter();
@@ -29,7 +29,7 @@ export default function LoadCharactersGrid() {
         const data = await response.json();
         setListOfChars(data);
       } catch (error) {
-        console.error("Failed to fetch characters:", error);
+        console.error('Failed to fetch characters:', error);
       } finally {
         setLoading(false);
       }
@@ -37,7 +37,7 @@ export default function LoadCharactersGrid() {
     getData();
   }, []);
 
-  const handleOpenChar = (e: any, id: string) => {
+  const handleOpenChar = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     router.push(`/character/${encodeURIComponent(id)}`);
   };
@@ -49,8 +49,8 @@ export default function LoadCharactersGrid() {
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     await fetch(`/api/character/${deleteTarget._id}`, {
-      method: "DELETE",
-      headers: { "Content-type": "application/json" },
+      method: 'DELETE',
+      headers: { 'Content-type': 'application/json' },
     });
     setListOfChars((prev) => prev.filter((x) => x._id !== deleteTarget._id));
     setDeleteTarget(null);
@@ -77,10 +77,10 @@ export default function LoadCharactersGrid() {
       <>
         <Box
           sx={{
-            textAlign: "center",
+            textAlign: 'center',
             py: 6,
-            border: "2px dashed",
-            borderColor: "primary.main",
+            border: '2px dashed',
+            borderColor: 'primary.main',
             borderRadius: 2,
             opacity: 0.6,
           }}
@@ -94,7 +94,7 @@ export default function LoadCharactersGrid() {
         </Box>
         <DeleteConfirmationDialog
           open={deleteTarget !== null}
-          characterName={deleteTarget?.name || ""}
+          characterName={deleteTarget?.name || ''}
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
         />
@@ -111,12 +111,12 @@ export default function LoadCharactersGrid() {
               <Card
                 elevation={3}
                 sx={{
-                  height: "100%",
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: "0 8px 24px rgba(201, 162, 39, 0.2)",
-                    borderColor: "rgba(201, 162, 39, 0.5)",
+                  height: '100%',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 24px rgba(201, 162, 39, 0.2)',
+                    borderColor: 'rgba(201, 162, 39, 0.5)',
                   },
                 }}
               >
@@ -126,7 +126,7 @@ export default function LoadCharactersGrid() {
                     height="120"
                     image="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6O694YvEuQNDxXMOr2UJqR1DLGXJUD8nAcw&usqp=CAU"
                     alt={character.name}
-                    sx={{ objectFit: "cover" }}
+                    sx={{ objectFit: 'cover' }}
                   />
                   <CardContent>
                     <Typography
@@ -136,16 +136,12 @@ export default function LoadCharactersGrid() {
                         fontWeight: 600,
                       }}
                     >
-                      {character.name || "Unnamed Character"}
+                      {character.name || 'Unnamed Character'}
                     </Typography>
                   </CardContent>
                 </CardActionArea>
-                <CardActions sx={{ justifyContent: "flex-end" }}>
-                  <Button
-                    size="small"
-                    color="error"
-                    onClick={() => handleDeleteClick(character)}
-                  >
+                <CardActions sx={{ justifyContent: 'flex-end' }}>
+                  <Button size="small" color="error" onClick={() => handleDeleteClick(character)}>
                     Delete
                   </Button>
                 </CardActions>
@@ -156,7 +152,7 @@ export default function LoadCharactersGrid() {
       </Grid>
       <DeleteConfirmationDialog
         open={deleteTarget !== null}
-        characterName={deleteTarget?.name || ""}
+        characterName={deleteTarget?.name || ''}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />

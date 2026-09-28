@@ -1,18 +1,27 @@
-import { Box, Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
-import { useState } from "react";
-import { Armor } from "../../../dtos/Armor.dto";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
-import AddNewButton from "../AddNewButton";
-import ArmorCard from "./ArmorCard";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
+import { Armor } from '../../../dtos/Armor.dto';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import AddNewButton from '../AddNewButton';
+import ArmorCard from './ArmorCard';
 
 export default function Armors() {
   const { wildcardData, setWildcardData } = useWildcard();
   const [armors, setArmors] = useState<Armor[]>(wildcardData?.armors || []);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newArmor, setNewArmor] = useState<Armor>(new Armor(""));
+  const [newArmor, setNewArmor] = useState<Armor>(new Armor(''));
 
   const handleOpenDialog = () => {
-    setNewArmor(new Armor(""));
+    setNewArmor(new Armor(''));
     setDialogOpen(true);
   };
 
@@ -39,7 +48,7 @@ export default function Armors() {
     setArmors([...cleanedArmors]);
   };
 
-  const armorUpdate = (event: any) => {
+  const armorUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewArmor({
       ...newArmor,
@@ -65,7 +74,7 @@ export default function Armors() {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="armor-name"
             margin="dense"

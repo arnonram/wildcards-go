@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
 import {
   Button,
   CardActionArea,
@@ -14,8 +10,12 @@ import {
   FormGroup,
   Grid,
   TextField,
-} from "@mui/material";
-import { Hindrance } from "../../../dtos/Hindrance.dto";
+} from '@mui/material';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import type { Hindrance } from '../../../dtos/Hindrance.dto';
 
 export interface HindranceCardProps {
   hindrance: Hindrance;
@@ -46,11 +46,11 @@ export default function HindranceCard(props: HindranceCardProps) {
     setOpen(false);
   };
 
-  const hindranceUpdate = (event: any) => {
+  const hindranceUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = event.target;
     setEditData({
       ...editData,
-      [name]: name === "isMajor" ? checked : value,
+      [name]: name === 'isMajor' ? checked : value,
     });
   };
 
@@ -76,7 +76,7 @@ export default function HindranceCard(props: HindranceCardProps) {
         <CardActionArea>
           <CardContent>
             <Typography gutterBottom variant="h6" component="div">
-              {`${props.hindrance.name} ${props.hindrance.isMajor ? "(major)" : ""}`}
+              {`${props.hindrance.name} ${props.hindrance.isMajor ? '(major)' : ''}`}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {props.hindrance.blurb}
@@ -89,7 +89,7 @@ export default function HindranceCard(props: HindranceCardProps) {
         <DialogTitle>
           <FormGroup row>
             <TextField
-              sx={{ width: "70%", ml: 3, mt: 2 }}
+              sx={{ width: '70%', ml: 3, mt: 2 }}
               name="name"
               id="hindrance-name"
               margin="dense"

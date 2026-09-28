@@ -1,5 +1,5 @@
-import { Box, Typography } from "@mui/material";
-import LoadCharactersGrid from "../components/load-characters/LoadCharacterGrid";
+import { Box, Typography } from '@mui/material';
+import LoadCharactersGrid from '../components/load-characters/LoadCharacterGrid';
 
 export default function LoadCharacter() {
   return (
@@ -10,7 +10,7 @@ export default function LoadCharacter() {
           fontFamily: "'Cinzel', 'Georgia', 'serif'",
           fontWeight: 600,
           mb: 3,
-          color: "#e8e6e3",
+          color: '#e8e6e3',
         }}
       >
         Load a Character

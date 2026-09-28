@@ -1,4 +1,4 @@
-import { BaseEntity } from "./BaseEntity.dto";
+import { BaseEntity } from './BaseEntity.dto';
 
 export class Gear extends BaseEntity {
   _id: string;
@@ -8,7 +8,7 @@ export class Gear extends BaseEntity {
 
   constructor(name: string, weight?: number, cost?: number, details?: string) {
     super(name);
-    this._id = crypto.randomUUID().replaceAll("-", "");
+    this._id = crypto.randomUUID().replaceAll('-', '');
     this.weight = weight;
     this.cost = cost;
     this.details = details;

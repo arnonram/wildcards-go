@@ -1,15 +1,14 @@
-import "../styles/globals.css";
-import type { AppProps } from "next/app";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import { darkTheme, lightTheme } from "../styles/theme";
-import { ThemeProvider as AppThemeProvider } from "../helpers/context/theme-context";
-import { useTheme } from "../helpers/context/theme-context";
-import Layout from "../components/layout/Layout";
+import '../styles/globals.css';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+import type { AppProps } from 'next/app';
+import Layout from '../components/layout/Layout';
+import { ThemeProvider as AppThemeProvider, useTheme } from '../helpers/context/theme-context';
+import { darkTheme, lightTheme } from '../styles/theme';
 
 function ThemedApp({ Component, pageProps }: AppProps) {
   const { mode } = useTheme();
-  const theme = mode === "dark" ? darkTheme : lightTheme;
+  const theme = mode === 'dark' ? darkTheme : lightTheme;
 
   return (
     <ThemeProvider theme={theme}>

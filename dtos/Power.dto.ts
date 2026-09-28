@@ -1,4 +1,4 @@
-import { BaseEntity } from "./BaseEntity.dto";
+import { BaseEntity } from './BaseEntity.dto';
 
 export class Power extends BaseEntity {
   _id: string;
@@ -10,6 +10,6 @@ export class Power extends BaseEntity {
 
   constructor(name: string) {
     super(name);
-    this._id = crypto.randomUUID().replaceAll("-", "");
+    this._id = crypto.randomUUID().replaceAll('-', '');
   }
 }

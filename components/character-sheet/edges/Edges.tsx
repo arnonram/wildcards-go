@@ -1,18 +1,27 @@
-import { Box, Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
-import { useState } from "react";
-import { Edge } from "../../../dtos/Edge";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
-import AddNewButton from "../AddNewButton";
-import EdgeCard from "./EdgeCard";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
+import { Edge } from '../../../dtos/Edge';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import AddNewButton from '../AddNewButton';
+import EdgeCard from './EdgeCard';
 
 export default function Edges() {
   const { wildcardData, setWildcardData } = useWildcard();
   const [edges, setEdges] = useState<Edge[]>(wildcardData?.edges || []);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newEdge, setNewEdge] = useState<Edge>(new Edge(""));
+  const [newEdge, setNewEdge] = useState<Edge>(new Edge(''));
 
   const handleOpenDialog = () => {
-    setNewEdge(new Edge(""));
+    setNewEdge(new Edge(''));
     setDialogOpen(true);
   };
 
@@ -39,7 +48,7 @@ export default function Edges() {
     setEdges([...cleanedEdges]);
   };
 
-  const edgeUpdate = (event: any) => {
+  const edgeUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewEdge({
       ...newEdge,
@@ -65,7 +74,7 @@ export default function Edges() {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="edge-name"
             margin="dense"

@@ -1,7 +1,7 @@
-import { Button } from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
-import { useWildcard } from "../../helpers/context/wildcard-context";
-import { saveUpdate } from "../../helpers/save-action";
+import SaveIcon from '@mui/icons-material/Save';
+import { Button } from '@mui/material';
+import { useWildcard } from '../../helpers/context/wildcard-context';
+import { saveUpdate } from '../../helpers/save-action';
 
 export interface SaveButtonProps {
   buttonText: string;

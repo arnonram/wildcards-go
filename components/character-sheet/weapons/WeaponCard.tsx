@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
 import {
   Button,
   CardActionArea,
@@ -11,8 +7,12 @@ import {
   DialogTitle,
   Grid,
   TextField,
-} from "@mui/material";
-import { Weapon } from "../../../dtos/Weapon.dto";
+} from '@mui/material';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import type { Weapon } from '../../../dtos/Weapon.dto';
 
 export interface WeaponCardProps {
   weapon: Weapon;
@@ -43,7 +43,7 @@ export default function WeaponCard(props: WeaponCardProps) {
     setOpen(false);
   };
 
-  const weaponUpdate = (event: any) => {
+  const weaponUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setEditData({
       ...editData,
@@ -76,8 +76,8 @@ export default function WeaponCard(props: WeaponCardProps) {
               {props.weapon.name}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {props.weapon.damage ? `${props.weapon.damage}` : ""}
-              {props.weapon.range ? ` — ${props.weapon.range}` : ""}
+              {props.weapon.damage ? `${props.weapon.damage}` : ''}
+              {props.weapon.range ? ` — ${props.weapon.range}` : ''}
             </Typography>
           </CardContent>
         </CardActionArea>
@@ -86,7 +86,7 @@ export default function WeaponCard(props: WeaponCardProps) {
       <Dialog open={open} onClose={handleClose} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="weapon-name"
             margin="dense"

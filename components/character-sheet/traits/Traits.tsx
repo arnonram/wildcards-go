@@ -1,11 +1,23 @@
-import { FormLabel, TextField, Box, IconButton, Grid, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
-import { DiceDropdown, DiceValues } from "../DiceDropdown";
-import React, { useEffect, useState } from "react";
-import { AddSkillDialog } from "./AddSkillDialog";
-import { Trait } from "../../../dtos/Trait.dto";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { handleArrayUpdate } from "../../../helpers/array-helpers";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormLabel,
+  Grid,
+  IconButton,
+  TextField,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
+import type { Trait } from '../../../dtos/Trait.dto';
+import { handleArrayUpdate } from '../../../helpers/array-helpers';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import { DiceDropdown, type DiceValues } from '../DiceDropdown';
+import { AddSkillDialog } from './AddSkillDialog';
 
 export interface TraitsProps {
   title: string;
@@ -15,12 +27,12 @@ export interface TraitsProps {
 export default function Traits(props: TraitsProps) {
   const { wildcardData, setWildcardData } = useWildcard();
   const [traits, setTraits] = useState(
-    props.isAttributes ? wildcardData.attributes : wildcardData.skills
+    props.isAttributes ? wildcardData.attributes : wildcardData.skills,
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [skillToDelete, setSkillToDelete] = useState<string>("");
+  const [skillToDelete, setSkillToDelete] = useState<string>('');
 
-  const handleInputChange = (event: any, traitName: string) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>, traitName: string) => {
     const { name, value } = event.target;
     setTraits(handleArrayUpdate(traits, traitName, name, value));
   };
@@ -28,9 +40,9 @@ export default function Traits(props: TraitsProps) {
   useEffect(() => {
     setWildcardData({
       ...wildcardData,
-      [props.isAttributes ? "attributes" : "skills"]: traits,
+      [props.isAttributes ? 'attributes' : 'skills']: traits,
     });
-  }, [traits]);
+  }, [traits, wildcardData, setWildcardData, props.isAttributes]);
 
   const addNewSkill = (newSkill: Trait) => {
     setTraits([...traits, newSkill]);
@@ -44,22 +56,22 @@ export default function Traits(props: TraitsProps) {
   const handleConfirmDelete = () => {
     setTraits(traits.filter((skill) => skill.name !== skillToDelete));
     setDeleteDialogOpen(false);
-    setSkillToDelete("");
+    setSkillToDelete('');
   };
 
   const handleCancelDelete = () => {
     setDeleteDialogOpen(false);
-    setSkillToDelete("");
+    setSkillToDelete('');
   };
 
   const addTrait = (trait: Trait) => (
     <Grid item id={`trait-${trait.name}`} key={`trait-${trait.name}`}>
       <FormLabel
         sx={{
-          display: "block",
-          typography: "body",
-          textTransform: "uppercase",
-          fontWeight: "bold",
+          display: 'block',
+          typography: 'body',
+          textTransform: 'uppercase',
+          fontWeight: 'bold',
         }}
       >
         {trait.name}
@@ -72,7 +84,7 @@ export default function Traits(props: TraitsProps) {
       />
       <TextField
         id={`${trait.name}-mod`}
-        name={"mod"}
+        name={'mod'}
         label={`${trait.name} mod`}
         value={traits.find((x) => x.name === trait.name)?.mod}
         onChange={(event) => handleInputChange(event, trait.name)}

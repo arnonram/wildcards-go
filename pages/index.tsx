@@ -3,19 +3,19 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Grid,
-  Typography,
-  Skeleton,
   Fade,
+  Grid,
+  Skeleton,
+  Typography,
   useTheme,
-} from "@mui/material";
-import type { NextPage } from "next";
-import Head from "next/head";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { createNewCharacter } from "../helpers/api-actions";
-import { CharToLoad } from "../dtos/CharToLoad";
+} from '@mui/material';
+import type { NextPage } from 'next';
+import Head from 'next/head';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import type { CharToLoad } from '../dtos/CharToLoad';
+import { createNewCharacter } from '../helpers/api-actions';
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -26,11 +26,11 @@ const Home: NextPage = () => {
   useEffect(() => {
     const fetchCharacters = async () => {
       try {
-        const response = await fetch("/api/character");
+        const response = await fetch('/api/character');
         const data = await response.json();
         setCharacters(data);
       } catch (error) {
-        console.error("Failed to fetch characters:", error);
+        console.error('Failed to fetch characters:', error);
       } finally {
         setLoading(false);
       }
@@ -38,7 +38,7 @@ const Home: NextPage = () => {
     fetchCharacters();
   }, []);
 
-  const handleCreateNew = async (e: any) => {
+  const handleCreateNew = async (e: React.FormEvent) => {
     e.preventDefault();
     const { characterId } = await createNewCharacter();
     router.push(`/character/${encodeURIComponent(characterId)}`);
@@ -59,7 +59,7 @@ const Home: NextPage = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          textAlign: "center",
+          textAlign: 'center',
           py: { xs: 4, md: 6 },
           mb: 4,
         }}
@@ -69,9 +69,9 @@ const Home: NextPage = () => {
           sx={{
             fontFamily: "'Cinzel', 'Georgia', 'serif'",
             fontWeight: 700,
-            color: "primary.main",
+            color: 'primary.main',
             mb: 2,
-            fontSize: { xs: "2rem", md: "3rem" },
+            fontSize: { xs: '2rem', md: '3rem' },
           }}
         >
           Wild Cards on-the-go
@@ -79,14 +79,14 @@ const Home: NextPage = () => {
         <Typography
           variant="h6"
           color="text.secondary"
-          sx={{ mb: 3, fontSize: { xs: "1rem", md: "1.25rem" } }}
+          sx={{ mb: 3, fontSize: { xs: '1rem', md: '1.25rem' } }}
         >
           Have your Savage Worlds characters with you anywhere
         </Typography>
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
+            display: 'flex',
+            justifyContent: 'center',
             mb: 4,
           }}
         >
@@ -95,7 +95,7 @@ const Home: NextPage = () => {
             alt="Savage Worlds"
             width={200}
             height={133}
-            style={{ objectFit: "contain" }}
+            style={{ objectFit: 'contain' }}
           />
         </Box>
       </Box>
@@ -108,7 +108,7 @@ const Home: NextPage = () => {
             fontFamily: "'Cinzel', 'Georgia', 'serif'",
             fontWeight: 600,
             mb: 3,
-            color: "text.primary",
+            color: 'text.primary',
           }}
         >
           Your Characters
@@ -125,10 +125,10 @@ const Home: NextPage = () => {
         ) : characters.length === 0 ? (
           <Box
             sx={{
-              textAlign: "center",
+              textAlign: 'center',
               py: 6,
-              border: "2px dashed",
-              borderColor: "primary.main",
+              border: '2px dashed',
+              borderColor: 'primary.main',
               borderRadius: 2,
               opacity: 0.6,
             }}
@@ -148,18 +148,18 @@ const Home: NextPage = () => {
                   <Card
                     elevation={3}
                     sx={{
-                      height: "100%",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease-in-out",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
                         boxShadow: theme.shadows[8],
-                        borderColor: "primary.main",
+                        borderColor: 'primary.main',
                       },
                     }}
                     onClick={() => handleOpenCharacter(char._id)}
                   >
-                    <CardActionArea sx={{ height: "100%" }}>
+                    <CardActionArea sx={{ height: '100%' }}>
                       <CardContent>
                         <Typography
                           variant="h6"
@@ -169,7 +169,7 @@ const Home: NextPage = () => {
                             mb: 1,
                           }}
                         >
-                          {char.name || "Unnamed Character"}
+                          {char.name || 'Unnamed Character'}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           Click to view character sheet
@@ -187,10 +187,10 @@ const Home: NextPage = () => {
       {/* Actions Section */}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
           gap: 3,
-          justifyContent: "center",
+          justifyContent: 'center',
           mt: 4,
         }}
       >
@@ -198,27 +198,27 @@ const Home: NextPage = () => {
           elevation={5}
           onClick={handleCreateNew}
           sx={{
-            width: { xs: "100%", sm: 250 },
+            width: { xs: '100%', sm: 250 },
             minHeight: 100,
-            cursor: "pointer",
+            cursor: 'pointer',
             background: `linear-gradient(135deg, ${theme.palette.primary.main}26 0%, ${theme.palette.primary.main}0D 100%)`,
             border: `2px solid ${theme.palette.primary.main}66`,
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              transform: "translateY(-4px)",
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-4px)',
               boxShadow: `0 8px 24px ${theme.palette.primary.main}4D`,
-              borderColor: "primary.main",
+              borderColor: 'primary.main',
             },
           }}
         >
-          <CardActionArea sx={{ height: "100%" }}>
-            <CardContent sx={{ textAlign: "center" }}>
+          <CardActionArea sx={{ height: '100%' }}>
+            <CardContent sx={{ textAlign: 'center' }}>
               <Typography
                 variant="h6"
                 sx={{
                   fontFamily: "'Cinzel', 'Georgia', 'serif'",
                   fontWeight: 600,
-                  color: "primary.main",
+                  color: 'primary.main',
                 }}
               >
                 ✨ Create New Wildcard
@@ -229,29 +229,29 @@ const Home: NextPage = () => {
 
         <Card
           elevation={5}
-          onClick={() => router.push("/load-character")}
+          onClick={() => router.push('/load-character')}
           sx={{
-            width: { xs: "100%", sm: 250 },
+            width: { xs: '100%', sm: 250 },
             minHeight: 100,
-            cursor: "pointer",
+            cursor: 'pointer',
             background: `linear-gradient(135deg, ${theme.palette.secondary.main}26 0%, ${theme.palette.secondary.main}0D 100%)`,
             border: `2px solid ${theme.palette.secondary.main}66`,
-            transition: "all 0.2s ease-in-out",
-            "&:hover": {
-              transform: "translateY(-4px)",
+            transition: 'all 0.2s ease-in-out',
+            '&:hover': {
+              transform: 'translateY(-4px)',
               boxShadow: `0 8px 24px ${theme.palette.secondary.main}4D`,
-              borderColor: "secondary.main",
+              borderColor: 'secondary.main',
             },
           }}
         >
-          <CardActionArea sx={{ height: "100%" }}>
-            <CardContent sx={{ textAlign: "center" }}>
+          <CardActionArea sx={{ height: '100%' }}>
+            <CardContent sx={{ textAlign: 'center' }}>
               <Typography
                 variant="h6"
                 sx={{
                   fontFamily: "'Cinzel', 'Georgia', 'serif'",
                   fontWeight: 600,
-                  color: "secondary.main",
+                  color: 'secondary.main',
                 }}
               >
                 📂 Load Wildcard

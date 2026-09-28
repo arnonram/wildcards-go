@@ -1,18 +1,27 @@
-import { Box, Grid, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from "@mui/material";
-import { useState } from "react";
-import { Gear } from "../../../dtos/Gear.dto";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
-import AddNewButton from "../AddNewButton";
-import GearCard from "./GearCard";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
+import { Gear } from '../../../dtos/Gear.dto';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import AddNewButton from '../AddNewButton';
+import GearCard from './GearCard';
 
 export default function GearList() {
   const { wildcardData, setWildcardData } = useWildcard();
   const [gear, setGear] = useState<Gear[]>(wildcardData?.gear || []);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [newGear, setNewGear] = useState<Gear>(new Gear(""));
+  const [newGear, setNewGear] = useState<Gear>(new Gear(''));
 
   const handleOpenDialog = () => {
-    setNewGear(new Gear(""));
+    setNewGear(new Gear(''));
     setDialogOpen(true);
   };
 
@@ -39,7 +48,7 @@ export default function GearList() {
     setGear([...cleanedGear]);
   };
 
-  const gearUpdate = (event: any) => {
+  const gearUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewGear({
       ...newGear,
@@ -65,7 +74,7 @@ export default function GearList() {
       <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>
           <TextField
-            sx={{ width: "70%", ml: 3, mt: 2 }}
+            sx={{ width: '70%', ml: 3, mt: 2 }}
             name="name"
             id="gear-name"
             margin="dense"

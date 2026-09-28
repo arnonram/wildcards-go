@@ -1,7 +1,7 @@
-import { WildCardCharacter } from "../dtos/WildCardCharacter.dto";
-import { updateCharacter } from "./api-actions";
+import type { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
+import { updateCharacter } from './api-actions';
 
-export async function saveUpdate(event: any, data: WildCardCharacter) {
+export async function saveUpdate(event: React.FormEvent, data: WildCardCharacter) {
   event.preventDefault();
   await saveToDb(data);
 }
