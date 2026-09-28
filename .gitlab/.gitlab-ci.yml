@@ -14,5 +14,4 @@ lint:
         codequality:
           - code-quality.json
     rules:
-        - if: $CI_COMMIT_BRANCH    # Run job for commits on branches
         - if: $CI_MERGE_REQUEST_ID # Run job for merge requests
