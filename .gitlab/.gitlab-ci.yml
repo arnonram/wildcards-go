@@ -1,0 +1,18 @@
+stages:
+  - quality
+
+lint:
+    image:
+      name: ghcr.io/biomejs/biome:latest
+      entrypoint: [""]
+    stage: quality
+    script:
+        - biome ci --reporter=gitlab --colors=off > /tmp/code-quality.json
+        - cp /tmp/code-quality.json code-quality.json
+    artifacts:
+      reports:
+        codequality:
+          - code-quality.json
+    rules:
+        - if: $CI_COMMIT_BRANCH    # Run job for commits on branches
+        - if: $CI_MERGE_REQUEST_ID # Run job for merge requests
