@@ -7,6 +7,7 @@ import {
   DialogTitle,
   Grid,
   TextField,
+  Typography,
 } from '@mui/material';
 import { useState } from 'react';
 import { Power } from '../../../dtos/Power.dto';
@@ -56,9 +57,67 @@ export default function Powers() {
     });
   };
 
+  const maxPowerPoints = wildcardData.maxPowerPoints ?? 0;
+  const currentPowerPoints = wildcardData.currentPowerPoints ?? 0;
+
+  const handleMaxPowerPointsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextMax = Math.max(0, Number(event.target.value) || 0);
+    setWildcardData({
+      ...wildcardData,
+      maxPowerPoints: nextMax,
+      // lowering max must not leave current stranded above it
+      currentPowerPoints: Math.min(currentPowerPoints, nextMax),
+    });
+  };
+
+  const handleCurrentPowerPointsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const next = Math.max(0, Number(event.target.value) || 0);
+    setWildcardData({
+      ...wildcardData,
+      currentPowerPoints: Math.min(next, maxPowerPoints),
+    });
+  };
+
   return (
     <Box>
-      <h3>Powers</h3>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 2,
+          mb: 1,
+        }}
+      >
+        <Typography variant="h3">Powers</Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            id="max-power-points"
+            name="maxPowerPoints"
+            label="Max PP"
+            type="number"
+            value={maxPowerPoints}
+            onChange={handleMaxPowerPointsChange}
+            slotProps={{ htmlInput: { min: 0 } }}
+            sx={{ width: 90 }}
+          />
+          <TextField
+            id="current-power-points"
+            name="currentPowerPoints"
+            label="Current PP"
+            type="number"
+            value={currentPowerPoints}
+            onChange={handleCurrentPowerPointsChange}
+            error={currentPowerPoints > maxPowerPoints}
+            helperText={
+              currentPowerPoints > maxPowerPoints ? `Cannot exceed max (${maxPowerPoints})` : ' '
+            }
+            slotProps={{ htmlInput: { min: 0, max: maxPowerPoints } }}
+            sx={{ width: 110 }}
+          />
+        </Box>
+      </Box>
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
         {powers.map((power) => (
           <PowerCard

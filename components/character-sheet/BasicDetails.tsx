@@ -1,6 +1,7 @@
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { Box, Grid, TextField } from '@mui/material';
 import Image from 'next/image';
+import { computeToughness } from '../../helpers/armor-helpers';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { RankDropdown } from './RankDropdown';
 
@@ -21,6 +22,8 @@ export default function BasicDetails() {
     };
     reader.readAsDataURL(file);
   };
+
+  const toughness = computeToughness(wildcardData);
 
   return (
     <Box>
@@ -180,11 +183,16 @@ export default function BasicDetails() {
             <TextField
               id="toughness"
               name="toughness"
-              label="Toughness"
+              label={
+                toughness.armor > 0
+                  ? `Toughness: ${toughness.total} (${toughness.base})`
+                  : 'Toughness'
+              }
               type="number"
               value={wildcardData.toughness}
               onChange={handleChange}
-              sx={{ maxWidth: 90 }}
+              helperText={toughness.armor > 0 ? `+${toughness.armor} from torso armor` : ' '}
+              sx={{ maxWidth: 200 }}
             />
             <TextField
               id="toughness-mod"

@@ -1,10 +1,12 @@
 import {
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Grid,
   TextField,
 } from '@mui/material';
@@ -13,6 +15,7 @@ import { Armor } from '../../../dtos/Armor.dto';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
 import AddNewButton from '../AddNewButton';
 import ArmorCard from './ArmorCard';
+import ArmorLocationSelect from './ArmorLocationSelect';
 
 export default function Armors() {
   const { wildcardData, setWildcardData } = useWildcard();
@@ -37,23 +40,23 @@ export default function Armors() {
   };
 
   const handleUpdate = (updatedArmor: Armor) => {
-    const armorIndex = armors.findIndex((x) => x._id === updatedArmor._id);
-    const currentArmors = armors;
-    currentArmors[armorIndex] = updatedArmor;
-    setArmors([...currentArmors]);
+    const updated = armors.map((armor) => (armor._id === updatedArmor._id ? updatedArmor : armor));
+    setArmors(updated);
+    setWildcardData({ ...wildcardData, armors: updated });
   };
 
   const handleDelete = (id: string) => {
-    const cleanedArmors = armors.filter((x) => x._id !== id);
-    setArmors([...cleanedArmors]);
+    const updated = armors.filter((armor) => armor._id !== id);
+    setArmors(updated);
+    setWildcardData({ ...wildcardData, armors: updated });
   };
 
   const armorUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setNewArmor({
-      ...newArmor,
-      [name]: value,
-    });
+    setNewArmor((prev) => ({
+      ...prev,
+      [name]: name === 'armorBonus' ? Number(value) || 0 : value,
+    }));
   };
 
   return (
@@ -84,29 +87,38 @@ export default function Armors() {
           />
         </DialogTitle>
         <DialogContent>
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="isEquipped"
+                id="new-armor-isEquipped"
+                checked={!!newArmor.isEquipped}
+                onChange={(event) =>
+                  setNewArmor((prev) => ({ ...prev, isEquipped: event.target.checked }))
+                }
+              />
+            }
+            label="Equipped"
+          />
           <TextField
             name="armorBonus"
-            id="armor-armorBonus"
+            id="new-armor-armorBonus"
             margin="dense"
             label="Armor Bonus"
             fullWidth
-            value={newArmor.armorBonus}
+            type="number"
+            value={newArmor.armorBonus ?? 0}
             onChange={armorUpdate}
             variant="standard"
           />
-          <TextField
-            name="locations"
-            id="armor-locations"
-            margin="dense"
-            label="Locations"
-            fullWidth
+          <ArmorLocationSelect
+            id="new-armor-locations"
             value={newArmor.locations}
-            onChange={armorUpdate}
-            variant="standard"
+            onChange={(value) => setNewArmor((prev) => ({ ...prev, locations: value }))}
           />
           <TextField
             name="weight"
-            id="armor-weight"
+            id="new-armor-weight"
             margin="dense"
             label="Weight"
             fullWidth
@@ -117,7 +129,7 @@ export default function Armors() {
           />
           <TextField
             name="cost"
-            id="armor-cost"
+            id="new-armor-cost"
             margin="dense"
             label="Cost"
             fullWidth
@@ -129,7 +141,7 @@ export default function Armors() {
           <TextField
             multiline
             name="comments"
-            id="armor-comments"
+            id="new-armor-comments"
             margin="dense"
             label="Comments"
             fullWidth

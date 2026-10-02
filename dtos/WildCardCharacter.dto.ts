@@ -14,6 +14,8 @@ export class WildCardCharacter extends BaseEntity {
   race?: string;
   rank?: Ranks = Ranks.Novice;
   bennies?: number;
+  maxPowerPoints?: number = 0;
+  currentPowerPoints?: number = 0;
   conviction?: string;
   bio?: string;
   imageUrl?: string;

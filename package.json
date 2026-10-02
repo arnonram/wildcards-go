@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "bun start:mongo && next dev",
     "build": "next build",
     "start": "next start",
+    "start:mongo": "docker compose up -d",
     "lint": "biome lint .",
     "lint:fix": "biome lint --write .",
     "format": "biome format .",

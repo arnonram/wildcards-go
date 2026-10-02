@@ -1,10 +1,13 @@
 import {
   Button,
   CardActionArea,
+  Checkbox,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Grid,
   TextField,
 } from '@mui/material';
@@ -13,6 +16,8 @@ import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import type { Armor } from '../../../dtos/Armor.dto';
+import { parseArmorBonus } from '../../../helpers/armor-helpers';
+import ArmorLocationSelect from './ArmorLocationSelect';
 
 export interface ArmorCardProps {
   armor: Armor;
@@ -45,16 +50,18 @@ export default function ArmorCard(props: ArmorCardProps) {
 
   const armorUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setEditData({
-      ...editData,
-      [name]: value,
-    });
+    setEditData((prev) => ({
+      ...prev,
+      [name]: name === 'armorBonus' ? Number(value) || 0 : value,
+    }));
   };
 
   const handleDelete = () => {
     props.deleteArmor(props.armor._id);
     setOpen(false);
   };
+
+  const bonus = parseArmorBonus(props.armor.armorBonus);
 
   return (
     <Grid item>
@@ -65,6 +72,7 @@ export default function ArmorCard(props: ArmorCardProps) {
           margin: 0.5,
           border: 1,
           borderRadius: 4,
+          opacity: props.armor.isEquipped ? 1 : 0.6,
         }}
         id={`armor-card-${props.armor._id}`}
         onClick={handleOpen}
@@ -75,9 +83,17 @@ export default function ArmorCard(props: ArmorCardProps) {
             <Typography gutterBottom variant="h6" component="div">
               {props.armor.name}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {props.armor.armorBonus ? `+${props.armor.armorBonus}` : ''}
-              {props.armor.locations ? ` — ${props.armor.locations}` : ''}
+            <Typography variant="body2" color="text.secondary" component="div">
+              {bonus > 0 && (
+                <Chip
+                  size="small"
+                  label={`+${bonus}`}
+                  color="primary"
+                  sx={{ mr: 0.5, height: 18, fontSize: 11 }}
+                />
+              )}
+              {props.armor.locations || 'No location'}
+              {props.armor.isEquipped && ' • equipped'}
             </Typography>
           </CardContent>
         </CardActionArea>
@@ -96,25 +112,34 @@ export default function ArmorCard(props: ArmorCardProps) {
           />
         </DialogTitle>
         <DialogContent>
+          <FormControlLabel
+            control={
+              <Checkbox
+                name="isEquipped"
+                id="armor-isEquipped"
+                checked={!!editData.isEquipped}
+                onChange={(event) =>
+                  setEditData((prev) => ({ ...prev, isEquipped: event.target.checked }))
+                }
+              />
+            }
+            label="Equipped"
+          />
           <TextField
             name="armorBonus"
             id="armor-armorBonus"
             margin="dense"
             label="Armor Bonus"
             fullWidth
-            value={editData.armorBonus}
+            type="number"
+            value={editData.armorBonus ?? 0}
             onChange={armorUpdate}
             variant="standard"
           />
-          <TextField
-            name="locations"
+          <ArmorLocationSelect
             id="armor-locations"
-            margin="dense"
-            label="Locations"
-            fullWidth
             value={editData.locations}
-            onChange={armorUpdate}
-            variant="standard"
+            onChange={(value) => setEditData((prev) => ({ ...prev, locations: value }))}
           />
           <TextField
             name="weight"

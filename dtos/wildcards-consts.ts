@@ -14,6 +14,17 @@ export enum CoreSkills {
   Stealth = 'Stealth',
 }
 
+/**
+ * Savage Worlds damage locations. Armor covering a location adds its bonus
+ * when the wearer is struck there.
+ */
+export enum ArmorLocations {
+  Head = 'Head',
+  Torso = 'Torso',
+  Arms = 'Arms',
+  Legs = 'Legs',
+}
+
 export enum Ranks {
   Novice = 'Novice',
   Seasoned = 'Seasoned',
