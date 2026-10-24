@@ -2,12 +2,13 @@
 import { Plus } from 'lucide-react';
 import { cn } from '../../helpers/cn';
 
-export type PipTone = 'accent' | 'danger' | 'warn';
+export type PipTone = 'accent' | 'danger' | 'warn' | 'conviction';
 
 const filledTones: Record<PipTone, string> = {
   accent: 'border-accent bg-accent',
   danger: 'border-danger bg-danger',
   warn: 'border-warn bg-warn',
+  conviction: 'border-accent-2 bg-accent-2',
 };
 
 export interface PipsProps {

@@ -17,7 +17,7 @@ export default function Basics() {
 
   return (
     <Section id="basics" title="Basics">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field
           label="Ancestry"
           placeholder="Human, Elf, …"
@@ -29,13 +29,6 @@ export default function Basics() {
           value={wildcardData.rank ?? Ranks.Novice}
           onValueChange={(value) => update({ rank: value as Ranks })}
           options={Object.values(Ranks).map((rank) => ({ value: rank, label: rank }))}
-        />
-        <Field
-          label="Conviction"
-          placeholder="What keeps them going?"
-          containerClassName="sm:col-span-2"
-          value={wildcardData.conviction ?? ''}
-          onChange={(event) => update({ conviction: event.target.value })}
         />
       </div>
 

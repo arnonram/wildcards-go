@@ -26,6 +26,14 @@ export function StatusStrip() {
           onChange={(value) => update({ bennies: value })}
         />
         <Pips
+          label="Conviction"
+          value={toNumber(wildcardData.conviction)}
+          max={1}
+          tone="conviction"
+          allowAdd
+          onChange={(value) => update({ conviction: value })}
+        />
+        <Pips
           label="Wounds"
           value={toNumber(wildcardData.wounds)}
           max={3}
