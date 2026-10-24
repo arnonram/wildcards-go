@@ -70,7 +70,8 @@ export function SheetNav({ items, pinned = false }: SheetNavProps) {
       aria-label="Character sheet sections"
       className={cn(
         '-mx-4 mt-4 border-y border-line bg-bg/90 px-4 backdrop-blur',
-        !pinned && 'sticky top-[var(--appbar-h)] z-20',
+        'sticky z-20',
+        pinned ? 'top-[calc(var(--appbar-h)+var(--status-h))]' : 'top-[var(--appbar-h)]',
       )}
     >
       <ul className="flex h-[var(--nav-h)] items-stretch gap-1 overflow-x-auto">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import { cn } from '../../helpers/cn';
 import { WildCardProvider } from '../../helpers/context/wildcard-context';
@@ -33,46 +33,49 @@ export interface CharacterSheetProps {
 export default function CharacterSheet({ wildCard, onDelete }: CharacterSheetProps) {
   const [pinned, setPinned] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
-  const stickyRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
 
-  // The sections' scroll margin must account for the pinned strip. Measure the
-  // whole sticky group so the offset follows wrapping at every viewport width.
+  // Track the status card's real height so the section nav can sit directly
+  // beneath it when pinned, even when its stats wrap onto more rows.
   useEffect(() => {
     const sheet = sheetRef.current;
-    if (!sheet) return;
-
-    if (!pinned) {
-      sheet.style.removeProperty('--sheet-sticky-h');
-      return;
-    }
-
-    const stickyGroup = stickyRef.current;
-    if (!stickyGroup) return;
+    const status = statusRef.current;
+    if (!sheet || !status) return;
 
     const update = () => {
-      sheet.style.setProperty('--sheet-sticky-h', `${stickyGroup.offsetHeight}px`);
+      sheet.style.setProperty('--status-h', `${status.offsetHeight}px`);
     };
 
     update();
     const observer = new ResizeObserver(update);
-    observer.observe(stickyGroup);
+    observer.observe(status);
     return () => observer.disconnect();
-  }, [pinned]);
+  }, []);
 
   return (
     <WildCardProvider wildCard={wildCard}>
-      <div ref={sheetRef} className="pb-16">
+      <div
+        ref={sheetRef}
+        className="pb-16"
+        style={
+          pinned
+            ? ({
+                '--sheet-sticky-h': 'calc(var(--status-h) + var(--nav-h))',
+              } as CSSProperties)
+            : undefined
+        }
+      >
         <SheetHeader onDelete={onDelete} />
         <div
-          ref={stickyRef}
+          ref={statusRef}
           className={cn(
             'pt-4',
             pinned && 'sticky top-[var(--appbar-h)] z-20 bg-bg/95 shadow-sm backdrop-blur',
           )}
         >
           <StatusStrip pinned={pinned} onPinnedChange={setPinned} />
-          <SheetNav items={SECTIONS} pinned={pinned} />
         </div>
+        <SheetNav items={SECTIONS} pinned={pinned} />
 
         <div className="mt-8 space-y-10">
           <Basics />
