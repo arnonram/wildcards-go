@@ -1,16 +1,14 @@
 import { Check, Moon, Palette, Sun } from 'lucide-react';
-import { type Skin, type ThemeMode, useTheme } from '../../helpers/context/theme-context';
+import { type Skin, useTheme } from '../../helpers/context/theme-context';
 import { Menu } from '../ui/Menu';
 
-const options: Array<{ skin: Skin; mode: ThemeMode; label: string; hint: string }> = [
-  { skin: 'parchment', mode: 'light', label: 'Parchment', hint: 'Day' },
-  { skin: 'parchment', mode: 'dark', label: 'Parchment', hint: 'Candlelight' },
-  { skin: 'vtt', mode: 'dark', label: 'VTT', hint: 'Night' },
-  { skin: 'vtt', mode: 'light', label: 'VTT', hint: 'Day' },
+const options: Array<{ skin: Skin; label: string; hint: string }> = [
+  { skin: 'classic', label: 'Classic', hint: 'Warm serif' },
+  { skin: 'modern', label: 'Modern', hint: 'Clean sans' },
 ];
 
 export function SkinMenu() {
-  const { skin, mode, setSkin, setMode } = useTheme();
+  const { skin, setSkin } = useTheme();
 
   return (
     <Menu.Root>
@@ -29,14 +27,11 @@ export function SkinMenu() {
                 Theme
               </Menu.GroupLabel>
               {options.map((option) => {
-                const active = option.skin === skin && option.mode === mode;
+                const active = option.skin === skin;
                 return (
                   <Menu.Item
-                    key={`${option.skin}-${option.mode}`}
-                    onClick={() => {
-                      setSkin(option.skin);
-                      setMode(option.mode);
-                    }}
+                    key={option.skin}
+                    onClick={() => setSkin(option.skin)}
                     className="flex cursor-default select-none items-center gap-2 rounded-[calc(var(--radius)-1px)] px-2 py-1.5 text-sm text-ink outline-none data-[highlighted]:bg-surface-2"
                   >
                     <span className="flex w-3.5 shrink-0 justify-center text-accent">

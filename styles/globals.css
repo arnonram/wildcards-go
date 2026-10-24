@@ -38,16 +38,16 @@
   --nav-h: 2.75rem;
 }
 
-/* VTT trades the serif for a tighter sans */
-[data-skin="vtt"] {
+/* Modern trades the serif for a tighter sans */
+[data-skin="modern"] {
   --type-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --appbar-h: 3.25rem;
   --nav-h: 2.5rem;
 }
 
-/* Parchment, daylight — the default */
+/* Classic, daylight — the default */
 :root,
-[data-skin="parchment"][data-mode="light"] {
+[data-skin="classic"][data-mode="light"] {
   color-scheme: light;
   --bg: #f3ead6;
   --bg-deep: #e8dcc0;
@@ -70,8 +70,8 @@
   --focus: #8c2f2a;
 }
 
-/* Parchment, candlelight */
-[data-skin="parchment"][data-mode="dark"] {
+/* Classic, candlelight */
+[data-skin="classic"][data-mode="dark"] {
   color-scheme: dark;
   --bg: #1d1812;
   --bg-deep: #14100c;
@@ -94,8 +94,8 @@
   --focus: #e0b25a;
 }
 
-/* VTT, night */
-[data-skin="vtt"][data-mode="dark"] {
+/* Modern, night */
+[data-skin="modern"][data-mode="dark"] {
   color-scheme: dark;
   --radius: 5px;
   --row-h: 2rem;
@@ -120,8 +120,8 @@
   --focus: #c9a227;
 }
 
-/* VTT, daylight */
-[data-skin="vtt"][data-mode="light"] {
+/* Modern, daylight */
+[data-skin="modern"][data-mode="light"] {
   color-scheme: light;
   --radius: 5px;
   --row-h: 2rem;
@@ -238,27 +238,27 @@
 /* Skin surfaces                                                       */
 /* ------------------------------------------------------------------ */
 
-[data-skin="parchment"] body {
+[data-skin="classic"] body {
   background-image:
     radial-gradient(1100px 700px at 50% -15%, rgba(255, 252, 244, 0.9), transparent 65%),
     radial-gradient(900px 600px at 105% 105%, rgba(140, 47, 42, 0.05), transparent 60%),
     repeating-linear-gradient(0deg, rgba(74, 54, 28, 0.022) 0 1px, transparent 1px 4px);
 }
 
-[data-skin="parchment"][data-mode="dark"] body {
+[data-skin="classic"][data-mode="dark"] body {
   background-image:
     radial-gradient(900px 600px at 50% -10%, rgba(224, 178, 90, 0.08), transparent 65%),
     radial-gradient(700px 500px at 100% 100%, rgba(140, 47, 42, 0.1), transparent 60%);
 }
 
 /* biome-ignore lint/style/noDescendingSpecificity: skin selectors are mutually exclusive, so order is only for readability */
-[data-skin="vtt"] body {
+[data-skin="modern"] body {
   background-image:
     radial-gradient(900px 620px at 50% -20%, rgba(60, 110, 180, 0.2), transparent 70%),
     radial-gradient(700px 500px at 100% 0%, rgba(201, 162, 39, 0.06), transparent 70%);
 }
 
-[data-skin="vtt"][data-mode="light"] body {
+[data-skin="modern"][data-mode="light"] body {
   background-image:
     radial-gradient(900px 620px at 50% -20%, rgba(120, 160, 215, 0.18), transparent 70%),
     radial-gradient(700px 500px at 100% 0%, rgba(201, 162, 39, 0.05), transparent 70%);
