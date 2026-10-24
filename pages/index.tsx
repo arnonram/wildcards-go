@@ -1,27 +1,20 @@
-import {
-  Box,
-  Card,
-  CardActionArea,
-  CardContent,
-  Fade,
-  Grid,
-  Skeleton,
-  Typography,
-  useTheme,
-} from '@mui/material';
+import { FolderOpen, Plus, Sparkles } from 'lucide-react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { CharacterCard } from '../components/home/CharacterCard';
+import { Button } from '../components/ui/Button';
 import type { CharToLoad } from '../dtos/CharToLoad';
 import { createNewCharacter } from '../helpers/api-actions';
 
 const Home: NextPage = () => {
   const router = useRouter();
-  const theme = useTheme();
   const [characters, setCharacters] = useState<CharToLoad[]>([]);
   const [isLoading, setLoading] = useState(true);
+  const [isCreating, setCreating] = useState(false);
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -38,14 +31,14 @@ const Home: NextPage = () => {
     fetchCharacters();
   }, []);
 
-  const handleCreateNew = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { characterId } = await createNewCharacter();
-    router.push(`/character/${encodeURIComponent(characterId)}`);
-  };
-
-  const handleOpenCharacter = (id: string) => {
-    router.push(`/character/${encodeURIComponent(id)}`);
+  const handleCreateNew = async () => {
+    setCreating(true);
+    try {
+      const { characterId } = await createNewCharacter();
+      router.push(`/character/${encodeURIComponent(characterId)}`);
+    } finally {
+      setCreating(false);
+    }
   };
 
   return (
@@ -56,247 +49,92 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Hero Section */}
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: { xs: 4, md: 6 },
-          mb: 4,
-        }}
-      >
-        <Typography
-          variant="h2"
-          sx={{
-            fontFamily: "'Cinzel', 'Georgia', 'serif'",
-            fontWeight: 700,
-            color: 'primary.main',
-            mb: 2,
-            fontSize: { xs: '2rem', md: '3rem' },
-          }}
-        >
-          Wild Cards on-the-go
-        </Typography>
-        <Typography
-          variant="h6"
-          color="text.secondary"
-          sx={{ mb: 3, fontSize: { xs: '1rem', md: '1.25rem' } }}
-        >
-          Have your Savage Worlds characters with you anywhere
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            mb: 4,
-          }}
-        >
+      <section className="border-b border-line pb-8 pt-4 sm:pt-8">
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-faint">
+            Savage Worlds
+          </span>
+          <h1 className="mt-2 font-display text-4xl font-bold tracking-[0.04em] text-heading sm:text-5xl">
+            Wild Cards on-the-go
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
+            Carry your Wildcards from the table to the sofa. Track bennies, wounds, edges and gear
+            without hauling the book.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+            <Button variant="primary" onClick={handleCreateNew} disabled={isCreating}>
+              <Plus size={15} />
+              {isCreating ? 'Creating…' : 'Create Wildcard'}
+            </Button>
+            <Button variant="outline" onClick={() => router.push('/load-character')}>
+              <FolderOpen size={15} />
+              Load Wildcard
+            </Button>
+          </div>
           <Image
             src="/images/SW_LOGO_FP_2018-300x200-1.png"
             alt="Savage Worlds"
-            width={200}
-            height={133}
-            style={{ objectFit: 'contain' }}
+            width={180}
+            height={120}
+            className="mt-8 h-auto w-36 object-contain opacity-90 sm:w-44"
           />
-        </Box>
-      </Box>
+        </div>
+      </section>
 
-      {/* Characters Section */}
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            fontFamily: "'Cinzel', 'Georgia', 'serif'",
-            fontWeight: 600,
-            mb: 3,
-            color: 'text.primary',
-          }}
-        >
-          Your Characters
-        </Typography>
+      <section className="pt-8" aria-labelledby="characters-title">
+        <div className="mb-3 flex items-end justify-between gap-3 border-b border-line pb-1.5">
+          <h2
+            id="characters-title"
+            className="font-display text-lg font-semibold uppercase tracking-[0.08em] text-heading"
+          >
+            Your Characters
+          </h2>
+          {!isLoading && characters.length > 0 && (
+            <span className="text-xs tabular-nums text-faint">{characters.length}</span>
+          )}
+        </div>
 
         {isLoading ? (
-          <Grid container spacing={3}>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <Grid item xs={12} sm={6} md={4} key={i}>
-                <Skeleton variant="rectangular" height={180} sx={{ borderRadius: 2 }} />
-              </Grid>
+              <div
+                key={i}
+                className="h-[92px] animate-pulse rounded-[var(--radius)] border border-line bg-surface"
+              />
             ))}
-          </Grid>
+          </div>
         ) : characters.length === 0 ? (
-          <Box
-            sx={{
-              textAlign: 'center',
-              py: 6,
-              border: '2px dashed',
-              borderColor: 'primary.main',
-              borderRadius: 2,
-              opacity: 0.6,
-            }}
-          >
-            <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-              No characters yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Create your first Wildcard to get started!
-            </Typography>
-          </Box>
+          <div className="rounded-[var(--radius)] border border-dashed border-line-strong px-6 py-12 text-center">
+            <Sparkles size={20} className="mx-auto text-accent" />
+            <p className="mt-3 font-display text-lg font-semibold text-ink">No characters yet</p>
+            <p className="mt-1 text-sm text-muted">Create your first Wildcard to get started.</p>
+            <Button
+              variant="primary"
+              className="mt-4"
+              onClick={handleCreateNew}
+              disabled={isCreating}
+            >
+              <Plus size={15} />
+              {isCreating ? 'Creating…' : 'Create Wildcard'}
+            </Button>
+          </div>
         ) : (
-          <Grid container spacing={3}>
-            {characters.map((char) => (
-              <Grid item xs={12} sm={6} md={4} key={char._id}>
-                <Fade in timeout={500}>
-                  <Card
-                    elevation={3}
-                    sx={{
-                      height: '100%',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: theme.shadows[8],
-                        borderColor: 'primary.main',
-                      },
-                    }}
-                    onClick={() => handleOpenCharacter(char._id)}
-                  >
-                    <CardActionArea sx={{ height: '100%' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
-                        <Box
-                          sx={{
-                            width: 60,
-                            height: 60,
-                            borderRadius: 1,
-                            overflow: 'hidden',
-                            flexShrink: 0,
-                            bgcolor: 'background.paper',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                          }}
-                        >
-                          {char.imageUrl ? (
-                            <Image
-                              src={char.imageUrl}
-                              alt={char.name}
-                              width={60}
-                              height={60}
-                              style={{ objectFit: 'cover' }}
-                            />
-                          ) : (
-                            <Box
-                              sx={{
-                                width: '100%',
-                                height: '100%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <Typography variant="caption" color="text.secondary">
-                                No image
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                        <CardContent sx={{ flex: 1, p: 0 }}>
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              fontFamily: "'Cinzel', 'Georgia', 'serif'",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {char.name || 'Unnamed Character'}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Click to view
-                          </Typography>
-                        </CardContent>
-                      </Box>
-                    </CardActionArea>
-                  </Card>
-                </Fade>
-              </Grid>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {characters.map((character) => (
+              <CharacterCard key={character._id} character={character} />
             ))}
-          </Grid>
+          </div>
         )}
-      </Box>
 
-      {/* Actions Section */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: 3,
-          justifyContent: 'center',
-          mt: 4,
-        }}
-      >
-        <Card
-          elevation={5}
-          onClick={handleCreateNew}
-          sx={{
-            width: { xs: '100%', sm: 250 },
-            minHeight: 100,
-            cursor: 'pointer',
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}26 0%, ${theme.palette.primary.main}0D 100%)`,
-            border: `2px solid ${theme.palette.primary.main}66`,
-            transition: 'all 0.2s ease-in-out',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: `0 8px 24px ${theme.palette.primary.main}4D`,
-              borderColor: 'primary.main',
-            },
-          }}
-        >
-          <CardActionArea sx={{ height: '100%' }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontFamily: "'Cinzel', 'Georgia', 'serif'",
-                  fontWeight: 600,
-                  color: 'primary.main',
-                }}
-              >
-                ✨ Create New Wildcard
-              </Typography>
-            </CardContent>
-          </CardActionArea>
-        </Card>
-
-        <Card
-          elevation={5}
-          onClick={() => router.push('/load-character')}
-          sx={{
-            width: { xs: '100%', sm: 250 },
-            minHeight: 100,
-            cursor: 'pointer',
-            background: `linear-gradient(135deg, ${theme.palette.secondary.main}26 0%, ${theme.palette.secondary.main}0D 100%)`,
-            border: `2px solid ${theme.palette.secondary.main}66`,
-            transition: 'all 0.2s ease-in-out',
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: `0 8px 24px ${theme.palette.secondary.main}4D`,
-              borderColor: 'secondary.main',
-            },
-          }}
-        >
-          <CardActionArea sx={{ height: '100%' }}>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontFamily: "'Cinzel', 'Georgia', 'serif'",
-                  fontWeight: 600,
-                  color: 'secondary.main',
-                }}
-              >
-                📂 Load Wildcard
-              </Typography>
-            </CardContent>
-          </CardActionArea>
-        </Card>
-      </Box>
+        <div className="mt-6 flex justify-center">
+          <Link
+            href="/load-character"
+            className="text-xs text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
+          >
+            Manage characters
+          </Link>
+        </div>
+      </section>
     </>
   );
 };

@@ -1,5 +1,5 @@
 import { omit } from 'lodash';
-import { type Db, ObjectId } from 'mongodb';
+import { type Db, type Document, ObjectId } from 'mongodb';
 import { connectToDb } from './db-util';
 
 export class DbActions {
@@ -24,7 +24,7 @@ export class DbActions {
       .toArray();
   }
 
-  async updateById(collection: Collections, id: string, data: Record<string, unknown>) {
+  async updateById(collection: Collections, id: string, data: object) {
     await this.init();
     const cleanedData = omit(data, '_id');
     const response = await this.dbConnection
@@ -38,9 +38,9 @@ export class DbActions {
     return this.dbConnection.collection(collection).deleteOne({ _id: new ObjectId(id) });
   }
 
-  async createNew(collection: Collections, createObject: Record<string, unknown>) {
+  async createNew(collection: Collections, createObject: object) {
     await this.init();
-    return this.dbConnection.collection(collection).insertOne(createObject);
+    return this.dbConnection.collection(collection).insertOne(createObject as Document);
   }
 }
 

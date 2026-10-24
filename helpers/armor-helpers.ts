@@ -51,9 +51,11 @@ function toNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-/** Toughness before any armor, including the character's Toughness Mod. */
+/** Toughness before any armor, including Size and the character's Toughness Mod. */
 export function baseToughness(character: WildCardCharacter): number {
-  return toNumber(character.toughness) + toNumber(character.toughnessMod);
+  return (
+    toNumber(character.toughness) + toNumber(character.toughnessMod) + toNumber(character.size)
+  );
 }
 
 /** Only torso armor contributes to Toughness. */

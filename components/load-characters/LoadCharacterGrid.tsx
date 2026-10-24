@@ -1,23 +1,9 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  Fade,
-  Grid,
-  Skeleton,
-  Typography,
-} from '@mui/material';
-import Image from 'next/image';
-import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import type { CharToLoad } from '../../dtos/CharToLoad';
 import DeleteConfirmationDialog from '../DeleteConfirmationDialog';
+import { CharacterCard } from '../home/CharacterCard';
 
 export default function LoadCharactersGrid() {
-  const router = useRouter();
   const [listOfChars, setListOfChars] = useState<CharToLoad[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<CharToLoad | null>(null);
@@ -25,7 +11,7 @@ export default function LoadCharactersGrid() {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await fetch(`/api/character`);
+        const response = await fetch('/api/character');
         const data = await response.json();
         setListOfChars(data);
       } catch (error) {
@@ -37,15 +23,6 @@ export default function LoadCharactersGrid() {
     getData();
   }, []);
 
-  const handleOpenChar = (e: React.MouseEvent, id: string) => {
-    e.preventDefault();
-    router.push(`/character/${encodeURIComponent(id)}`);
-  };
-
-  const handleDeleteClick = (character: CharToLoad) => {
-    setDeleteTarget(character);
-  };
-
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     await fetch(`/api/character/${deleteTarget._id}`, {
@@ -56,136 +33,44 @@ export default function LoadCharactersGrid() {
     setDeleteTarget(null);
   };
 
-  const handleCancelDelete = () => {
-    setDeleteTarget(null);
-  };
-
   if (isLoading) {
     return (
-      <Grid container spacing={3}>
-        {[1, 2, 3, 4].map((i) => (
-          <Grid item xs={12} sm={6} md={4} key={i}>
-            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-          </Grid>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="h-[92px] animate-pulse rounded-[var(--radius)] border border-line bg-surface"
+          />
         ))}
-      </Grid>
+      </div>
     );
   }
 
   if (listOfChars.length === 0) {
     return (
-      <>
-        <Box
-          sx={{
-            textAlign: 'center',
-            py: 6,
-            border: '2px dashed',
-            borderColor: 'primary.main',
-            borderRadius: 2,
-            opacity: 0.6,
-          }}
-        >
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-            No characters found
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Create a new Wildcard to get started!
-          </Typography>
-        </Box>
-        <DeleteConfirmationDialog
-          open={deleteTarget !== null}
-          characterName={deleteTarget?.name || ''}
-          onConfirm={handleConfirmDelete}
-          onCancel={handleCancelDelete}
-        />
-      </>
+      <div className="rounded-[var(--radius)] border border-dashed border-line-strong px-6 py-12 text-center">
+        <p className="font-display text-lg font-semibold text-ink">No characters found</p>
+        <p className="mt-1 text-sm text-muted">Create a new Wildcard to get started.</p>
+      </div>
     );
   }
 
   return (
     <>
-      <Grid container spacing={3}>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {listOfChars.map((character) => (
-          <Grid item xs={12} sm={6} md={4} key={character._id}>
-            <Fade in timeout={500}>
-              <Card
-                elevation={3}
-                sx={{
-                  height: '100%',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 24px rgba(201, 162, 39, 0.2)',
-                    borderColor: 'rgba(201, 162, 39, 0.5)',
-                  },
-                }}
-              >
-                <CardActionArea onClick={(e) => handleOpenChar(e, character._id)}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
-                    <Box
-                      sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 1,
-                        overflow: 'hidden',
-                        flexShrink: 0,
-                        bgcolor: 'background.paper',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                      }}
-                    >
-                      {character.imageUrl ? (
-                        <Image
-                          src={character.imageUrl}
-                          alt={character.name}
-                          width={60}
-                          height={60}
-                          style={{ objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <Box
-                          sx={{
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Typography variant="caption" color="text.secondary">
-                            No image
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                    <CardContent sx={{ flex: 1, p: 0 }}>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontFamily: "'Cinzel', 'Georgia', 'serif'",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {character.name || 'Unnamed Character'}
-                      </Typography>
-                    </CardContent>
-                  </Box>
-                </CardActionArea>
-                <CardActions sx={{ justifyContent: 'flex-end' }}>
-                  <Button size="small" color="error" onClick={() => handleDeleteClick(character)}>
-                    Delete
-                  </Button>
-                </CardActions>
-              </Card>
-            </Fade>
-          </Grid>
+          <CharacterCard
+            key={character._id}
+            character={character}
+            onDelete={(target) => setDeleteTarget(target)}
+          />
         ))}
-      </Grid>
+      </div>
       <DeleteConfirmationDialog
         open={deleteTarget !== null}
         characterName={deleteTarget?.name || ''}
         onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </>
   );

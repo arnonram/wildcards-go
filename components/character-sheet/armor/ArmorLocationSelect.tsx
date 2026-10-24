@@ -1,6 +1,7 @@
-import { FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
 import { ArmorLocations } from '../../../dtos/wildcards-consts';
 import { isArmorLocationKnown } from '../../../helpers/armor-helpers';
+import { Field } from '../../ui/Field';
+import { Select } from '../../ui/Select';
 
 export const CUSTOM_LOCATION = '__custom__';
 
@@ -19,38 +20,31 @@ export default function ArmorLocationSelect({ id, value, onChange }: ArmorLocati
   const isKnown = isArmorLocationKnown(value);
 
   return (
-    <>
-      <FormControl fullWidth variant="standard" sx={{ mt: 1 }}>
-        <InputLabel id={`${id}-label`}>Location</InputLabel>
-        <Select
-          labelId={`${id}-label`}
-          id={id}
-          label="Location"
-          value={isKnown ? value : CUSTOM_LOCATION}
-          onChange={(event) =>
-            onChange(event.target.value === CUSTOM_LOCATION ? '' : event.target.value)
-          }
-        >
-          {Object.values(ArmorLocations).map((location) => (
-            <MenuItem key={location} value={location}>
-              {location}
-            </MenuItem>
-          ))}
-          <MenuItem value={CUSTOM_LOCATION}>Other…</MenuItem>
-        </Select>
-      </FormControl>
-
+    <div className="min-w-24 sm:min-w-36">
+      <Select
+        id={id}
+        aria-label="Armor location"
+        size="sm"
+        value={isKnown ? value : CUSTOM_LOCATION}
+        onValueChange={(next) => onChange(next === CUSTOM_LOCATION ? '' : next)}
+        options={[
+          ...Object.values(ArmorLocations).map((location) => ({
+            value: location,
+            label: location,
+          })),
+          { value: CUSTOM_LOCATION, label: 'Other…' },
+        ]}
+      />
       {!isKnown && (
-        <TextField
-          id={`${id}-custom`}
-          label="Custom location"
-          fullWidth
-          variant="standard"
+        <Field
+          aria-label="Custom armor location"
+          placeholder="Custom location"
+          variant="quiet"
+          containerClassName="mt-1"
           value={value ?? ''}
           onChange={(event) => onChange(event.target.value)}
-          sx={{ mt: 1 }}
         />
       )}
-    </>
+    </div>
   );
 }
