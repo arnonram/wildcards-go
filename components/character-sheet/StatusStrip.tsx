@@ -2,6 +2,7 @@ import { computeToughness } from '../../helpers/armor-helpers';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { Pips } from '../ui/Pips';
 import { Stat } from '../ui/Stat';
+import { ConvictionToggle } from './ConvictionToggle';
 
 const toNumber = (value: unknown) => {
   const parsed = Number(value);
@@ -25,14 +26,7 @@ export function StatusStrip() {
           allowAdd
           onChange={(value) => update({ bennies: value })}
         />
-        <Pips
-          label="Conviction"
-          value={toNumber(wildcardData.conviction)}
-          max={1}
-          tone="conviction"
-          allowAdd
-          onChange={(value) => update({ conviction: value })}
-        />
+        <ConvictionToggle />
         <Pips
           label="Wounds"
           value={toNumber(wildcardData.wounds)}

@@ -15,7 +15,7 @@ export class WildCardCharacter extends BaseEntity {
   bennies?: number;
   maxPowerPoints?: number = 0;
   currentPowerPoints?: number = 0;
-  conviction?: number;
+  conviction?: boolean;
   bio?: string;
   imageUrl?: string;
   pace?: number;
