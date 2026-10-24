@@ -1,4 +1,4 @@
-import { Camera, Trash2 } from 'lucide-react';
+import { Camera, Pencil, Trash2 } from 'lucide-react';
 import { Ranks } from '../../dtos/wildcards-consts';
 import { type SaveState, useWildcard } from '../../helpers/context/wildcard-context';
 import { fileToPortraitDataUrl } from '../../helpers/image-helpers';
@@ -74,13 +74,21 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
       </label>
 
       <div className="min-w-0 flex-1">
-        <input
-          value={wildcardData.name ?? ''}
-          onChange={(event) => update({ name: event.target.value })}
-          placeholder="Unnamed Wildcard"
-          aria-label="Character name"
-          className="w-full bg-transparent font-display text-xl font-bold tracking-[0.02em] text-heading placeholder:text-faint focus:outline-none sm:text-3xl"
-        />
+        <div className="group relative">
+          <input
+            value={wildcardData.name ?? ''}
+            onChange={(event) => update({ name: event.target.value })}
+            placeholder="Unnamed Wildcard"
+            aria-label="Character name"
+            title="Edit character name"
+            className="w-[calc(100%+0.5rem)] -ml-2 rounded-[var(--radius)] border border-transparent bg-transparent py-0.5 pr-7 pl-2 font-display text-xl font-bold tracking-[0.02em] text-heading placeholder:text-faint transition-colors hover:border-line focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/15 sm:text-3xl"
+          />
+          <Pencil
+            size={12}
+            aria-hidden="true"
+            className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-faint opacity-50 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          />
+        </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
           <span>{wildcardData.rank ?? Ranks.Novice}</span>
           <span className="text-faint" aria-hidden="true">
