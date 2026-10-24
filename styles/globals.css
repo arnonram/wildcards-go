@@ -36,6 +36,7 @@
   --row-h: 2.25rem;
   --appbar-h: 3.5rem;
   --nav-h: 2.75rem;
+  --sheet-sticky-h: var(--nav-h);
 }
 
 /* Modern trades the serif for a tighter sans */

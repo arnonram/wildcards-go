@@ -1,4 +1,6 @@
+import { Pin } from 'lucide-react';
 import { computeToughness } from '../../helpers/armor-helpers';
+import { cn } from '../../helpers/cn';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { Pips } from '../ui/Pips';
 import { Stat } from '../ui/Stat';
@@ -12,7 +14,12 @@ const toNumber = (value: unknown) => {
 const signed = (value: number) => `${value >= 0 ? '+' : '−'}${Math.abs(value)}`;
 const negative = (value: number) => (value === 0 ? '0' : `-${value}`);
 
-export function StatusStrip() {
+export interface StatusStripProps {
+  pinned: boolean;
+  onPinnedChange: (pinned: boolean) => void;
+}
+
+export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
   const { wildcardData, update } = useWildcard();
 
   const pace = toNumber(wildcardData.pace) + toNumber(wildcardData.paceMod);
@@ -21,8 +28,22 @@ export function StatusStrip() {
   const woundFatiguePenalty = toNumber(wildcardData.wounds) + toNumber(wildcardData.fatigue);
 
   return (
-    <div className="mt-4 rounded-[var(--radius)] border border-line bg-surface/70 px-3 py-3">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+    <div className="relative rounded-[var(--radius)] border border-line bg-surface/70 px-3 py-3">
+      <button
+        type="button"
+        aria-label={pinned ? 'Unpin status bar' : 'Pin status bar'}
+        aria-pressed={pinned}
+        title={pinned ? 'Unpin status bar' : 'Pin status bar'}
+        onClick={() => onPinnedChange(!pinned)}
+        className={cn(
+          'absolute right-2 top-2 flex size-7 items-center justify-center rounded-full transition-colors',
+          pinned ? 'bg-accent-soft text-accent' : 'text-faint hover:bg-surface-2 hover:text-ink',
+        )}
+      >
+        <Pin size={13} fill={pinned ? 'currentColor' : 'none'} />
+      </button>
+
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pr-8">
         <Pips
           label="Bennies"
           value={toNumber(wildcardData.bennies)}

@@ -15,7 +15,7 @@ export function Section({ id, title, actions, children, className, description }
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className={cn('scroll-mt-[calc(var(--appbar-h)+var(--nav-h)+1rem)]', className)}
+      className={cn('scroll-mt-[calc(var(--appbar-h)+var(--sheet-sticky-h)+1rem)]', className)}
     >
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2 border-b border-line pb-1.5">
         <div className="min-w-0">

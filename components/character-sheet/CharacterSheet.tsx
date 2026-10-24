@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react';
 import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
+import { cn } from '../../helpers/cn';
 import { WildCardProvider } from '../../helpers/context/wildcard-context';
 import Armors from './armor/Armors';
 import Basics from './Basics';
@@ -29,12 +31,48 @@ export interface CharacterSheetProps {
 }
 
 export default function CharacterSheet({ wildCard, onDelete }: CharacterSheetProps) {
+  const [pinned, setPinned] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+
+  // The sections' scroll margin must account for the pinned strip. Measure the
+  // whole sticky group so the offset follows wrapping at every viewport width.
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+
+    if (!pinned) {
+      sheet.style.removeProperty('--sheet-sticky-h');
+      return;
+    }
+
+    const stickyGroup = stickyRef.current;
+    if (!stickyGroup) return;
+
+    const update = () => {
+      sheet.style.setProperty('--sheet-sticky-h', `${stickyGroup.offsetHeight}px`);
+    };
+
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(stickyGroup);
+    return () => observer.disconnect();
+  }, [pinned]);
+
   return (
     <WildCardProvider wildCard={wildCard}>
-      <div className="pb-16">
+      <div ref={sheetRef} className="pb-16">
         <SheetHeader onDelete={onDelete} />
-        <StatusStrip />
-        <SheetNav items={SECTIONS} />
+        <div
+          ref={stickyRef}
+          className={cn(
+            'pt-4',
+            pinned && 'sticky top-[var(--appbar-h)] z-20 bg-bg/95 shadow-sm backdrop-blur',
+          )}
+        >
+          <StatusStrip pinned={pinned} onPinnedChange={setPinned} />
+          <SheetNav items={SECTIONS} pinned={pinned} />
+        </div>
 
         <div className="mt-8 space-y-10">
           <Basics />

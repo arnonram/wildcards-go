@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '../../helpers/cn';
 
 export interface SheetNavItem {
@@ -6,8 +6,14 @@ export interface SheetNavItem {
   label: string;
 }
 
-export function SheetNav({ items }: { items: SheetNavItem[] }) {
+export interface SheetNavProps {
+  items: SheetNavItem[];
+  pinned?: boolean;
+}
+
+export function SheetNav({ items, pinned = false }: SheetNavProps) {
   const [active, setActive] = useState(items[0]?.id ?? '');
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const sections = items
@@ -16,11 +22,13 @@ export function SheetNav({ items }: { items: SheetNavItem[] }) {
 
     if (sections.length === 0) return;
 
-    const focusOffset = 160;
     let frame = 0;
 
     const update = () => {
       frame = 0;
+      const focusOffset = pinned
+        ? (navRef.current?.getBoundingClientRect().bottom ?? 160) + 24
+        : 160;
 
       // The active section is the last one whose heading has crossed the
       // reading line below the sticky header.
@@ -54,12 +62,16 @@ export function SheetNav({ items }: { items: SheetNavItem[] }) {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
-  }, [items]);
+  }, [items, pinned]);
 
   return (
     <nav
+      ref={navRef}
       aria-label="Character sheet sections"
-      className="sticky top-[var(--appbar-h)] z-20 -mx-4 mt-4 border-y border-line bg-bg/90 px-4 backdrop-blur"
+      className={cn(
+        '-mx-4 mt-4 border-y border-line bg-bg/90 px-4 backdrop-blur',
+        !pinned && 'sticky top-[var(--appbar-h)] z-20',
+      )}
     >
       <ul className="flex h-[var(--nav-h)] items-stretch gap-1 overflow-x-auto">
         {items.map((item) => {
