@@ -12,6 +12,8 @@ import { SheetTable, Td, Th, Tr } from '../../ui/Table';
 import { Textarea } from '../../ui/Textarea';
 
 const COLUMN_COUNT = 5;
+const compactField = 'px-1.5 sm:px-2.5';
+const compactContainer = '-mx-1 sm:mx-0';
 
 const toNumber = (value: unknown) => {
   const parsed = Number(value);
@@ -105,14 +107,14 @@ export default function Powers() {
       {powers.length === 0 ? (
         <p className="py-3 text-sm text-faint">No powers yet.</p>
       ) : (
-        <SheetTable>
+        <SheetTable className="table-fixed">
           <thead>
             <tr>
-              <Th className="min-w-28 sm:min-w-44">Name</Th>
-              <Th className="w-12 sm:w-16">PP</Th>
-              <Th className="hidden w-32 sm:table-cell">Range</Th>
-              <Th className="hidden w-24 sm:table-cell">Duration</Th>
-              <Th className="w-12 sm:w-16">
+              <Th>Name</Th>
+              <Th className="w-11 sm:w-16">PP</Th>
+              <Th className="w-20 sm:w-32">Range</Th>
+              <Th className="w-[4.25rem] max-[379px]:hidden sm:w-24">Duration</Th>
+              <Th className="w-14 sm:w-16">
                 <span className="sr-only">Actions</span>
               </Th>
             </tr>
@@ -128,6 +130,8 @@ export default function Powers() {
                         aria-label="Power name"
                         placeholder="Power name"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={power.name}
                         onChange={(event) => updatePower(power._id, { name: event.target.value })}
                       />
@@ -137,24 +141,30 @@ export default function Powers() {
                         aria-label="Power points"
                         placeholder="2"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={power.pp ?? ''}
                         onChange={(event) => updatePower(power._id, { pp: event.target.value })}
                       />
                     </Td>
-                    <Td className="hidden sm:table-cell">
+                    <Td>
                       <Field
                         aria-label="Range"
                         placeholder="Smarts"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={power.range ?? ''}
                         onChange={(event) => updatePower(power._id, { range: event.target.value })}
                       />
                     </Td>
-                    <Td className="hidden sm:table-cell">
+                    <Td className="max-[379px]:hidden">
                       <Field
                         aria-label="Duration"
                         type="number"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={power.duration ?? ''}
                         onChange={(event) =>
                           updatePower(power._id, {
@@ -164,7 +174,7 @@ export default function Powers() {
                         }
                       />
                     </Td>
-                    <Td>
+                    <Td className="px-1 sm:px-2">
                       <div className="flex items-center justify-end gap-0.5">
                         <button
                           type="button"
@@ -194,18 +204,10 @@ export default function Powers() {
                       >
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
                           <Field
-                            label="Range"
-                            value={power.range ?? ''}
-                            containerClassName="sm:hidden"
-                            onChange={(event) =>
-                              updatePower(power._id, { range: event.target.value })
-                            }
-                          />
-                          <Field
                             label="Duration"
                             type="number"
+                            containerClassName="col-span-2 hidden max-[379px]:block"
                             value={power.duration ?? ''}
-                            containerClassName="sm:hidden"
                             onChange={(event) =>
                               updatePower(power._id, {
                                 duration:

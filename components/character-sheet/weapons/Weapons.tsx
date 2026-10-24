@@ -11,6 +11,8 @@ import { SheetTable, Td, Th, Tr } from '../../ui/Table';
 import { Textarea } from '../../ui/Textarea';
 
 const COLUMN_COUNT = 7;
+const compactField = 'px-1.5 sm:px-2.5';
+const compactContainer = '-mx-1 sm:mx-0';
 
 export default function Weapons() {
   const { wildcardData, setWildcardData } = useWildcard();
@@ -63,16 +65,19 @@ export default function Weapons() {
       {weapons.length === 0 ? (
         <p className="py-3 text-sm text-faint">No weapons yet.</p>
       ) : (
-        <SheetTable>
+        <SheetTable className="table-fixed">
           <thead>
             <tr>
-              <Th className="min-w-28 sm:min-w-44">Name</Th>
-              <Th className="hidden w-28 sm:table-cell">Range</Th>
-              <Th className="w-20 sm:w-28">Damage</Th>
-              <Th className="hidden w-14 sm:table-cell">AP</Th>
-              <Th className="hidden w-14 sm:table-cell">ROF</Th>
-              <Th className="hidden w-16 sm:table-cell">Weight</Th>
-              <Th className="w-12 sm:w-16">
+              <Th>Name</Th>
+              <Th className="w-[4.75rem] sm:w-28">Range</Th>
+              <Th className="w-[5.5rem] sm:w-28">Damage</Th>
+              <Th className="w-12 max-[379px]:hidden sm:w-14">AP</Th>
+              <Th className="hidden w-10 min-[420px]:table-cell sm:w-14">ROF</Th>
+              <Th className="hidden w-11 min-[520px]:table-cell sm:w-16">
+                <span className="sm:hidden">Wt</span>
+                <span className="hidden sm:inline">Weight</span>
+              </Th>
+              <Th className="w-14 sm:w-16">
                 <span className="sr-only">Actions</span>
               </Th>
             </tr>
@@ -88,15 +93,19 @@ export default function Weapons() {
                         aria-label="Weapon name"
                         placeholder="Weapon name"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={weapon.name}
                         onChange={(event) => update(weapon._id, { name: event.target.value })}
                       />
                     </Td>
-                    <Td className="hidden sm:table-cell">
+                    <Td>
                       <Field
                         aria-label="Range"
                         placeholder="3/6/12"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={weapon.range ?? ''}
                         onChange={(event) => update(weapon._id, { range: event.target.value })}
                       />
@@ -106,15 +115,19 @@ export default function Weapons() {
                         aria-label="Damage"
                         placeholder="Str+d6"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={weapon.damage ?? ''}
                         onChange={(event) => update(weapon._id, { damage: event.target.value })}
                       />
                     </Td>
-                    <Td className="hidden sm:table-cell">
+                    <Td className="max-[379px]:hidden">
                       <Field
                         aria-label="Armor piercing"
                         type="number"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={weapon.ap ?? ''}
                         onChange={(event) =>
                           update(weapon._id, {
@@ -123,11 +136,13 @@ export default function Weapons() {
                         }
                       />
                     </Td>
-                    <Td className="hidden sm:table-cell">
+                    <Td className="hidden min-[420px]:table-cell">
                       <Field
                         aria-label="Rate of fire"
                         type="number"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={weapon.rof ?? ''}
                         onChange={(event) =>
                           update(weapon._id, {
@@ -136,11 +151,13 @@ export default function Weapons() {
                         }
                       />
                     </Td>
-                    <Td className="hidden sm:table-cell">
+                    <Td className="hidden min-[520px]:table-cell">
                       <Field
                         aria-label="Weight"
                         type="number"
                         variant="quiet"
+                        className={compactField}
+                        containerClassName={compactContainer}
                         value={weapon.weight ?? ''}
                         onChange={(event) =>
                           update(weapon._id, {
@@ -150,7 +167,7 @@ export default function Weapons() {
                         }
                       />
                     </Td>
-                    <Td>
+                    <Td className="px-1 sm:px-2">
                       <div className="flex items-center justify-end gap-0.5">
                         <button
                           type="button"
@@ -180,18 +197,10 @@ export default function Weapons() {
                       >
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                           <Field
-                            label="Range"
-                            placeholder="3/6/12"
-                            variant="quiet"
-                            containerClassName="sm:hidden"
-                            value={weapon.range ?? ''}
-                            onChange={(event) => update(weapon._id, { range: event.target.value })}
-                          />
-                          <Field
                             label="AP"
                             type="number"
                             variant="quiet"
-                            containerClassName="sm:hidden"
+                            containerClassName="hidden max-[379px]:block"
                             value={weapon.ap ?? ''}
                             onChange={(event) =>
                               update(weapon._id, {
@@ -206,7 +215,7 @@ export default function Weapons() {
                             label="ROF"
                             type="number"
                             variant="quiet"
-                            containerClassName="sm:hidden"
+                            containerClassName="min-[420px]:hidden"
                             value={weapon.rof ?? ''}
                             onChange={(event) =>
                               update(weapon._id, {
@@ -221,7 +230,7 @@ export default function Weapons() {
                             label="Weight"
                             type="number"
                             variant="quiet"
-                            containerClassName="sm:hidden"
+                            containerClassName="min-[520px]:hidden"
                             value={weapon.weight ?? ''}
                             onChange={(event) =>
                               update(weapon._id, {
