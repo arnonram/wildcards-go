@@ -1,5 +1,4 @@
-import { BaseEntity } from "./BaseEntity.dto";
-import { v4 as uuidv4 } from "uuid";
+import { BaseEntity } from './BaseEntity.dto';
 
 export class Edge extends BaseEntity {
   _id: string;
@@ -10,6 +9,6 @@ export class Edge extends BaseEntity {
 
   constructor(name: string) {
     super(name);
-    this._id = uuidv4().replaceAll("-", "");
+    this._id = crypto.randomUUID().replaceAll('-', '');
   }
 }

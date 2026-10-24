@@ -1,0 +1,113 @@
+import { useEffect, useRef, useState } from 'react';
+import { cn } from '../../helpers/cn';
+
+export interface SheetNavItem {
+  id: string;
+  label: string;
+}
+
+export interface SheetNavProps {
+  items: SheetNavItem[];
+  pinned?: boolean;
+}
+
+export function SheetNav({ items, pinned = false }: SheetNavProps) {
+  const [active, setActive] = useState(items[0]?.id ?? '');
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const sections = items
+      .map((item) => document.getElementById(item.id))
+      .filter((element): element is HTMLElement => element !== null);
+
+    if (sections.length === 0) return;
+
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+      const focusOffset = pinned
+        ? (navRef.current?.getBoundingClientRect().bottom ?? 160) + 24
+        : 160;
+
+      // The active section is the last one whose heading has crossed the
+      // reading line below the sticky header.
+      let current = sections[0].id;
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= focusOffset) {
+          current = section.id;
+        }
+      }
+
+      // At the very end of the sheet the final sections cannot reach the
+      // reading line, so make the last link active instead of stranding the
+      // highlight on an earlier section.
+      const atBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+      if (atBottom) current = sections[sections.length - 1].id;
+
+      setActive((previous) => (previous === current ? previous : current));
+    };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [items, pinned]);
+
+  return (
+    <nav
+      ref={navRef}
+      aria-label="Character sheet sections"
+      className={cn(
+        '-mx-4 mt-4 border-y border-line bg-bg/90 px-4 backdrop-blur',
+        'sticky z-20',
+        pinned ? 'top-[calc(var(--appbar-h)+var(--status-h))]' : 'top-[var(--appbar-h)]',
+      )}
+    >
+      <ul className="flex h-[var(--nav-h)] items-stretch gap-1 overflow-x-auto">
+        {items.map((item) => {
+          const isActive = item.id === active;
+          return (
+            <li key={item.id}>
+              <a
+                href={`#${item.id}`}
+                aria-current={isActive ? 'true' : undefined}
+                onClick={(event) => {
+                  event.preventDefault();
+                  document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                  setActive(item.id);
+                }}
+                className={cn(
+                  'relative flex h-full items-center whitespace-nowrap px-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors',
+                  isActive ? 'text-heading' : 'text-muted hover:text-ink',
+                )}
+              >
+                {item.label}
+                {isActive && (
+                  <span
+                    className="absolute inset-x-1 bottom-0 h-0.5 bg-accent"
+                    aria-hidden="true"
+                  />
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-bg to-transparent sm:hidden"
+      />
+    </nav>
+  );
+}

@@ -1,89 +1,161 @@
-import { FormLabel, TextField, Box, IconButton, Grid } from "@mui/material";
-import { DiceDropdown, DiceValues } from "../DiceDropdown";
-import React, { useEffect, useState } from "react";
-import { AddSkillDialog } from "./AddSkillDialog";
-import { Trait } from "../../../dtos/Trait.dto";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { handleArrayUpdate } from "../../../helpers/array-helpers";
-import { useWildcard } from "../../../helpers/context/wildcard-context";
+// biome-ignore-all lint/suspicious/noArrayIndexKey: skills have no stable id yet; index keys preserve focus while typing
+import { Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Trait } from '../../../dtos/Trait.dto';
+import { DiceValues } from '../../../dtos/wildcards-consts';
+import { useWildcard } from '../../../helpers/context/wildcard-context';
+import { Button } from '../../ui/Button';
+import { DeleteButton } from '../../ui/DeleteButton';
+import { Field } from '../../ui/Field';
+import { Section } from '../../ui/Section';
+import { DiePicker } from '../DiePicker';
 
-export interface TraitsProps {
-  title: string;
-  isAttributes: boolean;
+type TraitKey = 'attributes' | 'skills';
+
+function TraitRow({
+  trait,
+  onDiceChange,
+  onModChange,
+  onNameChange,
+  onDelete,
+}: {
+  trait: Trait;
+  onDiceChange: (dice: DiceValues) => void;
+  onModChange: (mod: string) => void;
+  onNameChange?: (name: string) => void;
+  onDelete?: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 border-b border-line/60 py-1">
+      {onNameChange ? (
+        <Field
+          aria-label="Skill name"
+          variant="quiet"
+          containerClassName="min-w-0 flex-1"
+          value={trait.name}
+          onChange={(event) => onNameChange(event.target.value)}
+        />
+      ) : (
+        <span className="min-w-0 flex-1 truncate text-sm text-ink">{trait.name}</span>
+      )}
+      <DiePicker
+        name={trait.name}
+        value={trait.dice}
+        onChange={onDiceChange}
+        allowUntrained={!!onDelete}
+      />
+      <Field
+        aria-label={`${trait.name} modifier`}
+        placeholder="+0"
+        variant="quiet"
+        containerClassName="w-14 shrink-0"
+        value={trait.mod ?? ''}
+        onChange={(event) => onModChange(event.target.value)}
+      />
+      {onDelete && <DeleteButton label={trait.name || 'skill'} onDelete={onDelete} />}
+    </div>
+  );
 }
 
-export default function Traits(props: TraitsProps) {
-  const { wildcardData, setWildcardData } = useWildcard();
-  const [traits, setTraits] = useState(
-    props.isAttributes ? wildcardData.attributes : wildcardData.skills
-  );
+function AddSkillRow({ onAdd }: { onAdd: (skill: Trait) => void }) {
+  const [name, setName] = useState('');
+  const [dice, setDice] = useState<DiceValues>(DiceValues.untrained);
 
-  const handleInputChange = (event: any, traitName: string) => {
-    const { name, value } = event.target;
-    setTraits(handleArrayUpdate(traits, traitName, name, value));
+  const submit = () => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    onAdd(new Trait(trimmed, dice));
+    setName('');
+    setDice(DiceValues.untrained);
   };
-
-  useEffect(() => {
-    setWildcardData({
-      ...wildcardData,
-      [props.isAttributes ? "attributes" : "skills"]: traits,
-    });
-  }, [traits]);
-
-  const addNewSkill = (newSkill: Trait) => {
-    setTraits([...traits, newSkill]);
-  };
-
-  const deleteSkill = (skillToDelete: string) => {
-    setTraits(traits.filter((skill) => skill.name !== skillToDelete));
-  };
-
-  const addTrait = (trait: Trait) => (
-    <Grid item id={`trait-${trait.name}`} key={`trait-${trait.name}`}>
-      <FormLabel
-        sx={{
-          display: "block",
-          typography: "body",
-          textTransform: "uppercase",
-          fontWeight: "bold",
-        }}
-      >
-        {trait.name}
-      </FormLabel>
-      <DiceDropdown
-        dice={trait.dice as DiceValues}
-        traitName={trait.name as string}
-        isSkill={!props.isAttributes}
-        updateChanges={handleInputChange}
-      />
-      <TextField
-        id={`${trait.name}-mod`}
-        name={"mod"}
-        label={`${trait.name} mod`}
-        value={traits.find((x) => x.name === trait.name)?.mod}
-        onChange={(event) => handleInputChange(event, trait.name)}
-      />
-      {!props.isAttributes && (
-        <IconButton
-          id={`${trait.name}-delete`}
-          color="warning"
-          aria-label="delete"
-          edge="start"
-          onClick={() => deleteSkill(trait.name)}
-        >
-          <DeleteForeverIcon />
-        </IconButton>
-      )}
-    </Grid>
-  );
 
   return (
-    <Box>
-      <h3>{props.title}</h3>
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        {traits.map((trait) => addTrait(trait))}
-      </Grid>
-      {!props.isAttributes && <AddSkillDialog addSkill={addNewSkill} />}
-    </Box>
+    <div className="mt-3 flex items-center gap-2">
+      <Field
+        aria-label="New skill name"
+        placeholder="New skill…"
+        variant="quiet"
+        containerClassName="min-w-0 flex-1"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            submit();
+          }
+        }}
+      />
+      <DiePicker name="new-skill" value={dice} onChange={setDice} allowUntrained />
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={submit}
+        disabled={!name.trim()}
+        aria-label="Add skill"
+      >
+        <Plus size={14} />
+      </Button>
+    </div>
+  );
+}
+
+export default function Traits() {
+  const { wildcardData, setWildcardData } = useWildcard();
+
+  const updateTrait = (key: TraitKey, index: number, patch: Partial<Trait>) => {
+    setWildcardData((previous) => ({
+      ...previous,
+      [key]: previous[key].map((trait, position) =>
+        position === index ? { ...trait, ...patch } : trait,
+      ),
+    }));
+  };
+
+  const removeSkill = (index: number) => {
+    setWildcardData((previous) => ({
+      ...previous,
+      skills: previous.skills.filter((_, position) => position !== index),
+    }));
+  };
+
+  const addSkill = (skill: Trait) => {
+    setWildcardData((previous) => ({ ...previous, skills: [...previous.skills, skill] }));
+  };
+
+  return (
+    <Section id="traits" title="Traits">
+      <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
+        <div>
+          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+            Attributes
+          </h3>
+          {wildcardData.attributes.map((trait, index) => (
+            <TraitRow
+              key={trait.name}
+              trait={trait}
+              onDiceChange={(dice) => updateTrait('attributes', index, { dice })}
+              onModChange={(mod) => updateTrait('attributes', index, { mod })}
+            />
+          ))}
+        </div>
+
+        <div>
+          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+            Skills
+          </h3>
+          {wildcardData.skills.map((trait, index) => (
+            <TraitRow
+              key={`skill-${index}`}
+              trait={trait}
+              onDiceChange={(dice) => updateTrait('skills', index, { dice })}
+              onModChange={(mod) => updateTrait('skills', index, { mod })}
+              onNameChange={(name) => updateTrait('skills', index, { name })}
+              onDelete={() => removeSkill(index)}
+            />
+          ))}
+          <AddSkillRow onAdd={addSkill} />
+        </div>
+      </div>
+    </Section>
   );
 }

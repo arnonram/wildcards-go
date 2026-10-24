@@ -1,5 +1,5 @@
-import { DiceValues } from "../components/character-sheet/DiceDropdown";
-import { BaseEntity } from "./BaseEntity.dto";
+import type { DiceValues } from '../dtos/wildcards-consts';
+import { BaseEntity } from './BaseEntity.dto';
 
 export class Trait extends BaseEntity {
   dice: DiceValues;

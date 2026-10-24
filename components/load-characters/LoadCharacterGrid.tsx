@@ -1,105 +1,77 @@
-import {
-  Button,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  CardMedia,
-  Grid,
-  Typography,
-} from "@mui/material";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { CharToLoad } from "../../dtos/CharToLoad";
+import { useEffect, useState } from 'react';
+import type { CharToLoad } from '../../dtos/CharToLoad';
+import DeleteConfirmationDialog from '../DeleteConfirmationDialog';
+import { CharacterCard } from '../home/CharacterCard';
 
 export default function LoadCharactersGrid() {
-  const router = useRouter();
   const [listOfChars, setListOfChars] = useState<CharToLoad[]>([]);
   const [isLoading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<CharToLoad | null>(null);
 
   useEffect(() => {
     const getData = async () => {
-      const response = await fetch(`api/character`, {
-        method: "GET",
-        headers: { "Content-type": "application/json" },
-      });
-      setListOfChars(await response.json());
+      try {
+        const response = await fetch('/api/character');
+        const data = await response.json();
+        setListOfChars(data);
+      } catch (error) {
+        console.error('Failed to fetch characters:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    getData().catch(console.error);
-    setLoading(false);
+    getData();
   }, []);
 
-  const handleOpenChar = (e: any, id: string) => {
-    e.preventDefault();
-    router.push(`/character/${encodeURIComponent(id)}`);
-  };
-
-  const handleDeleteChar = async (id: string) => {
-    await fetch(`api/character/${id}`, {
-      method: "DELETE",
-      headers: { "Content-type": "application/json" },
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    await fetch(`/api/character/${deleteTarget._id}`, {
+      method: 'DELETE',
+      headers: { 'Content-type': 'application/json' },
     });
-    console.log(listOfChars.length);
-
-    const cleanedList = listOfChars.filter((x) => x._id !== id);
-    console.log(listOfChars.length);
-    setListOfChars(cleanedList);
-  };
-
-  const generateCard = (character: CharToLoad) => {
-    return (
-      <Grid item key={`wildcard-load-grid-${character._id}`}>
-        <Card
-          sx={{
-            margin: 1,
-            border: 3,
-            borderRadius: 4,
-          }}
-          id={`wildcard-card-${character._id}`}
-          elevation={7}
-        >
-          <CardActionArea onClick={(e) => handleOpenChar(e, character._id)}>
-            <CardMedia
-              component="img"
-              image="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6O694YvEuQNDxXMOr2UJqR1DLGXJUD8kAcw&usqp=CAU"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h6" component="div">
-                {character.name}
-              </Typography>
-            </CardContent>
-          </CardActionArea>
-          <CardActions>
-            <Button
-              size="small"
-              color="primary"
-              onClick={() => handleDeleteChar(character._id)}
-            >
-              Delete
-            </Button>
-          </CardActions>
-        </Card>
-      </Grid>
-    );
+    setListOfChars((prev) => prev.filter((x) => x._id !== deleteTarget._id));
+    setDeleteTarget(null);
   };
 
   if (isLoading) {
-    return <div className="App">Loading...</div>;
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="h-[92px] animate-pulse rounded-[var(--radius)] border border-line bg-surface"
+          />
+        ))}
+      </div>
+    );
   }
+
+  if (listOfChars.length === 0) {
+    return (
+      <div className="rounded-[var(--radius)] border border-dashed border-line-strong px-6 py-12 text-center">
+        <p className="font-display text-lg font-semibold text-ink">No characters found</p>
+        <p className="mt-1 text-sm text-muted">Create a new Wildcard to get started.</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <Typography
-        variant="h3"
-        align="center"
-        sx={{ boxShadow: 3 }}
-        fontFamily="fantasy"
-        marginBottom={2}
-      >
-        List of Characters
-      </Typography>
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        {listOfChars.map((char) => generateCard(char))}
-      </Grid>
-    </div>
+    <>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {listOfChars.map((character) => (
+          <CharacterCard
+            key={character._id}
+            character={character}
+            onDelete={(target) => setDeleteTarget(target)}
+          />
+        ))}
+      </div>
+      <DeleteConfirmationDialog
+        open={deleteTarget !== null}
+        characterName={deleteTarget?.name || ''}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    </>
   );
 }

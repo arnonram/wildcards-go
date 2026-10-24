@@ -1,0 +1,18 @@
+stages:
+  - quality
+
+lint:
+    image:
+      # Keep this in lockstep with @biomejs/biome and the $schema URL.
+      name: ghcr.io/biomejs/biome:2.5.14
+      entrypoint: [""]
+    stage: quality
+    script:
+        - biome ci --reporter=gitlab --colors=off > /tmp/code-quality.json
+        - cp /tmp/code-quality.json code-quality.json
+    artifacts:
+      reports:
+        codequality:
+          - code-quality.json
+    rules:
+        - if: $CI_MERGE_REQUEST_ID

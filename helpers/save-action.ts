@@ -1,10 +1,5 @@
-import { WildCardCharacter } from "../dtos/WildCardCharacter.dto";
-import { updateCharacter } from "./api-actions";
-
-export async function saveUpdate(event: any, data: WildCardCharacter) {
-  event.preventDefault();
-  await saveToDb(data);
-}
+import type { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
+import { updateCharacter } from './api-actions';
 
 export async function saveToDb(data: WildCardCharacter) {
   await updateCharacter(data);
