@@ -2,6 +2,7 @@ import { Ranks } from '../../dtos/wildcards-consts';
 import { computeToughness } from '../../helpers/armor-helpers';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { Field } from '../ui/Field';
+import { NumberField } from '../ui/NumberField';
 import { Section } from '../ui/Section';
 import { Select } from '../ui/Select';
 import { Textarea } from '../ui/Textarea';
@@ -14,10 +15,18 @@ const toNumber = (value: unknown) => {
 export default function Basics() {
   const { wildcardData, update } = useWildcard();
   const toughness = computeToughness(wildcardData);
+  const size = toNumber(wildcardData.size);
+  const toughnessHint =
+    [
+      size !== 0 ? `${size > 0 ? '+' : '−'}${Math.abs(size)} size` : null,
+      toughness.armor > 0 ? `+${toughness.armor} armor` : null,
+    ]
+      .filter(Boolean)
+      .join(' · ') || undefined;
 
   return (
     <Section id="basics" title="Basics">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Field
           label="Ancestry"
           placeholder="Human, Elf, …"
@@ -30,6 +39,12 @@ export default function Basics() {
           onValueChange={(value) => update({ rank: value as Ranks })}
           options={Object.values(Ranks).map((rank) => ({ value: rank, label: rank }))}
         />
+        <NumberField
+          label="Size"
+          value={size}
+          hint="Added to Toughness"
+          onValueChange={(value) => update({ size: value })}
+        />
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -41,11 +56,10 @@ export default function Basics() {
             value={toNumber(wildcardData.pace)}
             onChange={(event) => update({ pace: Number(event.target.value) })}
           />
-          <Field
+          <NumberField
             label="Pace mod"
-            type="number"
             value={toNumber(wildcardData.paceMod)}
-            onChange={(event) => update({ paceMod: Number(event.target.value) })}
+            onValueChange={(value) => update({ paceMod: value })}
           />
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -56,11 +70,10 @@ export default function Basics() {
             value={toNumber(wildcardData.parry)}
             onChange={(event) => update({ parry: Number(event.target.value) })}
           />
-          <Field
+          <NumberField
             label="Parry mod"
-            type="number"
             value={toNumber(wildcardData.parryMod)}
-            onChange={(event) => update({ parryMod: Number(event.target.value) })}
+            onValueChange={(value) => update({ parryMod: value })}
           />
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -70,13 +83,12 @@ export default function Basics() {
             min={0}
             value={toNumber(wildcardData.toughness)}
             onChange={(event) => update({ toughness: Number(event.target.value) })}
-            hint={toughness.armor > 0 ? `+${toughness.armor} armor` : undefined}
+            hint={toughnessHint}
           />
-          <Field
+          <NumberField
             label="Toughness mod"
-            type="number"
             value={toNumber(wildcardData.toughnessMod)}
-            onChange={(event) => update({ toughnessMod: Number(event.target.value) })}
+            onValueChange={(value) => update({ toughnessMod: value })}
           />
         </div>
       </div>

@@ -67,10 +67,10 @@ export default function Weapons() {
           <thead>
             <tr>
               <Th className="min-w-28 sm:min-w-44">Name</Th>
+              <Th className="hidden w-28 sm:table-cell">Range</Th>
               <Th className="w-20 sm:w-28">Damage</Th>
               <Th className="hidden w-14 sm:table-cell">AP</Th>
               <Th className="hidden w-14 sm:table-cell">ROF</Th>
-              <Th className="hidden w-28 sm:table-cell">Range</Th>
               <Th className="hidden w-16 sm:table-cell">Weight</Th>
               <Th className="w-12 sm:w-16">
                 <span className="sr-only">Actions</span>
@@ -90,6 +90,15 @@ export default function Weapons() {
                         variant="quiet"
                         value={weapon.name}
                         onChange={(event) => update(weapon._id, { name: event.target.value })}
+                      />
+                    </Td>
+                    <Td className="hidden sm:table-cell">
+                      <Field
+                        aria-label="Range"
+                        placeholder="3/6/12"
+                        variant="quiet"
+                        value={weapon.range ?? ''}
+                        onChange={(event) => update(weapon._id, { range: event.target.value })}
                       />
                     </Td>
                     <Td>
@@ -125,15 +134,6 @@ export default function Weapons() {
                             rof: event.target.value === '' ? undefined : Number(event.target.value),
                           })
                         }
-                      />
-                    </Td>
-                    <Td className="hidden sm:table-cell">
-                      <Field
-                        aria-label="Range"
-                        placeholder="3/6/12"
-                        variant="quiet"
-                        value={weapon.range ?? ''}
-                        onChange={(event) => update(weapon._id, { range: event.target.value })}
                       />
                     </Td>
                     <Td className="hidden sm:table-cell">
@@ -180,6 +180,14 @@ export default function Weapons() {
                       >
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                           <Field
+                            label="Range"
+                            placeholder="3/6/12"
+                            variant="quiet"
+                            containerClassName="sm:hidden"
+                            value={weapon.range ?? ''}
+                            onChange={(event) => update(weapon._id, { range: event.target.value })}
+                          />
+                          <Field
                             label="AP"
                             type="number"
                             variant="quiet"
@@ -208,14 +216,6 @@ export default function Weapons() {
                                     : Number(event.target.value),
                               })
                             }
-                          />
-                          <Field
-                            label="Range"
-                            placeholder="3/6/12"
-                            variant="quiet"
-                            containerClassName="sm:hidden"
-                            value={weapon.range ?? ''}
-                            onChange={(event) => update(weapon._id, { range: event.target.value })}
                           />
                           <Field
                             label="Weight"

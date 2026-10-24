@@ -17,6 +17,7 @@ export interface PipsProps {
   onChange: (value: number) => void;
   tone?: PipTone;
   allowAdd?: boolean;
+  formatValue?: (value: number) => string;
   className?: string;
 }
 
@@ -27,6 +28,7 @@ export function Pips({
   onChange,
   tone = 'accent',
   allowAdd = false,
+  formatValue,
   className,
 }: PipsProps) {
   const count = Math.max(max, value);
@@ -68,7 +70,9 @@ export function Pips({
           </button>
         )}
       </fieldset>
-      <span className="min-w-6 text-xs tabular-nums text-muted">{value}</span>
+      <span className="min-w-6 text-xs tabular-nums text-muted">
+        {formatValue ? formatValue(value) : value}
+      </span>
     </div>
   );
 }
