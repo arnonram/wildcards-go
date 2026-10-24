@@ -1,4 +1,3 @@
-import { DiceValues } from '../components/character-sheet/DiceDropdown';
 import type { Armor } from './Armor.dto';
 import { BaseEntity } from './BaseEntity.dto';
 import type { Edge } from './Edge';
@@ -7,7 +6,7 @@ import type { Hindrance } from './Hindrance.dto';
 import type { Power } from './Power.dto';
 import { Trait } from './Trait.dto';
 import type { Weapon } from './Weapon.dto';
-import { Attributes, CoreSkills, Ranks } from './wildcards-consts';
+import { Attributes, CoreSkills, DiceValues, Ranks } from './wildcards-consts';
 
 export class WildCardCharacter extends BaseEntity {
   _id?: string;

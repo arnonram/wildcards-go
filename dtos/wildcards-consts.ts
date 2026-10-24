@@ -25,6 +25,19 @@ export enum ArmorLocations {
   Legs = 'Legs',
 }
 
+/**
+ * Savage Worlds die steps. Lives here (rather than in a component) so DTOs can
+ * reference it without depending on the UI layer.
+ */
+export enum DiceValues {
+  untrained = 'd4-2',
+  d4 = 'd4',
+  d6 = 'd6',
+  d8 = 'd8',
+  d10 = 'd10',
+  d12 = 'd12',
+}
+
 export enum Ranks {
   Novice = 'Novice',
   Seasoned = 'Seasoned',

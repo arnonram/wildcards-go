@@ -1,20 +1,15 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Typography,
-} from '@mui/material';
+import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import CharacterSheet from '../../components/character-sheet/CharacterSheet';
+import { Button } from '../../components/ui/Button';
+import { Dialog } from '../../components/ui/Dialog';
+import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-export default function Character({ character }: { character: Record<string, unknown> }) {
+export default function Character({ character }: { character: WildCardCharacter }) {
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -27,56 +22,51 @@ export default function Character({ character }: { character: Record<string, unk
     router.push('/');
   };
 
-  return (
-    <Box>
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mb: 3,
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            fontFamily: "'Cinzel', 'Georgia', 'serif'",
-            fontWeight: 600,
-            color: 'text.primary',
-          }}
-        >
-          {character.name || 'Unnamed Character'}
-        </Typography>
-        <Button variant="outlined" color="error" onClick={() => setDeleteDialogOpen(true)}>
-          Delete
-        </Button>
-      </Box>
+  if (!character) {
+    return <p className="py-12 text-center text-sm text-muted">Loading character…</p>;
+  }
 
-      <CharacterSheet wildCard={character} />
+  return (
+    <>
+      <Head>
+        <title>{`${character.name || 'Unnamed Character'} — Wild Cards Go`}</title>
+      </Head>
+
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <Link
+          href="/"
+          className="text-xs text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
+        >
+          ← All characters
+        </Link>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-faint">
+          Character sheet
+        </span>
+      </div>
+
+      <CharacterSheet wildCard={character} onDelete={() => setDeleteDialogOpen(true)} />
 
       <Dialog
         open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Character"
+        description="This action cannot be undone."
+        size="sm"
+        footer={
+          <>
+            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="danger" onClick={handleDelete}>
+              Delete
+            </Button>
+          </>
+        }
       >
-        <DialogTitle>Delete Character</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete <strong>{character.name || 'this character'}</strong>?
-            This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
+        <p className="text-sm text-muted">
+          Are you sure you want to delete{' '}
+          <strong className="font-semibold text-ink">{character.name || 'this character'}</strong>?
+        </p>
       </Dialog>
-    </Box>
+    </>
   );
 }
 

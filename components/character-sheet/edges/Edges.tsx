@@ -1,141 +1,135 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  TextField,
-} from '@mui/material';
+import { ChevronDown, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Edge } from '../../../dtos/Edge';
+import { cn } from '../../../helpers/cn';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
-import AddNewButton from '../AddNewButton';
-import EdgeCard from './EdgeCard';
+import { Button } from '../../ui/Button';
+import { DeleteButton } from '../../ui/DeleteButton';
+import { Field } from '../../ui/Field';
+import { Section } from '../../ui/Section';
+import { Textarea } from '../../ui/Textarea';
+
+function EdgeRow({
+  edge,
+  onChange,
+  onDelete,
+}: {
+  edge: Edge;
+  onChange: (patch: Partial<Edge>) => void;
+  onDelete: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="border-b border-line/60 py-1.5">
+      <div className="flex flex-wrap items-center gap-2">
+        <Field
+          aria-label="Edge name"
+          placeholder="New edge"
+          variant="quiet"
+          containerClassName="min-w-36 flex-1"
+          value={edge.name}
+          onChange={(event) => onChange({ name: event.target.value })}
+        />
+        <Field
+          aria-label="Edge type"
+          placeholder="Type"
+          variant="quiet"
+          containerClassName="w-28 shrink-0"
+          value={edge.edgeType ?? ''}
+          onChange={(event) => onChange({ edgeType: event.target.value })}
+        />
+        <button
+          type="button"
+          onClick={() => setExpanded((current) => !current)}
+          aria-label={expanded ? 'Hide details' : 'Show details'}
+          aria-expanded={expanded}
+          className="rounded-[var(--radius)] p-1 text-faint transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <ChevronDown size={14} className={cn('transition-transform', expanded && 'rotate-180')} />
+        </button>
+        <DeleteButton label={edge.name || 'edge'} onDelete={onDelete} />
+      </div>
+
+      {expanded && (
+        <div className="mt-2 grid gap-2 pl-1 sm:grid-cols-2">
+          <Field
+            label="Requirements"
+            variant="quiet"
+            placeholder="Novice, Agility d8…"
+            value={edge.requirements ?? ''}
+            onChange={(event) => onChange({ requirements: event.target.value })}
+          />
+          <Field
+            label="Blurb"
+            variant="quiet"
+            placeholder="One-line summary"
+            value={edge.blurb ?? ''}
+            onChange={(event) => onChange({ blurb: event.target.value })}
+          />
+          <Textarea
+            label="Description"
+            rows={2}
+            containerClassName="sm:col-span-2"
+            value={edge.description ?? ''}
+            onChange={(event) => onChange({ description: event.target.value })}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Edges() {
   const { wildcardData, setWildcardData } = useWildcard();
-  const [edges, setEdges] = useState<Edge[]>(wildcardData?.edges || []);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [newEdge, setNewEdge] = useState<Edge>(new Edge(''));
+  const edges = wildcardData.edges ?? [];
 
-  const handleOpenDialog = () => {
-    setNewEdge(new Edge(''));
-    setDialogOpen(true);
+  const add = () => {
+    setWildcardData((previous) => ({
+      ...previous,
+      edges: [...(previous.edges ?? []), new Edge('')],
+    }));
   };
 
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
+  const update = (index: number, patch: Partial<Edge>) => {
+    setWildcardData((previous) => ({
+      ...previous,
+      edges: (previous.edges ?? []).map((edge, position) =>
+        position === index ? { ...edge, ...patch } : edge,
+      ),
+    }));
   };
 
-  const handleSave = () => {
-    const updated = [...edges, newEdge];
-    setEdges(updated);
-    setWildcardData({ ...wildcardData, edges: updated });
-    setDialogOpen(false);
-  };
-
-  const handleUpdate = (updatedEdge: Edge) => {
-    const edgeIndex = edges.findIndex((x) => x._id === updatedEdge._id);
-    const currentEdges = edges;
-    currentEdges[edgeIndex] = updatedEdge;
-    setEdges([...currentEdges]);
-  };
-
-  const handleDelete = (id: string) => {
-    const cleanedEdges = edges.filter((x) => x._id !== id);
-    setEdges([...cleanedEdges]);
-  };
-
-  const edgeUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setNewEdge({
-      ...newEdge,
-      [name]: value,
-    });
+  const remove = (index: number) => {
+    setWildcardData((previous) => ({
+      ...previous,
+      edges: (previous.edges ?? []).filter((_, position) => position !== index),
+    }));
   };
 
   return (
-    <Box>
-      <h3>Edges</h3>
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-        {edges.map((edge) => (
-          <EdgeCard
-            key={`edge-${edge._id}`}
+    <Section
+      id="edges"
+      title="Edges"
+      actions={
+        <Button size="sm" variant="outline" onClick={add}>
+          <Plus size={13} />
+          Add
+        </Button>
+      }
+    >
+      {edges.length === 0 ? (
+        <p className="py-3 text-sm text-faint">No edges yet.</p>
+      ) : (
+        edges.map((edge, index) => (
+          <EdgeRow
+            key={edge._id}
             edge={edge}
-            updateEdge={handleUpdate}
-            deleteEdge={handleDelete}
+            onChange={(patch) => update(index, patch)}
+            onDelete={() => remove(index)}
           />
-        ))}
-      </Grid>
-      <AddNewButton buttonText="Add Edge" onClick={handleOpenDialog} />
-
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} fullWidth>
-        <DialogTitle>
-          <TextField
-            sx={{ width: '70%', ml: 3, mt: 2 }}
-            name="name"
-            id="edge-name"
-            margin="dense"
-            label="Edge Name"
-            value={newEdge.name}
-            onChange={edgeUpdate}
-          />
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            name="requirements"
-            id="edge-requirements"
-            margin="dense"
-            label="Requirements"
-            fullWidth
-            value={newEdge.requirements}
-            onChange={edgeUpdate}
-            variant="standard"
-          />
-          <TextField
-            name="edgeType"
-            id="edge-edgeType"
-            margin="dense"
-            label="Edge Type"
-            fullWidth
-            value={newEdge.edgeType}
-            onChange={edgeUpdate}
-            variant="standard"
-          />
-          <TextField
-            name="blurb"
-            id="edge-blurb"
-            margin="dense"
-            label="Blurb"
-            fullWidth
-            value={newEdge.blurb}
-            onChange={edgeUpdate}
-            variant="standard"
-            sx={{ mt: 3 }}
-          />
-          <TextField
-            multiline
-            name="description"
-            id="edge-description"
-            margin="dense"
-            label="Description"
-            fullWidth
-            autoComplete="off"
-            value={newEdge.description}
-            onChange={edgeUpdate}
-            variant="standard"
-            sx={{ mt: 3 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSave} color="primary" variant="contained">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        ))
+      )}
+    </Section>
   );
 }
