@@ -1,6 +1,7 @@
 import { Camera, Trash2 } from 'lucide-react';
 import { Ranks } from '../../dtos/wildcards-consts';
 import { type SaveState, useWildcard } from '../../helpers/context/wildcard-context';
+import { fileToPortraitDataUrl } from '../../helpers/image-helpers';
 import { Button } from '../ui/Button';
 
 const saveLabels: Record<SaveState, { text: string; className: string }> = {
@@ -26,14 +27,19 @@ function SaveIndicator({ state }: { state: SaveState }) {
 export function SheetHeader({ onDelete }: { onDelete: () => void }) {
   const { wildcardData, update, saveState } = useWildcard();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      update({ imageUrl: reader.result as string });
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      const imageUrl = await fileToPortraitDataUrl(file);
+      update({ imageUrl });
+    } catch (error) {
+      console.error('Failed to process portrait:', error);
+    } finally {
+      input.value = '';
+    }
   };
 
   return (
