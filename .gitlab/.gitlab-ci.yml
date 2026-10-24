@@ -3,7 +3,8 @@ stages:
 
 lint:
     image:
-      name: ghcr.io/biomejs/biome:latest
+      # Keep this in lockstep with @biomejs/biome and the $schema URL.
+      name: ghcr.io/biomejs/biome:2.5.14
       entrypoint: [""]
     stage: quality
     script:
