@@ -1,39 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { CharToLoad } from '../../dtos/CharToLoad';
+import { deleteCharacter } from '../../helpers/offline/characters';
+import { useCharacterList } from '../../helpers/offline/hooks';
 import DeleteConfirmationDialog from '../DeleteConfirmationDialog';
 import { CharacterCard } from '../home/CharacterCard';
 
 export default function LoadCharactersGrid() {
-  const [listOfChars, setListOfChars] = useState<CharToLoad[]>([]);
-  const [isLoading, setLoading] = useState(true);
+  const list = useCharacterList();
+  const listOfChars = list ?? [];
   const [deleteTarget, setDeleteTarget] = useState<CharToLoad | null>(null);
-
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await fetch('/api/character');
-        const data = await response.json();
-        setListOfChars(data);
-      } catch (error) {
-        console.error('Failed to fetch characters:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    getData();
-  }, []);
 
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
-    await fetch(`/api/character/${deleteTarget._id}`, {
-      method: 'DELETE',
-      headers: { 'Content-type': 'application/json' },
-    });
-    setListOfChars((prev) => prev.filter((x) => x._id !== deleteTarget._id));
+    await deleteCharacter(deleteTarget._id);
     setDeleteTarget(null);
   };
 
-  if (isLoading) {
+  if (list === undefined) {
     return (
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3, 4, 5, 6].map((i) => (

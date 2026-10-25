@@ -1,7 +1,7 @@
 import { Trash2 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { CharToLoad } from '../../dtos/CharToLoad';
+import { usePortraitUrl } from '../../helpers/offline/hooks';
 
 export interface CharacterCardProps {
   character: CharToLoad;
@@ -9,6 +9,8 @@ export interface CharacterCardProps {
 }
 
 export function CharacterCard({ character, onDelete }: CharacterCardProps) {
+  const portraitUrl = usePortraitUrl(character._id);
+
   return (
     <div className="group relative flex items-stretch rounded-[var(--radius)] border border-line bg-surface transition-colors hover:border-accent/50">
       <Link
@@ -16,15 +18,9 @@ export function CharacterCard({ character, onDelete }: CharacterCardProps) {
         className="flex min-w-0 flex-1 items-center gap-3 rounded-[var(--radius)] p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
       >
         <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[2px] border border-line bg-bg-deep">
-          {character.imageUrl ? (
-            <Image
-              src={character.imageUrl}
-              alt={character.name}
-              width={64}
-              height={64}
-              unoptimized={!character.imageUrl.startsWith('/')}
-              className="size-full object-cover"
-            />
+          {portraitUrl ? (
+            // biome-ignore lint/performance/noImgElement: portraits are local blob URLs
+            <img src={portraitUrl} alt={character.name} className="size-full object-cover" />
           ) : (
             <span className="text-[10px] uppercase tracking-wider text-faint">No image</span>
           )}

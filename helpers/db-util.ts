@@ -14,11 +14,6 @@ export async function connectToDb() {
     };
   }
 
-  const _opts = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  };
-
   if (!MONGODB_URI) {
     throw new Error('MONGODB_URI environmental variable missing');
   }
@@ -27,7 +22,9 @@ export async function connectToDb() {
     throw new Error('MONGODB_DB environmental variable missing');
   }
 
-  const client = new MongoClient(MONGODB_URI);
+  // Fail fast so API requests (and the offline sync queue) do not hang when
+  // MongoDB is temporarily unavailable.
+  const client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 5_000 });
   await client.connect();
   const db = client.db(MONGODB_DB);
 

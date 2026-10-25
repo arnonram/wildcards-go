@@ -1,14 +1,19 @@
 import { Camera, Pencil, Trash2 } from 'lucide-react';
 import { Ranks } from '../../dtos/wildcards-consts';
 import { type SaveState, useWildcard } from '../../helpers/context/wildcard-context';
-import { fileToPortraitDataUrl } from '../../helpers/image-helpers';
+import { fileToPortraitBlob } from '../../helpers/image-helpers';
+import { setPortrait } from '../../helpers/offline/characters';
+import { usePortraitUrl } from '../../helpers/offline/hooks';
 import { Button } from '../ui/Button';
 
 const saveLabels: Record<SaveState, { text: string; className: string }> = {
   idle: { text: 'Autosave on', className: 'text-faint' },
   saving: { text: 'Saving…', className: 'text-warn' },
   saved: { text: 'Saved', className: 'text-ok' },
-  error: { text: 'Save failed', className: 'text-danger' },
+  pending: { text: 'Saved locally', className: 'text-warn' },
+  offline: { text: 'Offline — saved locally', className: 'text-warn' },
+  error: { text: 'Sync failed — saved locally', className: 'text-danger' },
+  conflict: { text: 'Conflict', className: 'text-danger' },
 };
 
 function SaveIndicator({ state }: { state: SaveState }) {
@@ -25,7 +30,8 @@ function SaveIndicator({ state }: { state: SaveState }) {
 }
 
 export function SheetHeader({ onDelete }: { onDelete: () => void }) {
-  const { wildcardData, update, saveState } = useWildcard();
+  const { characterId, wildcardData, update, saveState } = useWildcard();
+  const portraitUrl = usePortraitUrl(characterId);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -33,8 +39,8 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
     if (!file) return;
 
     try {
-      const imageUrl = await fileToPortraitDataUrl(file);
-      update({ imageUrl });
+      const portraitRev = await setPortrait(characterId, await fileToPortraitBlob(file));
+      update({ portraitRev });
     } catch (error) {
       console.error('Failed to process portrait:', error);
     } finally {
@@ -52,12 +58,12 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
           className="sr-only"
           aria-label="Upload character portrait"
         />
-        {wildcardData.imageUrl ? (
+        {portraitUrl ? (
           <>
-            {/* Data URLs are not compatible with the Next image optimizer. */}
-            {/* biome-ignore lint/performance/noImgElement: portraits are arbitrary user-provided URLs */}
+            {/* Blob URLs are not compatible with the Next image optimizer. */}
+            {/* biome-ignore lint/performance/noImgElement: portraits are local blob URLs */}
             <img
-              src={wildcardData.imageUrl}
+              src={portraitUrl}
               alt={`${wildcardData.name || 'Character'} portrait`}
               className="size-full object-cover"
             />

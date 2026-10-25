@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { SyncStatus } from './SyncStatus';
 import { ModeToggle, SkinMenu } from './ThemeControls';
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -18,6 +19,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             Savage Worlds
           </span>
           <div className="ml-auto flex items-center gap-1">
+            <SyncStatus />
             <SkinMenu />
             <ModeToggle />
           </div>

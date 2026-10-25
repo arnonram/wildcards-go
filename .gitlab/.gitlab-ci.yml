@@ -2,17 +2,31 @@ stages:
   - quality
 
 lint:
-    image:
-      # Keep this in lockstep with @biomejs/biome and the $schema URL.
-      name: ghcr.io/biomejs/biome:2.5.14
-      entrypoint: [""]
-    stage: quality
-    script:
-        - biome ci --reporter=gitlab --colors=off > /tmp/code-quality.json
-        - cp /tmp/code-quality.json code-quality.json
-    artifacts:
-      reports:
-        codequality:
-          - code-quality.json
-    rules:
-        - if: $CI_MERGE_REQUEST_ID
+  image:
+    name: ghcr.io/biomejs/biome:2.6.3
+    entrypoint: [""]
+  stage: quality
+  script:
+    - biome ci --reporter=gitlab --colors=off > /tmp/code-quality.json
+    - cp /tmp/code-quality.json code-quality.json
+  artifacts:
+    reports:
+      codequality:
+        - code-quality.json
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+
+test:
+  image: oven/bun:1.4.2
+  stage: quality
+  services:
+    - name: mongo:6
+      alias: mongo
+  variables:
+    MONGODB_URI: mongodb://mongo:27017
+    MONGODB_DB: wcg_test
+  script:
+    - bun install --frozen-lockfile
+    - bun test
+  rules:
+    - if: $CI_MERGE_REQUEST_ID

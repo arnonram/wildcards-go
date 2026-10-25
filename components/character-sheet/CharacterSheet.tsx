@@ -4,6 +4,7 @@ import { cn } from '../../helpers/cn';
 import { WildCardProvider } from '../../helpers/context/wildcard-context';
 import Armors from './armor/Armors';
 import Basics from './Basics';
+import { ConflictBanner } from './ConflictBanner';
 import Edges from './edges/Edges';
 import GearList from './gear/Gear';
 import Hindrances from './hindrances/Hindrances';
@@ -26,11 +27,12 @@ const SECTIONS: SheetNavItem[] = [
 ];
 
 export interface CharacterSheetProps {
+  characterId: string;
   wildCard: WildCardCharacter;
   onDelete: () => void;
 }
 
-export default function CharacterSheet({ wildCard, onDelete }: CharacterSheetProps) {
+export default function CharacterSheet({ characterId, wildCard, onDelete }: CharacterSheetProps) {
   const [pinned, setPinned] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
@@ -53,7 +55,8 @@ export default function CharacterSheet({ wildCard, onDelete }: CharacterSheetPro
   }, []);
 
   return (
-    <WildCardProvider wildCard={wildCard}>
+    <WildCardProvider characterId={characterId} initial={wildCard}>
+      <ConflictBanner />
       <div
         ref={sheetRef}
         className="pb-16"
