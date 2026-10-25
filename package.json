@@ -13,7 +13,8 @@
     "format:fix": "biome format --write .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "ci": "biome ci ."
+    "ci": "biome ci .",
+    "test": "bun test"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",
@@ -28,10 +29,12 @@
   "devDependencies": {
     "@biomejs/biome": "2.6.3",
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/bun": "1.4.4",
     "@types/lodash": "^4.17.27",
     "@types/node": "26.6.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "fake-indexeddb": "6.2.6",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2"
   }
