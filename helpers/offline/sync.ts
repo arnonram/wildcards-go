@@ -119,6 +119,23 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
     });
   }
 
+  async function resolveDeleteConflict(row: LocalCharacter, server: ServerCharacter | null) {
+    await database.transaction('rw', database.characters, database.portraits, async () => {
+      if (!server || server.deleted) {
+        await database.characters.delete(row.id);
+        await database.portraits.delete(row.id);
+        return;
+      }
+      await database.characters.update(row.id, {
+        data: server.data,
+        version: server.version,
+        deleted: 0,
+        dirty: 0,
+        localUpdatedAt: nextStamp(row.localUpdatedAt),
+      });
+    });
+  }
+
   /** Throws Unreachable for errors that make the rest of the run pointless. */
   async function guarded<T>(
     action: () => Promise<T>,
@@ -170,6 +187,11 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
       } else if (result.conflict && sameContent(result.conflict, row)) {
         // Another tab or a lost response already saved this exact content.
         await confirmPush(row.id, stamp, result.conflict.version);
+      } else if (row.deleted) {
+        // A deleted row is hidden from the UI, so it cannot show a conflict
+        // banner. An edit elsewhere wins over the delete; a copy already gone
+        // from the server just drops the row.
+        await resolveDeleteConflict(row, result.conflict);
       } else {
         await database.characters.update(row.id, { conflict: result.conflict });
       }

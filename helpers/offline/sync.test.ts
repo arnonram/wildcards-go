@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test';
 import type { PutCharacterBody, ServerCharacter } from '../../dtos/sync';
 import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
-import { createCharacter, saveCharacter, setPortrait } from './characters';
+import { createCharacter, deleteCharacter, saveCharacter, setPortrait } from './characters';
 import { openTestDb, type WcgDb } from './db';
 import { createSyncEngine, type SyncEngine } from './sync';
 
@@ -271,4 +271,33 @@ test('offline run makes no requests', async () => {
   await engine.syncNow();
   expect(requests).toHaveLength(0);
   expect(engine.getStatus().online).toBe(false);
+});
+
+test('delete that conflicts with a newer edit restores the edited copy', async () => {
+  const id = await createCharacter(db);
+  await db.characters.update(id, { version: 1, dirty: 0 });
+  await deleteCharacter(id, db);
+  handler = (url, init) =>
+    init.method === 'PUT'
+      ? json(409, { server: server(id, 2, { name: 'Edited elsewhere' }) })
+      : acceptAll(url, init);
+  await engine.syncNow();
+  const restored = await row(id);
+  expect(restored.deleted).toBe(0);
+  expect(restored.dirty).toBe(0);
+  expect(restored.version).toBe(2);
+  expect(restored.data.name).toBe('Edited elsewhere');
+  expect(restored.conflict).toBeUndefined();
+  expect(engine.getStatus().conflicts).toBe(0);
+});
+
+test('delete that conflicts with a missing server copy drops the row', async () => {
+  const id = await createCharacter(db);
+  await db.characters.update(id, { version: 3, dirty: 0 });
+  await deleteCharacter(id, db);
+  handler = (url, init) =>
+    init.method === 'PUT' ? json(409, { server: null }) : acceptAll(url, init);
+  await engine.syncNow();
+  expect(await db.characters.get(id)).toBeUndefined();
+  expect(engine.getStatus().pending).toBe(0);
 });
