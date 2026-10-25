@@ -301,3 +301,16 @@ test('delete that conflicts with a missing server copy drops the row', async () 
   expect(await db.characters.get(id)).toBeUndefined();
   expect(engine.getStatus().pending).toBe(0);
 });
+
+test('pulled delete removes the local portrait too', async () => {
+  const id = await createCharacter(db);
+  await setPortrait(id, new Blob(['x'], { type: 'image/webp' }), db);
+  await engine.syncNow(); // pushes; row and portrait now clean, version 1
+  handler = (url, init) =>
+    init.method === 'GET' && url.pathname === '/api/characters'
+      ? json(200, { characters: [{ id, version: 2, modifiedAt: 20, deleted: true }], cursor: 20 })
+      : acceptAll(url, init);
+  await engine.syncNow();
+  expect(await db.characters.get(id)).toBeUndefined();
+  expect(await db.portraits.get(id)).toBeUndefined();
+});

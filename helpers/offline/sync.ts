@@ -224,7 +224,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
   }
 
   async function applyPulled(server: ServerCharacter) {
-    await database.transaction('rw', database.characters, async () => {
+    await database.transaction('rw', database.characters, database.portraits, async () => {
       const local = await database.characters.get(server.id);
       if (!local) {
         if (server.deleted) return;
@@ -242,6 +242,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
       if (local.dirty || server.version <= local.version) return;
       if (server.deleted) {
         await database.characters.delete(server.id);
+        await database.portraits.delete(server.id);
         return;
       }
       await database.characters.update(server.id, {
