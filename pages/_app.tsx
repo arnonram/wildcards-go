@@ -3,11 +3,11 @@ import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import { ThemeProvider } from '../helpers/context/theme-context';
-import { startSync } from '../helpers/offline/sync';
+import { startAccounts } from '../helpers/offline/account';
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    startSync();
+    const stopAccounts = startAccounts();
     const enableWorker =
       process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_ENABLE_SW === '1';
     if (enableWorker && 'serviceWorker' in navigator) {
@@ -15,6 +15,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         console.error('Service worker registration failed:', error);
       });
     }
+    return () => {
+      void stopAccounts.then((stop) => stop());
+    };
   }, []);
 
   return (

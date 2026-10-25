@@ -1,7 +1,7 @@
 import { CloudOff, CloudUpload, RefreshCw } from 'lucide-react';
 import { cn } from '../../helpers/cn';
+import { syncNow } from '../../helpers/offline/active';
 import { useSyncStatus } from '../../helpers/offline/hooks';
-import { syncNow } from '../../helpers/offline/sync';
 
 function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`;

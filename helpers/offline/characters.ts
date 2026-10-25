@@ -1,5 +1,6 @@
 import { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
-import { db as defaultDb, type WcgDb } from './db';
+import { getActiveDb } from './active';
+import type { WcgDb } from './db';
 
 /**
  * Local writes. Every function commits to IndexedDB before resolving and
@@ -25,7 +26,7 @@ function changed() {
   onLocalChange?.();
 }
 
-export async function createCharacter(database: WcgDb = defaultDb): Promise<string> {
+export async function createCharacter(database: WcgDb = getActiveDb()): Promise<string> {
   const id = crypto.randomUUID();
   const data: WildCardCharacter = { ...new WildCardCharacter(), _id: id };
   await database.characters.add({
@@ -61,7 +62,7 @@ async function writeData(database: WcgDb, data: WildCardCharacter): Promise<numb
 /** Save an edit. Returns the row's new `localUpdatedAt`. */
 export async function saveCharacter(
   data: WildCardCharacter,
-  database: WcgDb = defaultDb,
+  database: WcgDb = getActiveDb(),
 ): Promise<number> {
   const stamp = await writeData(database, data);
   changed();
@@ -69,7 +70,7 @@ export async function saveCharacter(
 }
 
 /** Soft delete: the row stays, dirty, until the server confirms it. */
-export async function deleteCharacter(id: string, database: WcgDb = defaultDb): Promise<void> {
+export async function deleteCharacter(id: string, database: WcgDb = getActiveDb()): Promise<void> {
   await database.characters
     .where('id')
     .equals(id)
@@ -86,7 +87,7 @@ export async function deleteCharacter(id: string, database: WcgDb = defaultDb): 
 export async function setPortrait(
   id: string,
   blob: Blob,
-  database: WcgDb = defaultDb,
+  database: WcgDb = getActiveDb(),
 ): Promise<string> {
   const rev = crypto.randomUUID();
   await database.transaction('rw', database.characters, database.portraits, async () => {
@@ -109,7 +110,7 @@ export async function setPortrait(
 export async function resolveConflict(
   id: string,
   choice: 'mine' | 'theirs',
-  database: WcgDb = defaultDb,
+  database: WcgDb = getActiveDb(),
 ): Promise<void> {
   await database.transaction('rw', database.characters, database.portraits, async () => {
     const row = await database.characters.get(id);
