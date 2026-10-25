@@ -2,6 +2,9 @@ import type { WildCardCharacter } from './WildCardCharacter.dto';
 
 /** Wire types shared by the sync API and the client sync engine. */
 
+/** Names the account whose local store a sync request comes from. */
+export const STORE_OWNER_HEADER = 'X-WCG-Store-Owner';
+
 /** Character ids are `crypto.randomUUID()` strings. */
 export const CHARACTER_ID = /^[0-9a-f-]{36}$/;
 

@@ -22,7 +22,29 @@ The browser is the source of truth. Characters live in IndexedDB and MongoDB is 
 | ----------- | ---------------------------------------- | ------------------------------------------------- |
 | `GET`       | `/api/characters?since=<ms>`             | Characters changed at or after the cursor         |
 | `PUT`       | `/api/characters/:id`                    | Versioned write: `{ baseVersion, deleted, data }` |
-| `GET`/`PUT` | `/api/characters/:id/portrait?rev=<rev>` | Portrait bytes, up to 2 MiB                       |
+| `GET`/`PUT` | `/api/characters/:id/portrait?rev=<rev>` | Portrait bytes (JPEG, PNG or WebP), up to 2 MiB   |
+
+Every `/api/characters` request needs a session and an `X-WCG-Store-Owner` header naming the account whose local store it syncs. A missing session, or a header that doesn't match the signed-in user, answers `401`. Another user's character answers `404`.
+
+## Accounts
+
+Sign-in uses [Better Auth](https://www.better-auth.com/) with Google, Discord and email links. Users and sessions live in the same MongoDB. Signing in only turns sync on: the app works fully signed out, and characters made signed out can be added to an account later.
+
+Each account has its own local store (`wcg-u-<userId>`); signed-out characters live in `wcg`. Signing out hides the account's characters on that device until it signs in again.
+
+| Variable                                     | Purpose                                                |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `BETTER_AUTH_SECRET`                         | Session signing (`openssl rand -base64 32`)            |
+| `BETTER_AUTH_URL`                            | Public base URL, e.g. `http://localhost:3000`          |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | Optional; Google sign-in shows only when both are set  |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Optional; Discord sign-in shows only when both are set |
+| `RESEND_API_KEY`, `EMAIL_FROM`               | Email links; required in production                    |
+
+In development without `RESEND_API_KEY`, sign-in links print to the server console.
+
+To enable a social provider, register an OAuth app ([Google](https://console.cloud.google.com/apis/credentials), [Discord](https://discord.com/developers/applications)) with the redirect URL `<BETTER_AUTH_URL>/api/auth/callback/google` or `.../callback/discord`.
+
+Characters written before accounts existed have no owner and are never returned. Drop the dev `characters` and `portraits` collections once.
 
 ## Development
 
@@ -32,7 +54,7 @@ bun run start:mongo   # MongoDB in Docker
 bun run dev
 ```
 
-`.env.local` needs `MONGODB_URI` and `MONGODB_DB`. While MongoDB is down the API answers `503` and the client keeps retrying; edits are safe in the browser meanwhile.
+Copy `.env.example` to `.env.local` and fill in at least `MONGODB_URI`, `MONGODB_DB` and `BETTER_AUTH_SECRET`. While MongoDB is down the API answers `503` and the client keeps retrying; edits are safe in the browser meanwhile.
 
 Other scripts:
 

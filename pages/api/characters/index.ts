@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { respondWithApiError } from '../../../helpers/api-error';
 import { connectToDb } from '../../../helpers/db-util';
 import { listChangedSince } from '../../../server/character-store';
+import { authorize } from '../../../server/session';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -17,8 +18,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const ownerId = await authorize(req, res);
+    if (!ownerId) return;
     const { db } = await connectToDb();
-    res.status(200).json(await listChangedSince(db, since, Date.now()));
+    res.status(200).json(await listChangedSince(db, ownerId, since, Date.now()));
   } catch (error) {
     respondWithApiError(res, error, 'GET /api/characters');
   }
