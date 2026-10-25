@@ -15,7 +15,7 @@
 - The app is not deployed: no data migrations or compatibility shims for old documents.
 - Branch `sync-hardening`, in a worktree.
 - Every task ends green on `bun test`, `bunx tsc --noEmit -p .`, `bun run check`.
-- Match existing style: JSDoc comment explaining *why* on exported functions, `bun:test` with `describe`/`test`, single quotes.
+- Match existing style: JSDoc comment explaining _why_ on exported functions, `bun:test` with `describe`/`test`, single quotes.
 
 ## Review Focus
 
@@ -82,12 +82,16 @@ Problem: a deleted character keeps its full `data` forever, and every new device
 - Produces:
 
 ```ts
-interface ServerCharacterBase { id: string; version: number; modifiedAt: number }
+interface ServerCharacterBase {
+  id: string;
+  version: number;
+  modifiedAt: number;
+}
 export type ServerCharacter = ServerCharacterBase &
   ({ deleted: false; data: WildCardCharacter } | { deleted: true; data?: undefined });
 ```
 
-  `CharacterDoc.data` becomes optional. When `body.deleted`, `putCharacter` `$unset`s `data` (and the insert path omits it). `toServerCharacter` emits `data` only for live docs.
+`CharacterDoc.data` becomes optional. When `body.deleted`, `putCharacter` `$unset`s `data` (and the insert path omits it). `toServerCharacter` emits `data` only for live docs.
 
 - [ ] **Step 1: Write the failing tests.** Extend `delete is a versioned write` with `expect(characters[0].data).toBeUndefined();`, then add:
 
@@ -143,7 +147,9 @@ test('putPortrait refuses a deleted character', async () => {
 });
 
 test('putPortrait refuses an unknown character', async () => {
-  expect(await putPortrait(db, crypto.randomUUID(), 'r1', 'image/webp', new Uint8Array([1]))).toBe(false);
+  expect(await putPortrait(db, crypto.randomUUID(), 'r1', 'image/webp', new Uint8Array([1]))).toBe(
+    false,
+  );
 });
 ```
 
@@ -200,7 +206,7 @@ Problem: concurrent first requests each create a `MongoClient`, and `next dev` H
 
 **Interfaces:**
 - Produces:
-  - `connectToDb(): Promise<{ client: MongoClient; db: Db }>` (unchanged signature). Reads `MONGODB_URI`/`MONGODB_DB` per call, not at module load, so tests can set them. Caches the connect *promise* on `globalThis` (key `__wcgMongo`). Clears the cache if the promise rejects. Calls `ensureIndexes(db)` once, before resolving.
+  - `connectToDb(): Promise<{ client: MongoClient; db: Db }>` (unchanged signature). Reads `MONGODB_URI`/`MONGODB_DB` per call, not at module load, so tests can set them. Caches the connect _promise_ on `globalThis` (key `__wcgMongo`). Clears the cache if the promise rejects. Calls `ensureIndexes(db)` once, before resolving.
   - `ensureIndexes(db: Db): Promise<void>` in `server/character-store.ts`: `characters` gets `{ modifiedAt: 1 }`. Idempotent (`createIndex`).
 
 - [ ] **Step 1: Write the failing tests.**
@@ -233,7 +239,7 @@ test('concurrent callers share one client', async () => {
 });
 ```
 
-  `uri` is `process.env.MONGODB_URI ?? 'mongodb://localhost:27017'`, captured at the top. `afterAll` closes the client and drops `wcg_test_dbutil`.
+`uri` is `process.env.MONGODB_URI ?? 'mongodb://localhost:27017'`, captured at the top. `afterAll` closes the client and drops `wcg_test_dbutil`.
 
 - [ ] **Step 2: Run, expect FAIL** — `bun test helpers/db-util.test.ts server/character-store.test.ts`
 - [ ] **Step 3: Implement** per the Interfaces block. Keep `serverSelectionTimeoutMS: 5_000` and its comment.
