@@ -1,35 +1,46 @@
 import { type Db, MongoClient } from 'mongodb';
+import { ensureIndexes } from '../server/character-store';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB;
+type Connection = { client: MongoClient; db: Db };
 
-let cachedClient: MongoClient;
-let cachedDb: Db;
+// Kept on globalThis so `next dev` hot reloads reuse the connection instead
+// of leaking a new client each time.
+const cache = globalThis as typeof globalThis & { __wcgMongo?: Promise<Connection> };
 
-export async function connectToDb() {
-  if (cachedClient && cachedDb) {
-    return {
-      client: cachedClient,
-      db: cachedDb,
-    };
-  }
+async function connect(): Promise<Connection> {
+  const uri = process.env.MONGODB_URI;
+  const dbName = process.env.MONGODB_DB;
 
-  if (!MONGODB_URI) {
+  if (!uri) {
     throw new Error('MONGODB_URI environmental variable missing');
   }
 
-  if (!MONGODB_DB) {
+  if (!dbName) {
     throw new Error('MONGODB_DB environmental variable missing');
   }
 
   // Fail fast so API requests (and the offline sync queue) do not hang when
   // MongoDB is temporarily unavailable.
-  const client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 5_000 });
-  await client.connect();
-  const db = client.db(MONGODB_DB);
+  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5_000 });
+  try {
+    await client.connect();
+    const db = client.db(dbName);
+    await ensureIndexes(db);
+    return { client, db };
+  } catch (error) {
+    await client.close();
+    throw error;
+  }
+}
 
-  cachedClient = client;
-  cachedDb = db;
-
-  return { client: cachedClient, db: cachedDb };
+/**
+ * One shared connection. Concurrent first callers await the same promise; a
+ * failed attempt is dropped so the next request tries again.
+ */
+export function connectToDb(): Promise<Connection> {
+  cache.__wcgMongo ??= connect().catch((error) => {
+    cache.__wcgMongo = undefined;
+    throw error;
+  });
+  return cache.__wcgMongo;
 }

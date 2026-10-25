@@ -25,6 +25,11 @@ function characters(db: Db) {
   return db.collection<CharacterDoc>('characters');
 }
 
+/** Every pull filters on `modifiedAt`. Idempotent, so safe on each connect. */
+export async function ensureIndexes(db: Db): Promise<void> {
+  await characters(db).createIndex({ modifiedAt: 1 });
+}
+
 function toServerCharacter(doc: CharacterDoc): ServerCharacter {
   const base = { id: doc._id, version: doc.version, modifiedAt: doc.modifiedAt };
   if (doc.deleted || !doc.data) return { ...base, deleted: true };

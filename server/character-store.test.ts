@@ -3,6 +3,7 @@ import { type Db, MongoClient } from 'mongodb';
 import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
 import {
   CURSOR_LAG_MS,
+  ensureIndexes,
   getPortrait,
   listChangedSince,
   putCharacter,
@@ -190,4 +191,10 @@ describe('portraits', () => {
     const id = crypto.randomUUID();
     expect(await putPortrait(db, id, 'r1', 'image/webp', new Uint8Array([1]))).toBe(false);
   });
+});
+
+test('ensureIndexes indexes modifiedAt', async () => {
+  await ensureIndexes(db);
+  const names = (await db.collection('characters').indexes()).map((index) => index.name);
+  expect(names).toContain('modifiedAt_1');
 });
