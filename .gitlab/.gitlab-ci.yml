@@ -3,7 +3,7 @@ stages:
 
 lint:
   image:
-    name: ghcr.io/biomejs/biome:latest
+    name: ghcr.io/biomejs/biome:2.6.3
     entrypoint: [""]
   stage: quality
   script:
