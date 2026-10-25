@@ -49,6 +49,21 @@ export async function putCharacter(
   // Tombstones drop the data: no device needs it once the character is gone.
   const data = body.deleted ? undefined : (omit(body.data, '_id') as WildCardCharacter);
 
+  const result = await writeCharacter(db, id, body, data, now);
+  if ('ok' in result && body.deleted) {
+    await db.collection<PortraitDoc>('portraits').deleteOne({ _id: id });
+  }
+  return result;
+}
+
+/** The versioned write itself; putCharacter adds the portrait cleanup. */
+async function writeCharacter(
+  db: Db,
+  id: string,
+  body: PutCharacterBody,
+  data: WildCardCharacter | undefined,
+  now: number,
+): Promise<{ ok: PutCharacterOk } | { conflict: ServerCharacter | null }> {
   if (body.baseVersion === 0) {
     try {
       await characters(db).insertOne({
@@ -101,17 +116,28 @@ export async function listChangedSince(db: Db, since: number, now: number): Prom
   return { characters: docs.map(toServerCharacter), cursor };
 }
 
-/** Portraits live apart from the character so edits never re-send image bytes. */
+/**
+ * Portraits live apart from the character so edits never re-send image bytes.
+ * Returns false, writing nothing, when the character is missing or deleted, so
+ * a late upload cannot leave an orphan. A delete landing between the check and
+ * the write can still leave one; that race is rare and harmless.
+ */
 export async function putPortrait(
   db: Db,
   id: string,
   rev: string,
   contentType: string,
   bytes: Uint8Array,
-): Promise<void> {
+): Promise<boolean> {
+  const live = await characters(db).findOne(
+    { _id: id, deleted: false },
+    { projection: { _id: 1 } },
+  );
+  if (!live) return false;
   await db
     .collection<PortraitDoc>('portraits')
     .replaceOne({ _id: id }, { rev, contentType, data: new Binary(bytes) }, { upsert: true });
+  return true;
 }
 
 export async function getPortrait(

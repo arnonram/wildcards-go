@@ -140,8 +140,15 @@ describe('listChangedSince', () => {
 });
 
 describe('portraits', () => {
+  /** A live character, which putPortrait requires. */
+  async function live() {
+    const { id, data } = character('Ana');
+    await putCharacter(db, id, { baseVersion: 0, deleted: false, data }, 1000);
+    return { id, data };
+  }
+
   test('putPortrait then getPortrait returns same bytes and rev', async () => {
-    const id = crypto.randomUUID();
+    const { id } = await live();
     await putPortrait(db, id, 'rev-1', 'image/webp', new Uint8Array([1, 2, 3]));
     expect(await getPortrait(db, id)).toEqual({
       rev: 'rev-1',
@@ -151,7 +158,7 @@ describe('portraits', () => {
   });
 
   test('putPortrait overwrites previous rev', async () => {
-    const id = crypto.randomUUID();
+    const { id } = await live();
     await putPortrait(db, id, 'rev-1', 'image/webp', new Uint8Array([1]));
     await putPortrait(db, id, 'rev-2', 'image/png', new Uint8Array([9, 9]));
     expect(await getPortrait(db, id)).toEqual({
@@ -163,5 +170,24 @@ describe('portraits', () => {
 
   test('getPortrait of unknown id is null', async () => {
     expect(await getPortrait(db, crypto.randomUUID())).toBeNull();
+  });
+
+  test('deleting a character deletes its portrait', async () => {
+    const { id, data } = await live();
+    await putPortrait(db, id, 'r1', 'image/webp', new Uint8Array([1]));
+    await putCharacter(db, id, { baseVersion: 1, deleted: true, data }, 2000);
+    expect(await getPortrait(db, id)).toBeNull();
+  });
+
+  test('putPortrait refuses a deleted character', async () => {
+    const { id, data } = await live();
+    await putCharacter(db, id, { baseVersion: 1, deleted: true, data }, 2000);
+    expect(await putPortrait(db, id, 'r1', 'image/webp', new Uint8Array([1]))).toBe(false);
+    expect(await getPortrait(db, id)).toBeNull();
+  });
+
+  test('putPortrait refuses an unknown character', async () => {
+    const id = crypto.randomUUID();
+    expect(await putPortrait(db, id, 'r1', 'image/webp', new Uint8Array([1]))).toBe(false);
   });
 });
