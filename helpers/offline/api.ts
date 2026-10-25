@@ -5,6 +5,7 @@ import type {
   PutCharacterOk,
   ServerCharacter,
 } from '../../dtos/sync';
+import { STORE_OWNER_HEADER } from '../../dtos/sync';
 
 const REQUEST_TIMEOUT = 12_000;
 
@@ -20,11 +21,14 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path: string, init: RequestInit = {}): Promise<Response> {
+/** Every request names the account whose store it syncs; the server checks it. */
+async function request(owner: string, path: string, init: RequestInit = {}): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+  const headers = new Headers(init.headers);
+  headers.set(STORE_OWNER_HEADER, owner);
   try {
-    return await fetch(path, { cache: 'no-store', ...init, signal: controller.signal });
+    return await fetch(path, { cache: 'no-store', ...init, headers, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }
@@ -41,10 +45,11 @@ async function fail(response: Response, what: string): Promise<never> {
 }
 
 export async function putCharacterRemote(
+  owner: string,
   id: string,
   body: PutCharacterBody,
 ): Promise<{ ok: PutCharacterOk } | { conflict: ServerCharacter | null }> {
-  const response = await request(`/api/characters/${encodeURIComponent(id)}`, {
+  const response = await request(owner, `/api/characters/${encodeURIComponent(id)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -56,22 +61,31 @@ export async function putCharacterRemote(
   return { ok: (await response.json()) as PutCharacterOk };
 }
 
-export async function pullRemote(since: number): Promise<PullResponse> {
-  const response = await request(`/api/characters?since=${since}`);
+export async function pullRemote(owner: string, since: number): Promise<PullResponse> {
+  const response = await request(owner, `/api/characters?since=${since}`);
   if (!response.ok) return fail(response, 'load characters');
   return (await response.json()) as PullResponse;
 }
 
-export async function putPortraitRemote(id: string, rev: string, blob: Blob): Promise<void> {
+export async function putPortraitRemote(
+  owner: string,
+  id: string,
+  rev: string,
+  blob: Blob,
+): Promise<void> {
   const response = await request(
+    owner,
     `/api/characters/${encodeURIComponent(id)}/portrait?rev=${encodeURIComponent(rev)}`,
     { method: 'PUT', headers: { 'Content-Type': blob.type || 'image/webp' }, body: blob },
   );
   if (!response.ok) return fail(response, 'save portrait');
 }
 
-export async function getPortraitRemote(id: string): Promise<{ rev: string; blob: Blob } | null> {
-  const response = await request(`/api/characters/${encodeURIComponent(id)}/portrait`);
+export async function getPortraitRemote(
+  owner: string,
+  id: string,
+): Promise<{ rev: string; blob: Blob } | null> {
+  const response = await request(owner, `/api/characters/${encodeURIComponent(id)}/portrait`);
   if (response.status === 404) return null;
   if (!response.ok) return fail(response, 'load portrait');
   return { rev: response.headers.get('X-Portrait-Rev') ?? '', blob: await response.blob() };

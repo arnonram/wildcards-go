@@ -34,7 +34,7 @@ const acceptAll: Handler = (url, init) => {
 
 beforeEach(() => {
   db = openTestDb(crypto.randomUUID());
-  engine = createSyncEngine(db);
+  engine = createSyncEngine(db, 'u1');
   handler = acceptAll;
   requests = [];
   Object.defineProperty(globalThis.navigator, 'onLine', { value: true, configurable: true });
@@ -313,4 +313,34 @@ test('pulled delete removes the local portrait too', async () => {
   await engine.syncNow();
   expect(await db.characters.get(id)).toBeUndefined();
   expect(await db.portraits.get(id)).toBeUndefined();
+});
+
+test('requests carry the store owner header', async () => {
+  await createCharacter(db);
+  const owners = new Set<string | null>();
+  handler = (url, init) => {
+    owners.add(new Headers(init.headers).get('X-WCG-Store-Owner'));
+    return acceptAll(url, init);
+  };
+  await engine.syncNow();
+  expect([...owners]).toEqual(['u1']);
+});
+
+test('401 sets signedOut without marking rows or scheduling a retry', async () => {
+  const id = await createCharacter(db);
+  handler = () => json(401, { message: 'Sign in to sync' });
+  await engine.syncNow();
+  expect(engine.getStatus().signedOut).toBe(true);
+  expect(engine.getStatus().lastError).toBeNull();
+  expect((await row(id)).syncError).toBeUndefined();
+  expect(engine.retryScheduled()).toBe(false);
+});
+
+test('a successful run after 401 clears signedOut', async () => {
+  await createCharacter(db);
+  handler = () => json(401, {});
+  await engine.syncNow();
+  handler = acceptAll;
+  await engine.syncNow();
+  expect(engine.getStatus().signedOut).toBe(false);
 });

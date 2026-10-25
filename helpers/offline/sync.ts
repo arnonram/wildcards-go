@@ -8,7 +8,7 @@ import {
   putPortraitRemote,
 } from './api';
 import { nextStamp, setOnLocalChange } from './characters';
-import { db as defaultDb, type LocalCharacter, type WcgDb } from './db';
+import type { LocalCharacter, WcgDb } from './db';
 
 export interface SyncStatus {
   online: boolean;
@@ -16,6 +16,8 @@ export interface SyncStatus {
   pending: number;
   conflicts: number;
   lastError: string | null;
+  /** The server answered 401: this store's account is not signed in here. */
+  signedOut: boolean;
 }
 
 export interface SyncEngine {
@@ -40,6 +42,7 @@ function isPermanent(error: unknown) {
     error instanceof ApiError &&
     error.status >= 400 &&
     error.status < 500 &&
+    error.status !== 401 &&
     error.status !== 408 &&
     error.status !== 429
   );
@@ -66,6 +69,9 @@ function sameContent(server: ServerCharacter, row: LocalCharacter) {
   );
 }
 
+/** Stops the current run: no request can succeed until this account signs in again. */
+class SignedOut extends Error {}
+
 /** Stops the current run: the server is unreachable, so later requests would fail too. */
 class Unreachable extends Error {
   constructor(readonly cause: unknown) {
@@ -73,13 +79,14 @@ class Unreachable extends Error {
   }
 }
 
-export function createSyncEngine(database: WcgDb): SyncEngine {
+export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
   let status: SyncStatus = {
     online: isOnline(),
     syncing: false,
     pending: 0,
     conflicts: 0,
     lastError: null,
+    signedOut: false,
   };
   const listeners = new Set<() => void>();
   let running: Promise<void> | null = null;
@@ -144,6 +151,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
     try {
       return await action();
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401) throw new SignedOut();
       if (isPermanent(error)) {
         await onPermanent(error as ApiError);
         return undefined;
@@ -169,7 +177,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
       const stamp = row.localUpdatedAt;
       const result = await guarded(
         () =>
-          putCharacterRemote(row.id, {
+          putCharacterRemote(owner, row.id, {
             baseVersion: row.version,
             deleted: Boolean(row.deleted),
             data: row.data,
@@ -207,7 +215,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
 
       const done = await guarded(
         async () => {
-          await putPortraitRemote(portrait.id, portrait.rev, portrait.blob);
+          await putPortraitRemote(owner, portrait.id, portrait.rev, portrait.blob);
           return true;
         },
         async (error) => {
@@ -257,7 +265,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
   async function pull() {
     const since = (await database.meta.get('pullCursor'))?.value ?? 0;
     const response = await guarded(
-      () => pullRemote(since),
+      () => pullRemote(owner, since),
       async (error) => {
         throw new Unreachable(error);
       },
@@ -281,7 +289,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
       if (local?.dirty || local?.rev === wanted) continue;
 
       const remote = await guarded(
-        () => getPortraitRemote(character.id),
+        () => getPortraitRemote(owner, character.id),
         async () => undefined,
       );
       if (!remote || remote.rev !== wanted) continue;
@@ -325,10 +333,18 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
       await pull();
       await pullPortraits();
       resetRetry();
+      setStatus({ signedOut: false });
     } catch (error) {
-      if (!(error instanceof Unreachable)) throw error;
-      lastError = error.message;
-      scheduleRetry();
+      if (error instanceof SignedOut) {
+        // Not a failure to retry: nothing will succeed until a sign-in.
+        resetRetry();
+        setStatus({ signedOut: true });
+      } else if (error instanceof Unreachable) {
+        lastError = error.message;
+        scheduleRetry();
+      } else {
+        throw error;
+      }
     } finally {
       // Rows rejected earlier keep the badge in its error state until edited.
       const stillRejected = await database.characters
@@ -418,10 +434,3 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
     },
   };
 }
-
-const engine = createSyncEngine(defaultDb);
-
-export const syncNow = engine.syncNow;
-export const startSync = engine.start;
-export const subscribeSync = engine.subscribe;
-export const getSyncStatus = engine.getStatus;
