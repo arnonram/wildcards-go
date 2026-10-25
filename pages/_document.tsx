@@ -16,10 +16,23 @@ const themeScript = `
 
 export default function Document() {
   return (
-    <Html lang="en" data-skin="classic" data-mode="light" suppressHydrationWarning>
+    <Html
+      lang="en"
+      data-skin="classic"
+      data-mode="light"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <Head>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: blocking script must run before first paint to avoid a theme flash */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#f3ead6" />
+        <meta name="application-name" content="Wild Cards Go" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Wild Cards Go" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
