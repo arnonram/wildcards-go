@@ -55,7 +55,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return;
         }
         const { db } = await connectToDb();
-        await putPortrait(db, id, rev, contentType, bytes);
+        if (!(await putPortrait(db, id, rev, contentType, bytes))) {
+          res.status(404).json({ message: 'No such character' });
+          return;
+        }
         res.status(204).end();
         return;
       }

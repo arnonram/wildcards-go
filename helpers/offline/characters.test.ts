@@ -1,5 +1,6 @@
 import { beforeEach, expect, test } from 'bun:test';
 import type { ServerCharacter } from '../../dtos/sync';
+import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import {
   createCharacter,
   deleteCharacter,
@@ -29,7 +30,7 @@ function serverCopy(id: string, version: number, characterName: string): ServerC
     version,
     modifiedAt: 5000,
     deleted: false,
-    data: { _id: id, name: characterName } as ServerCharacter['data'],
+    data: { _id: id, name: characterName } as WildCardCharacter,
   };
 }
 
@@ -137,4 +138,28 @@ test('writes in the same millisecond get increasing stamps', async () => {
   } finally {
     Date.now = realNow;
   }
+});
+
+test('resolveConflict mine against a server delete re-uploads the portrait', async () => {
+  const id = await createCharacter(db);
+  await setPortrait(id, new Blob([new Uint8Array([1])], { type: 'image/webp' }), db);
+  await db.portraits.update(id, { dirty: 0 });
+  await db.characters.update(id, {
+    version: 1,
+    conflict: { id, version: 2, modifiedAt: 5000, deleted: true },
+  });
+  await resolveConflict(id, 'mine', db);
+  expect((await db.portraits.get(id))?.dirty).toBe(1);
+});
+
+test('resolveConflict theirs against a server delete removes the portrait', async () => {
+  const id = await createCharacter(db);
+  await setPortrait(id, new Blob([new Uint8Array([1])], { type: 'image/webp' }), db);
+  await db.characters.update(id, {
+    version: 1,
+    conflict: { id, version: 2, modifiedAt: 5000, deleted: true },
+  });
+  await resolveConflict(id, 'theirs', db);
+  expect(await db.characters.get(id)).toBeUndefined();
+  expect(await db.portraits.get(id)).toBeUndefined();
 });

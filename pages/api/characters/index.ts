@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { db } = await connectToDb();
-    res.status(200).json(await listChangedSince(db, since));
+    res.status(200).json(await listChangedSince(db, since, Date.now()));
   } catch (error) {
     respondWithApiError(res, error, 'GET /api/characters');
   }
