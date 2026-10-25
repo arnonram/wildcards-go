@@ -5,13 +5,15 @@ import type { WildCardCharacter } from './WildCardCharacter.dto';
 /** Character ids are `crypto.randomUUID()` strings. */
 export const CHARACTER_ID = /^[0-9a-f-]{36}$/;
 
-export interface ServerCharacter {
+interface ServerCharacterBase {
   id: string;
   version: number;
   modifiedAt: number;
-  deleted: boolean;
-  data: WildCardCharacter;
 }
+
+/** A deleted character is a tombstone: it carries no data. */
+export type ServerCharacter = ServerCharacterBase &
+  ({ deleted: false; data: WildCardCharacter } | { deleted: true; data?: undefined });
 
 /** `baseVersion` is the version the client last saw; 0 creates the character. */
 export interface PutCharacterBody {

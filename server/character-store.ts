@@ -8,7 +8,8 @@ interface CharacterDoc {
   version: number;
   modifiedAt: number;
   deleted: boolean;
-  data: WildCardCharacter;
+  /** Absent on tombstones. */
+  data?: WildCardCharacter;
 }
 
 interface PortraitDoc {
@@ -25,13 +26,9 @@ function characters(db: Db) {
 }
 
 function toServerCharacter(doc: CharacterDoc): ServerCharacter {
-  return {
-    id: doc._id,
-    version: doc.version,
-    modifiedAt: doc.modifiedAt,
-    deleted: doc.deleted,
-    data: { ...doc.data, _id: doc._id },
-  };
+  const base = { id: doc._id, version: doc.version, modifiedAt: doc.modifiedAt };
+  if (doc.deleted || !doc.data) return { ...base, deleted: true };
+  return { ...base, deleted: false, data: { ...doc.data, _id: doc._id } };
 }
 
 async function currentCopy(db: Db, id: string) {
@@ -49,7 +46,8 @@ export async function putCharacter(
   body: PutCharacterBody,
   now: number,
 ): Promise<{ ok: PutCharacterOk } | { conflict: ServerCharacter | null }> {
-  const data = omit(body.data, '_id') as WildCardCharacter;
+  // Tombstones drop the data: no device needs it once the character is gone.
+  const data = body.deleted ? undefined : (omit(body.data, '_id') as WildCardCharacter);
 
   if (body.baseVersion === 0) {
     try {
@@ -58,7 +56,7 @@ export async function putCharacter(
         version: 1,
         modifiedAt: now,
         deleted: body.deleted,
-        data,
+        ...(data && { data }),
       });
       return { ok: { version: 1, modifiedAt: now } };
     } catch (error) {
@@ -71,7 +69,9 @@ export async function putCharacter(
 
   const result = await characters(db).updateOne(
     { _id: id, version: body.baseVersion },
-    { $set: { data, deleted: body.deleted, modifiedAt: now }, $inc: { version: 1 } },
+    data
+      ? { $set: { data, deleted: false, modifiedAt: now }, $inc: { version: 1 } }
+      : { $set: { deleted: true, modifiedAt: now }, $unset: { data: '' }, $inc: { version: 1 } },
   );
   if (result.matchedCount === 0) {
     return { conflict: await currentCopy(db, id) };

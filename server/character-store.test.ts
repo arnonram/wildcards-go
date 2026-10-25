@@ -85,6 +85,17 @@ describe('putCharacter', () => {
     const { characters } = await listChangedSince(db, 0, FAR_FUTURE);
     expect(characters).toHaveLength(1);
     expect(characters[0].deleted).toBe(true);
+    expect(characters[0].data).toBeUndefined();
+  });
+
+  test('edit on a tombstone restores data', async () => {
+    const { id, data } = character('Ana');
+    await putCharacter(db, id, { baseVersion: 0, deleted: false, data }, 1000);
+    await putCharacter(db, id, { baseVersion: 1, deleted: true, data }, 2000);
+    const result = await putCharacter(db, id, { baseVersion: 2, deleted: false, data }, 3000);
+    expect(result).toEqual({ ok: { version: 3, modifiedAt: 3000 } });
+    const { characters } = await listChangedSince(db, 0, FAR_FUTURE);
+    expect(characters[0]).toEqual({ id, version: 3, modifiedAt: 3000, deleted: false, data });
   });
 });
 

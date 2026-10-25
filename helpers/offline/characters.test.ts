@@ -1,5 +1,6 @@
 import { beforeEach, expect, test } from 'bun:test';
 import type { ServerCharacter } from '../../dtos/sync';
+import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import {
   createCharacter,
   deleteCharacter,
@@ -29,7 +30,7 @@ function serverCopy(id: string, version: number, characterName: string): ServerC
     version,
     modifiedAt: 5000,
     deleted: false,
-    data: { _id: id, name: characterName } as ServerCharacter['data'],
+    data: { _id: id, name: characterName } as WildCardCharacter,
   };
 }
 
