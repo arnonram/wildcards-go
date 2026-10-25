@@ -1,17 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CHARACTER_ID, type PutCharacterBody } from '../../../../dtos/sync';
+import { CHARACTER_ID } from '../../../../dtos/sync';
 import { respondWithApiError } from '../../../../helpers/api-error';
 import { connectToDb } from '../../../../helpers/db-util';
 import { putCharacter } from '../../../../server/character-store';
+import { parsePutBody } from '../../../../server/parse-put-body';
 
-function parseBody(body: unknown): PutCharacterBody | null {
-  if (!body || typeof body !== 'object') return null;
-  const { baseVersion, deleted, data } = body as Record<string, unknown>;
-  if (!Number.isInteger(baseVersion) || (baseVersion as number) < 0) return null;
-  if (typeof deleted !== 'boolean') return null;
-  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
-  return { baseVersion, deleted, data } as PutCharacterBody;
-}
+/** A character is a few KB; anything near this is not a character. */
+export const config = { api: { bodyParser: { sizeLimit: '256kb' } } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const id = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id;
@@ -25,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
-  const body = parseBody(req.body);
+  const body = parsePutBody(req.body);
   if (!body) {
     res.status(400).json({ message: 'Expected { baseVersion, deleted, data }' });
     return;

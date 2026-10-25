@@ -1,4 +1,3 @@
-import { omit } from 'lodash';
 import { Binary, type Db, MongoServerError } from 'mongodb';
 import type { PullResponse, PutCharacterBody, PutCharacterOk, ServerCharacter } from '../dtos/sync';
 import type { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
@@ -52,7 +51,8 @@ export async function putCharacter(
   now: number,
 ): Promise<{ ok: PutCharacterOk } | { conflict: ServerCharacter | null }> {
   // Tombstones drop the data: no device needs it once the character is gone.
-  const data = body.deleted ? undefined : (omit(body.data, '_id') as WildCardCharacter);
+  const { _id, ...rest } = body.data;
+  const data = body.deleted ? undefined : rest;
 
   const result = await writeCharacter(db, id, body, data, now);
   if ('ok' in result && body.deleted) {
