@@ -37,3 +37,9 @@ test('email sender posts to Resend when a key is set', async () => {
     globalThis.fetch = realFetch;
   }
 });
+
+test('email sender refuses a Resend key without a from address', () => {
+  expect(() => createEmailSender({ NODE_ENV: 'production', RESEND_API_KEY: 'k' })).toThrow(
+    'EMAIL_FROM',
+  );
+});

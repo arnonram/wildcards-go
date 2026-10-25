@@ -3,6 +3,7 @@ import {
   getRememberedAccount,
   onAccountStorage,
   rememberAccount,
+  restoreRememberedAccount,
   signOutOfDevice,
   startAccounts,
   toAccount,
@@ -124,4 +125,22 @@ test('sign-out keeps the account store and activates signed-out', async () => {
   expect(getActiveOwner()).toBeNull();
   expect(getRememberedAccount()).toBeNull();
   expect(await new WcgDb(`wcg-u-${user}`).characters.get(id)).toBeDefined();
+});
+
+test('restoreRememberedAccount opens the remembered store without a session check', () => {
+  localStorage.setItem('wcg-account', JSON.stringify(account('u-r')));
+  restoreRememberedAccount();
+  expect(getActiveOwner()).toBe('u-r');
+});
+
+test('sign-out the server refuses keeps the account', async () => {
+  rememberAccount(account('u-a'));
+  await expect(
+    signOutOfDevice(
+      async () => true,
+      async () => ({ data: null, error: { status: 500, message: 'Database unavailable' } }),
+    ),
+  ).rejects.toThrow('Database unavailable');
+  expect(getActiveOwner()).toBe('u-a');
+  expect(getRememberedAccount()?.userId).toBe('u-a');
 });

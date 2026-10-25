@@ -95,6 +95,8 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
   let retryAttempt = 0;
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let cleanup: (() => void) | null = null;
+  /** Set by dispose: an in-flight run may finish, but nothing follows it. */
+  let disposed = false;
 
   function setStatus(patch: Partial<SyncStatus>) {
     const next = { ...status, ...patch };
@@ -303,7 +305,7 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
   }
 
   function scheduleRetry() {
-    if (retryTimer) return;
+    if (retryTimer || disposed) return;
     const delay = RETRY_DELAYS[Math.min(retryAttempt, RETRY_DELAYS.length - 1)];
     retryAttempt += 1;
     retryTimer = setTimeout(() => {
@@ -366,6 +368,7 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
   }
 
   function syncNow(options: { force?: boolean } = {}): Promise<void> {
+    if (disposed) return Promise.resolve();
     const force = Boolean(options.force);
     if (running) {
       rerun = { force: force || Boolean(rerun?.force) };
@@ -427,6 +430,8 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
     getStatus: () => status,
     retryScheduled: () => retryTimer !== null,
     dispose() {
+      disposed = true;
+      rerun = null;
       cleanup?.();
       cleanup = null;
       resetRetry();

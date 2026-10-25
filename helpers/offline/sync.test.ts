@@ -344,3 +344,23 @@ test('a successful run after 401 clears signedOut', async () => {
   await engine.syncNow();
   expect(engine.getStatus().signedOut).toBe(false);
 });
+
+test('a disposed engine neither retries nor reruns', async () => {
+  await createCharacter(db);
+  let release: () => void = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  handler = async () => {
+    await gate;
+    return json(503, {});
+  };
+  const run = engine.syncNow();
+  void engine.syncNow(); // queued rerun
+  engine.dispose();
+  release();
+  await run;
+  await Bun.sleep(5);
+  expect(engine.retryScheduled()).toBe(false);
+  expect(requests).toHaveLength(1);
+});

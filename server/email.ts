@@ -18,6 +18,8 @@ export function createEmailSender(env: EmailEnv): SendSignInEmail {
     };
   }
 
+  if (!EMAIL_FROM) throw new Error('EMAIL_FROM is required when RESEND_API_KEY is set');
+
   return async (email, url) => {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',

@@ -44,6 +44,17 @@ export function rememberAccount(account: Account | null): void {
   activateStore(account?.userId ?? null);
 }
 
+/**
+ * Open the remembered account's store. Runs when this module loads, before
+ * any page mounts, so a page never sees a switch from the signed-out store
+ * on startup.
+ */
+export function restoreRememberedAccount(): void {
+  activateStore(getRememberedAccount()?.userId ?? null);
+}
+
+if (typeof window !== 'undefined') restoreRememberedAccount();
+
 /** Another tab signed in or out: follow it. A null key means storage was cleared. */
 export function onAccountStorage(event: { key: string | null }): void {
   if (event.key !== null && event.key !== KEY) return;
@@ -69,7 +80,7 @@ async function serverSignOut(): Promise<unknown> {
 export async function startAccounts(
   lookup: () => Promise<Account | null> = sessionAccount,
 ): Promise<() => void> {
-  activateStore(getRememberedAccount()?.userId ?? null);
+  restoreRememberedAccount();
 
   const handleStorage = (event: StorageEvent) => onAccountStorage(event);
   if (typeof window !== 'undefined') window.addEventListener('storage', handleStorage);
@@ -100,7 +111,10 @@ export async function signOutOfDevice(
   if (!navigator.onLine) return 'offline';
   const unsynced = await getActiveDb().characters.where('dirty').equals(1).count();
   if (unsynced > 0 && !(await confirmUnsynced(unsynced))) return 'cancelled';
-  await signOut();
+  // Better Auth's client resolves HTTP failures as `{ error }` instead of
+  // throwing; signing out locally then would leave a live session cookie.
+  const result = (await signOut()) as { error?: { message?: string } | null } | undefined;
+  if (result?.error) throw new Error(result.error.message || 'Sign-out failed');
   rememberAccount(null);
   return 'done';
 }
