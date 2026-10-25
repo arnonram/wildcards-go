@@ -19,6 +19,8 @@ export class WildCardCharacter extends BaseEntity {
   conviction?: boolean;
   bio?: string;
   imageUrl?: string;
+  /** Changes whenever the portrait changes; undefined = no portrait. */
+  portraitRev?: string;
   pace?: number;
   paceMod?: number = 0;
   parry?: number;
