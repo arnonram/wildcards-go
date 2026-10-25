@@ -101,37 +101,44 @@ export async function setPortrait(
 
 /**
  * `mine` re-bases the local edit on the server's version so the next push
- * overwrites it. `theirs` takes the server copy, or drops the character if
- * the server no longer has it.
+ * overwrites it; if the server deleted the character it also dropped the
+ * portrait, so the local one is queued for upload again. `theirs` takes the
+ * server copy, or drops the character and its portrait if the server no
+ * longer has it.
  */
 export async function resolveConflict(
   id: string,
   choice: 'mine' | 'theirs',
   database: WcgDb = defaultDb,
 ): Promise<void> {
-  const row = await database.characters.get(id);
-  if (!row || row.conflict === undefined) return;
-  const server = row.conflict;
+  await database.transaction('rw', database.characters, database.portraits, async () => {
+    const row = await database.characters.get(id);
+    if (!row || row.conflict === undefined) return;
+    const server = row.conflict;
+    const goneOnServer = !server || server.deleted;
 
-  if (choice === 'mine') {
-    await database.characters.update(id, {
-      version: server?.version ?? 0,
-      dirty: 1,
-      conflict: undefined,
-      localUpdatedAt: nextStamp(row.localUpdatedAt),
-    });
-  } else if (!server || server.deleted) {
-    await database.characters.delete(id);
-  } else {
-    await database.characters.update(id, {
-      data: server.data,
-      version: server.version,
-      deleted: 0,
-      dirty: 0,
-      conflict: undefined,
-      syncError: undefined,
-      localUpdatedAt: nextStamp(row.localUpdatedAt),
-    });
-  }
+    if (choice === 'mine') {
+      await database.characters.update(id, {
+        version: server?.version ?? 0,
+        dirty: 1,
+        conflict: undefined,
+        localUpdatedAt: nextStamp(row.localUpdatedAt),
+      });
+      if (goneOnServer) await database.portraits.update(id, { dirty: 1 });
+    } else if (goneOnServer) {
+      await database.characters.delete(id);
+      await database.portraits.delete(id);
+    } else {
+      await database.characters.update(id, {
+        data: server.data,
+        version: server.version,
+        deleted: 0,
+        dirty: 0,
+        conflict: undefined,
+        syncError: undefined,
+        localUpdatedAt: nextStamp(row.localUpdatedAt),
+      });
+    }
+  });
   changed();
 }

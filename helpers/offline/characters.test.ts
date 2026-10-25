@@ -139,3 +139,27 @@ test('writes in the same millisecond get increasing stamps', async () => {
     Date.now = realNow;
   }
 });
+
+test('resolveConflict mine against a server delete re-uploads the portrait', async () => {
+  const id = await createCharacter(db);
+  await setPortrait(id, new Blob([new Uint8Array([1])], { type: 'image/webp' }), db);
+  await db.portraits.update(id, { dirty: 0 });
+  await db.characters.update(id, {
+    version: 1,
+    conflict: { id, version: 2, modifiedAt: 5000, deleted: true },
+  });
+  await resolveConflict(id, 'mine', db);
+  expect((await db.portraits.get(id))?.dirty).toBe(1);
+});
+
+test('resolveConflict theirs against a server delete removes the portrait', async () => {
+  const id = await createCharacter(db);
+  await setPortrait(id, new Blob([new Uint8Array([1])], { type: 'image/webp' }), db);
+  await db.characters.update(id, {
+    version: 1,
+    conflict: { id, version: 2, modifiedAt: 5000, deleted: true },
+  });
+  await resolveConflict(id, 'theirs', db);
+  expect(await db.characters.get(id)).toBeUndefined();
+  expect(await db.portraits.get(id)).toBeUndefined();
+});
