@@ -45,4 +45,8 @@ test:
     MONGODB_URI: mongodb://mongo:27017
     MONGODB_DB: wcg_test
   script:
-    - bun test
+    - bun test --reporter=junit --reporter-outfile=junit.xml
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
