@@ -122,3 +122,18 @@ test('every write notifies the local change listener', async () => {
   setOnLocalChange(null);
   expect(calls).toBe(3);
 });
+
+test('writes in the same millisecond get increasing stamps', async () => {
+  const realNow = Date.now;
+  Date.now = () => 1_000;
+  try {
+    const id = await createCharacter(db);
+    const first = (await row(id)).localUpdatedAt;
+    const second = await saveCharacter((await row(id)).data, db);
+    const third = await saveCharacter((await row(id)).data, db);
+    expect(second).toBeGreaterThan(first);
+    expect(third).toBeGreaterThan(second);
+  } finally {
+    Date.now = realNow;
+  }
+});

@@ -7,7 +7,7 @@ import {
   putCharacterRemote,
   putPortraitRemote,
 } from './api';
-import { setOnLocalChange } from './characters';
+import { nextStamp, setOnLocalChange } from './characters';
 import { db as defaultDb, type LocalCharacter, type WcgDb } from './db';
 
 export interface SyncStatus {
@@ -226,7 +226,7 @@ export function createSyncEngine(database: WcgDb): SyncEngine {
         data: server.data,
         version: server.version,
         deleted: 0,
-        localUpdatedAt: Date.now(),
+        localUpdatedAt: nextStamp(local.localUpdatedAt),
       });
     });
   }

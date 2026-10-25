@@ -13,6 +13,14 @@ export function setOnLocalChange(listener: (() => void) | null) {
   onLocalChange = listener;
 }
 
+/**
+ * A row's next `localUpdatedAt`. Strictly increasing per row, so a push can
+ * tell "unchanged since I read it" from "edited in the same millisecond".
+ */
+export function nextStamp(previous = 0): number {
+  return Math.max(Date.now(), previous + 1);
+}
+
 function changed() {
   onLocalChange?.();
 }
@@ -36,15 +44,18 @@ async function writeData(database: WcgDb, data: WildCardCharacter): Promise<numb
   const id = data._id;
   if (!id) throw new Error('Cannot save a character without an id');
 
-  const stamp = Date.now();
-  const updated = await database.characters.update(id, {
-    data,
-    dirty: 1,
-    syncError: undefined,
-    localUpdatedAt: stamp,
+  return database.transaction('rw', database.characters, async () => {
+    const row = await database.characters.get(id);
+    if (!row) throw new Error(`Character ${id} is not stored locally`);
+    const stamp = nextStamp(row.localUpdatedAt);
+    await database.characters.update(id, {
+      data,
+      dirty: 1,
+      syncError: undefined,
+      localUpdatedAt: stamp,
+    });
+    return stamp;
   });
-  if (!updated) throw new Error(`Character ${id} is not stored locally`);
-  return stamp;
 }
 
 /** Save an edit. Returns the row's new `localUpdatedAt`. */
@@ -59,12 +70,15 @@ export async function saveCharacter(
 
 /** Soft delete: the row stays, dirty, until the server confirms it. */
 export async function deleteCharacter(id: string, database: WcgDb = defaultDb): Promise<void> {
-  await database.characters.update(id, {
-    deleted: 1,
-    dirty: 1,
-    syncError: undefined,
-    localUpdatedAt: Date.now(),
-  });
+  await database.characters
+    .where('id')
+    .equals(id)
+    .modify((row) => {
+      row.deleted = 1;
+      row.dirty = 1;
+      delete row.syncError;
+      row.localUpdatedAt = nextStamp(row.localUpdatedAt);
+    });
   changed();
 }
 
@@ -102,7 +116,7 @@ export async function resolveConflict(
       version: server?.version ?? 0,
       dirty: 1,
       conflict: undefined,
-      localUpdatedAt: Date.now(),
+      localUpdatedAt: nextStamp(row.localUpdatedAt),
     });
   } else if (!server || server.deleted) {
     await database.characters.delete(id);
@@ -114,7 +128,7 @@ export async function resolveConflict(
       dirty: 0,
       conflict: undefined,
       syncError: undefined,
-      localUpdatedAt: Date.now(),
+      localUpdatedAt: nextStamp(row.localUpdatedAt),
     });
   }
   changed();
