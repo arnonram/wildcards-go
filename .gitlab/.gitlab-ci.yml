@@ -45,8 +45,26 @@ test:
     MONGODB_URI: mongodb://mongo:27017
     MONGODB_DB: wcg_test
   script:
-    - bun test --reporter=junit --reporter-outfile=junit.xml
+    - bun test --coverage --coverage-reporter=text --coverage-reporter=lcov --reporter=junit --reporter-outfile=junit.xml
+  # Line coverage from Bun's "All files" row (% Funcs, then % Lines).
+  coverage: '/All files\s*\|\s*[\d.]+\s*\|\s*([\d.]+)/'
   artifacts:
     when: always
+    paths:
+      - coverage/lcov.info
     reports:
       junit: junit.xml
+
+# GitLab annotates MR diffs from Cobertura; Bun only writes lcov.
+coverage-report:
+  image: python:3.13-slim
+  stage: quality
+  needs: [test]
+  script:
+    - pip install --quiet lcov_cobertura==2.1.1
+    - lcov_cobertura coverage/lcov.info --base-dir . --output coverage/cobertura.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura.xml
