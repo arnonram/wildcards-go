@@ -18,7 +18,6 @@ export class WildCardCharacter extends BaseEntity {
   currentPowerPoints?: number = 0;
   conviction?: boolean;
   bio?: string;
-  imageUrl?: string;
   /** Changes whenever the portrait changes; undefined = no portrait. */
   portraitRev?: string;
   pace?: number;

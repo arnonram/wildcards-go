@@ -5,26 +5,43 @@ import { useState } from 'react';
 import CharacterSheet from '../../components/character-sheet/CharacterSheet';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
-import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
+import { deleteCharacter } from '../../helpers/offline/characters';
+import { useCharacter } from '../../helpers/offline/hooks';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-
-export default function Character({ character }: { character: WildCardCharacter }) {
+export default function Character() {
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const rawId = router.query.characterId;
+  const characterId = Array.isArray(rawId) ? rawId[0] : rawId;
+  const row = useCharacter(characterId);
 
   const handleDelete = async () => {
-    await fetch(`/api/character/${character._id}`, {
-      method: 'DELETE',
-      headers: { 'Content-type': 'application/json' },
-    });
+    if (!characterId) return;
     setDeleteDialogOpen(false);
-    router.push('/');
+    // Leave first so the sheet never renders its own "not found" state.
+    await router.push('/');
+    await deleteCharacter(characterId);
   };
 
-  if (!character) {
+  if (!router.isReady || row === undefined) {
     return <p className="py-12 text-center text-sm text-muted">Loading character…</p>;
   }
+
+  if (row === null || !characterId) {
+    return (
+      <div className="py-12 text-center">
+        <p className="font-display text-lg font-semibold text-ink">Character not found</p>
+        <Link
+          href="/"
+          className="mt-2 inline-block text-xs text-muted underline-offset-4 hover:text-accent hover:underline"
+        >
+          ← All characters
+        </Link>
+      </div>
+    );
+  }
+
+  const character = row.data;
 
   return (
     <>
@@ -44,7 +61,12 @@ export default function Character({ character }: { character: WildCardCharacter 
         </span>
       </div>
 
-      <CharacterSheet wildCard={character} onDelete={() => setDeleteDialogOpen(true)} />
+      <CharacterSheet
+        key={characterId}
+        characterId={characterId}
+        wildCard={character}
+        onDelete={() => setDeleteDialogOpen(true)}
+      />
 
       <Dialog
         open={deleteDialogOpen}
@@ -68,23 +90,4 @@ export default function Character({ character }: { character: WildCardCharacter 
       </Dialog>
     </>
   );
-}
-
-export async function getStaticPaths() {
-  const response = await fetch(`${API_BASE}/api/character`, {
-    method: 'GET',
-    headers: { 'Content-type': 'application/json' },
-  });
-  const characters = await response.json();
-
-  const paths = characters.map((char: Record<string, unknown>) => ({
-    params: { characterId: char._id as string },
-  }));
-  return { paths, fallback: true };
-}
-
-export async function getStaticProps({ params }: { params: { characterId: string } }) {
-  const res = await fetch(`${API_BASE}/api/character/${params.characterId}`);
-  const character = await res.json();
-  return { props: { character } };
 }

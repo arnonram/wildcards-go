@@ -4,38 +4,26 @@ import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CharacterCard } from '../components/home/CharacterCard';
 import { Button } from '../components/ui/Button';
-import type { CharToLoad } from '../dtos/CharToLoad';
-import { createNewCharacter } from '../helpers/api-actions';
+import { createCharacter } from '../helpers/offline/characters';
+import { useCharacterList } from '../helpers/offline/hooks';
 
 const Home: NextPage = () => {
   const router = useRouter();
-  const [characters, setCharacters] = useState<CharToLoad[]>([]);
-  const [isLoading, setLoading] = useState(true);
+  const list = useCharacterList();
+  const characters = list ?? [];
+  const isLoading = list === undefined;
   const [isCreating, setCreating] = useState(false);
-
-  useEffect(() => {
-    const fetchCharacters = async () => {
-      try {
-        const response = await fetch('/api/character');
-        const data = await response.json();
-        setCharacters(data);
-      } catch (error) {
-        console.error('Failed to fetch characters:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCharacters();
-  }, []);
 
   const handleCreateNew = async () => {
     setCreating(true);
     try {
-      const { characterId } = await createNewCharacter();
-      router.push(`/character/${encodeURIComponent(characterId)}`);
+      const characterId = await createCharacter();
+      await router.push(`/character/${encodeURIComponent(characterId)}`);
+    } catch (error) {
+      console.error('Failed to create character:', error);
     } finally {
       setCreating(false);
     }

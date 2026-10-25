@@ -82,19 +82,21 @@ export async function deleteCharacter(id: string, database: WcgDb = defaultDb): 
   changed();
 }
 
+/** Store a new portrait. Returns its rev, which the caller must keep in its copy of the data. */
 export async function setPortrait(
   id: string,
   blob: Blob,
   database: WcgDb = defaultDb,
-): Promise<void> {
+): Promise<string> {
+  const rev = crypto.randomUUID();
   await database.transaction('rw', database.characters, database.portraits, async () => {
     const row = await database.characters.get(id);
     if (!row) throw new Error(`Character ${id} is not stored locally`);
-    const rev = crypto.randomUUID();
     await database.portraits.put({ id, rev, blob, dirty: 1 });
     await writeData(database, { ...row.data, portraitRev: rev });
   });
   changed();
+  return rev;
 }
 
 /**

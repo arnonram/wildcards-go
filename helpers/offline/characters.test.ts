@@ -72,8 +72,9 @@ test('deleteCharacter keeps a dirty tombstone', async () => {
 
 test('setPortrait sets matching rev on character and portrait', async () => {
   const id = await createCharacter(db);
-  await setPortrait(id, new Blob([new Uint8Array([1, 2])], { type: 'image/webp' }), db);
+  const rev = await setPortrait(id, new Blob([new Uint8Array([1, 2])], { type: 'image/webp' }), db);
   const character = await row(id);
+  expect(character.data.portraitRev).toBe(rev);
   const portrait = await db.portraits.get(id);
   expect(character.data.portraitRev).toBeString();
   expect(portrait?.rev).toBe(character.data.portraitRev as string);

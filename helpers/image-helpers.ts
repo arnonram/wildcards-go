@@ -2,11 +2,10 @@ const MAX_PORTRAIT_DIMENSION = 512;
 const PORTRAIT_QUALITY = 0.82;
 
 /**
- * Downscale and center-crop a portrait before storing it as a data URL.
- * Full-size phone photos turn into multi-megabyte base64 strings, which
- * exceed the API body limit and are far larger than the portrait slots need.
+ * Downscale and center-crop a portrait before storing it. Full-size phone
+ * photos are megabytes, far larger than the portrait slots need.
  */
-export async function fileToPortraitDataUrl(file: File): Promise<string> {
+export async function fileToPortraitBlob(file: File): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
 
   try {
@@ -35,7 +34,13 @@ export async function fileToPortraitDataUrl(file: File): Promise<string> {
       targetSize,
     );
 
-    return canvas.toDataURL('image/webp', PORTRAIT_QUALITY);
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('Could not encode the portrait.'))),
+        'image/webp',
+        PORTRAIT_QUALITY,
+      );
+    });
   } finally {
     bitmap.close();
   }
