@@ -49,7 +49,7 @@ The app stays offline-first. Signing in is what turns sync on. It is never what 
   - **Development:** when it isn't set, the link is logged to the server console (development only; refuse to start without it in production).
 - **Social providers:** Google and Discord. A provider is enabled only when both its client id and secret are set, so development works with email links alone.
   - The sign-in page shows only enabled providers. How the client learns which are enabled is the builder's call.
-- **Account linking:** on, for trusted providers (`google`, `discord`, email link). Someone who uses Google one day and an email link to the same address the next lands in the same account.
+- **Account linking:** on (Better Auth's default), for verified emails only: no `trustedProviders`, because that option skips the verification check and would let an unverified Discord email take over an account. Google and email links always verify, so someone who uses Google one day and an email link to the same address the next lands in the same account.
 - **Rate limiting:** Better Auth's built-in limiter, at its defaults.
 
 **Environment variables** (documented in README, with a `.env.example`):
