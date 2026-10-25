@@ -9,6 +9,7 @@ The browser is the source of truth. Characters live in IndexedDB and MongoDB is 
 - Every edit is written to IndexedDB at once and the character is marked as changed. About 600 ms after the last edit, the sync engine pushes it to the server.
 - Each character carries a version that only the server assigns. A push sends the version it was based on. If another device saved first, the server answers `409` and the sheet asks **Keep mine** or **Use theirs**.
 - The client pulls characters changed since its last pull: on startup, when the tab regains focus or comes back online, and every 30 seconds.
+- The pull cursor trails server time by 30 seconds, so a write that commits late is never skipped. Recent rows are re-sent, and the client ignores ones it already has.
 - Deletes are versioned writes too, so other devices learn about them.
 - Portraits are stored as blobs and synced through their own endpoint, so editing a character never re-sends image bytes.
 - If the server is unreachable or returns 5xx, sync backs off (5 s, 15 s, 30 s, 60 s). If the server rejects a character with another 4xx, only that character is marked, and it is retried after its next edit or with the badge's sync button.

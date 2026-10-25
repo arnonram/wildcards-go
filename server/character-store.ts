@@ -80,15 +80,24 @@ export async function putCharacter(
 }
 
 /**
+ * How far the pull cursor trails server time. `modifiedAt` is stamped before
+ * the write commits, so a slow write can land below a cursor already handed
+ * out; trailing re-sends recent rows instead of skipping them.
+ */
+export const CURSOR_LAG_MS = 30_000;
+
+/**
  * Characters written at or after `since`. Equal timestamps are included so
  * two writes in the same millisecond are never skipped; applying a row twice
- * on the client is harmless.
+ * on the client is harmless. The cursor trails `now` by CURSOR_LAG_MS and
+ * never moves backwards.
  */
-export async function listChangedSince(db: Db, since: number): Promise<PullResponse> {
+export async function listChangedSince(db: Db, since: number, now: number): Promise<PullResponse> {
   const docs = await characters(db)
     .find({ modifiedAt: { $gte: since } })
     .toArray();
-  const cursor = docs.reduce((max, doc) => Math.max(max, doc.modifiedAt), since);
+  const maxSeen = docs.reduce((max, doc) => Math.max(max, doc.modifiedAt), since);
+  const cursor = Math.max(since, Math.min(maxSeen, now - CURSOR_LAG_MS));
   return { characters: docs.map(toServerCharacter), cursor };
 }
 

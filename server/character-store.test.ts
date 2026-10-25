@@ -1,10 +1,19 @@
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test';
 import { type Db, MongoClient } from 'mongodb';
 import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
-import { getPortrait, listChangedSince, putCharacter, putPortrait } from './character-store';
+import {
+  CURSOR_LAG_MS,
+  getPortrait,
+  listChangedSince,
+  putCharacter,
+  putPortrait,
+} from './character-store';
 
 const client = new MongoClient(process.env.MONGODB_URI ?? 'mongodb://localhost:27017');
 let db: Db;
+
+/** A `now` far enough ahead that the cursor lag never applies. */
+const FAR_FUTURE = 1e12;
 
 beforeEach(async () => {
   db = client.db('wcg_test');
@@ -50,7 +59,7 @@ describe('putCharacter', () => {
       2000,
     );
     expect(result).toEqual({ ok: { version: 2, modifiedAt: 2000 } });
-    const { characters } = await listChangedSince(db, 0);
+    const { characters } = await listChangedSince(db, 0, FAR_FUTURE);
     expect(characters[0].data).toEqual(renamed);
   });
 
@@ -73,7 +82,7 @@ describe('putCharacter', () => {
     await putCharacter(db, id, { baseVersion: 0, deleted: false, data }, 1000);
     const result = await putCharacter(db, id, { baseVersion: 1, deleted: true, data }, 2000);
     expect(result).toEqual({ ok: { version: 2, modifiedAt: 2000 } });
-    const { characters } = await listChangedSince(db, 0);
+    const { characters } = await listChangedSince(db, 0, FAR_FUTURE);
     expect(characters).toHaveLength(1);
     expect(characters[0].deleted).toBe(true);
   });
@@ -85,7 +94,7 @@ describe('listChangedSince', () => {
     const b = character('B');
     await putCharacter(db, a.id, { baseVersion: 0, deleted: false, data: a.data }, 1000);
     await putCharacter(db, b.id, { baseVersion: 0, deleted: false, data: b.data }, 1000);
-    const result = await listChangedSince(db, 1000);
+    const result = await listChangedSince(db, 1000, FAR_FUTURE);
     expect(result.characters.map((c) => c.id).sort()).toEqual([a.id, b.id].sort());
     expect(result.cursor).toBe(1000);
   });
@@ -95,13 +104,27 @@ describe('listChangedSince', () => {
     const b = character('B');
     await putCharacter(db, a.id, { baseVersion: 0, deleted: false, data: a.data }, 900);
     await putCharacter(db, b.id, { baseVersion: 0, deleted: false, data: b.data }, 1100);
-    const result = await listChangedSince(db, 1000);
+    const result = await listChangedSince(db, 1000, FAR_FUTURE);
     expect(result.characters.map((c) => c.id)).toEqual([b.id]);
     expect(result.cursor).toBe(1100);
   });
 
   test('cursor stays at since when nothing changed', async () => {
-    expect(await listChangedSince(db, 1234)).toEqual({ characters: [], cursor: 1234 });
+    expect(await listChangedSince(db, 1234, FAR_FUTURE)).toEqual({ characters: [], cursor: 1234 });
+  });
+
+  test('cursor lags behind now so late commits are re-pulled', async () => {
+    const a = character('A');
+    const b = character('B');
+    await putCharacter(db, a.id, { baseVersion: 0, deleted: false, data: a.data }, 1000);
+    await putCharacter(db, b.id, { baseVersion: 0, deleted: false, data: b.data }, 50_000);
+    const result = await listChangedSince(db, 0, 60_000);
+    expect(result.characters).toHaveLength(2);
+    expect(result.cursor).toBe(60_000 - CURSOR_LAG_MS);
+  });
+
+  test('cursor never moves backwards', async () => {
+    expect(await listChangedSince(db, 40_000, 50_000)).toEqual({ characters: [], cursor: 40_000 });
   });
 });
 
