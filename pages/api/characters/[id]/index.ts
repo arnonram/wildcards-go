@@ -1,10 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import type { PutCharacterBody } from '../../../dtos/sync';
-import { respondWithApiError } from '../../../helpers/api-error';
-import { connectToDb } from '../../../helpers/db-util';
-import { putCharacter } from '../../../server/character-store';
-
-export const CHARACTER_ID = /^[0-9a-f-]{36}$/;
+import { CHARACTER_ID, type PutCharacterBody } from '../../../../dtos/sync';
+import { respondWithApiError } from '../../../../helpers/api-error';
+import { connectToDb } from '../../../../helpers/db-util';
+import { putCharacter } from '../../../../server/character-store';
 
 function parseBody(body: unknown): PutCharacterBody | null {
   if (!body || typeof body !== 'object') return null;

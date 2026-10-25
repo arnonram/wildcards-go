@@ -1,5 +1,5 @@
 import { omit } from 'lodash';
-import { type Db, MongoServerError } from 'mongodb';
+import { Binary, type Db, MongoServerError } from 'mongodb';
 import type { PullResponse, PutCharacterBody, PutCharacterOk, ServerCharacter } from '../dtos/sync';
 import type { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
 
@@ -9,6 +9,13 @@ interface CharacterDoc {
   modifiedAt: number;
   deleted: boolean;
   data: WildCardCharacter;
+}
+
+interface PortraitDoc {
+  _id: string;
+  rev: string;
+  contentType: string;
+  data: Binary;
 }
 
 const DUPLICATE_KEY = 11000;
@@ -83,4 +90,30 @@ export async function listChangedSince(db: Db, since: number): Promise<PullRespo
     .toArray();
   const cursor = docs.reduce((max, doc) => Math.max(max, doc.modifiedAt), since);
   return { characters: docs.map(toServerCharacter), cursor };
+}
+
+/** Portraits live apart from the character so edits never re-send image bytes. */
+export async function putPortrait(
+  db: Db,
+  id: string,
+  rev: string,
+  contentType: string,
+  bytes: Uint8Array,
+): Promise<void> {
+  await db
+    .collection<PortraitDoc>('portraits')
+    .replaceOne({ _id: id }, { rev, contentType, data: new Binary(bytes) }, { upsert: true });
+}
+
+export async function getPortrait(
+  db: Db,
+  id: string,
+): Promise<{ rev: string; contentType: string; bytes: Uint8Array } | null> {
+  const doc = await db.collection<PortraitDoc>('portraits').findOne({ _id: id });
+  if (!doc) return null;
+  return {
+    rev: doc.rev,
+    contentType: doc.contentType,
+    bytes: doc.data.buffer.subarray(0, doc.data.position),
+  };
 }

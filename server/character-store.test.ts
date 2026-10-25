@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test';
 import { type Db, MongoClient } from 'mongodb';
 import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
-import { listChangedSince, putCharacter } from './character-store';
+import { getPortrait, listChangedSince, putCharacter, putPortrait } from './character-store';
 
 const client = new MongoClient(process.env.MONGODB_URI ?? 'mongodb://localhost:27017');
 let db: Db;
@@ -102,5 +102,32 @@ describe('listChangedSince', () => {
 
   test('cursor stays at since when nothing changed', async () => {
     expect(await listChangedSince(db, 1234)).toEqual({ characters: [], cursor: 1234 });
+  });
+});
+
+describe('portraits', () => {
+  test('putPortrait then getPortrait returns same bytes and rev', async () => {
+    const id = crypto.randomUUID();
+    await putPortrait(db, id, 'rev-1', 'image/webp', new Uint8Array([1, 2, 3]));
+    expect(await getPortrait(db, id)).toEqual({
+      rev: 'rev-1',
+      contentType: 'image/webp',
+      bytes: new Uint8Array([1, 2, 3]),
+    });
+  });
+
+  test('putPortrait overwrites previous rev', async () => {
+    const id = crypto.randomUUID();
+    await putPortrait(db, id, 'rev-1', 'image/webp', new Uint8Array([1]));
+    await putPortrait(db, id, 'rev-2', 'image/png', new Uint8Array([9, 9]));
+    expect(await getPortrait(db, id)).toEqual({
+      rev: 'rev-2',
+      contentType: 'image/png',
+      bytes: new Uint8Array([9, 9]),
+    });
+  });
+
+  test('getPortrait of unknown id is null', async () => {
+    expect(await getPortrait(db, crypto.randomUUID())).toBeNull();
   });
 });

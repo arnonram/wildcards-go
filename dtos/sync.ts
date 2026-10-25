@@ -2,6 +2,9 @@ import type { WildCardCharacter } from './WildCardCharacter.dto';
 
 /** Wire types shared by the sync API and the client sync engine. */
 
+/** Character ids are `crypto.randomUUID()` strings. */
+export const CHARACTER_ID = /^[0-9a-f-]{36}$/;
+
 export interface ServerCharacter {
   id: string;
   version: number;
