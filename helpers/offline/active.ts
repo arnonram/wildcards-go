@@ -1,4 +1,5 @@
 import type { CharToLoad } from '../../dtos/CharToLoad';
+import { adoptSignedOutCharacters, countSignedOutCharacters } from './adopt';
 import { WcgDb } from './db';
 import { createSyncEngine, type SyncEngine, type SyncStatus } from './sync';
 
@@ -63,8 +64,54 @@ export function activateStore(userId: string | null): void {
     stopListening = engine.subscribe(() => notify(syncListeners));
     engine.start();
   }
+  setAdoption(null);
   notify(activeListeners);
   notify(syncListeners);
+  if (userId) void offerAdoption(userId);
+}
+
+/* Adding signed-out characters to an account. */
+
+let adoption: { count: number } | null = null;
+/** Accounts already asked during this app start; "Not now" lasts until a reload. */
+const asked = new Set<string>();
+const adoptionListeners = new Set<() => void>();
+
+function setAdoption(next: { count: number } | null) {
+  if (adoption === next) return;
+  adoption = next;
+  notify(adoptionListeners);
+}
+
+async function offerAdoption(userId: string) {
+  if (asked.has(userId)) return;
+  const count = await countSignedOutCharacters(storeFor(null));
+  // The account may have changed while counting.
+  if (count === 0 || owner !== userId || asked.has(userId)) return;
+  asked.add(userId);
+  setAdoption({ count });
+}
+
+export function getAdoption(): { count: number } | null {
+  return adoption;
+}
+
+export function subscribeAdoption(listener: () => void): () => void {
+  adoptionListeners.add(listener);
+  return () => adoptionListeners.delete(listener);
+}
+
+/** "Add": move the signed-out characters into the active account and sync them. */
+export async function acceptAdoption(): Promise<void> {
+  if (!owner) return;
+  await adoptSignedOutCharacters(storeFor(null), database);
+  setAdoption(null);
+  void syncNow();
+}
+
+/** "Not now": leave them signed out; asked again on the next app start. */
+export function dismissAdoption(): void {
+  setAdoption(null);
 }
 
 let signedOutStatus: SyncStatus | null = null;
