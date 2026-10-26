@@ -42,7 +42,13 @@ function buildAuth(db: Db) {
     // Linking needs a verified email. `trustedProviders` would skip that check
     // and let an unverified Discord email take over an account.
     account: { accountLinking: { enabled: true } },
-    plugins: [magicLink({ sendMagicLink: ({ email, url }) => sendSignInEmail(email, url) })],
+    plugins: [
+      magicLink({
+        // Store only a hash, so a database leak exposes no usable sign-in link.
+        storeToken: 'hashed',
+        sendMagicLink: ({ email, url }) => sendSignInEmail(email, url),
+      }),
+    ],
   });
 }
 
