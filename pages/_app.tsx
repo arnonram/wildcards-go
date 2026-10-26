@@ -14,6 +14,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       navigator.serviceWorker.register('/sw.js').catch((error) => {
         console.error('Service worker registration failed:', error);
       });
+    } else if ('serviceWorker' in navigator) {
+      // A worker left by an earlier production run would serve stale pages and
+      // fail to precache build files `next dev` doesn't have. Remove it.
+      void navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((r) => r.unregister())));
     }
     return () => {
       void stopAccounts.then((stop) => stop());

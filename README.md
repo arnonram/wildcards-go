@@ -14,7 +14,7 @@ The browser is the source of truth. Characters live in IndexedDB and MongoDB is 
 - Portraits are stored as blobs and synced through their own endpoint, so editing a character never re-sends image bytes.
 - If the server is unreachable or returns 5xx, sync backs off (5 s, 15 s, 30 s, 60 s). If the server rejects a character with another 4xx, only that character is marked, and it is retried after its next edit or with the badge's sync button.
 - Only one tab syncs at a time (Web Locks).
-- A service worker built by [Serwist](https://serwist.pages.dev/) precaches the app shell, so pages load offline. It is registered in production builds; set `NEXT_PUBLIC_ENABLE_SW=1` to register it under `next dev` after a `bun run build`.
+- A service worker built by [Serwist](https://serwist.pages.dev/) precaches the app shell, so pages load offline. It is registered in production builds; set `NEXT_PUBLIC_ENABLE_SW=1` to register it under `next dev` after a `bun run build`. Otherwise `next dev` unregisters any worker left from an earlier production run.
 
 ### API
 
