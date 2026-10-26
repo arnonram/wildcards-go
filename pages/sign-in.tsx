@@ -2,6 +2,7 @@ import { CloudOff, MailCheck } from 'lucide-react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { type FormEvent, useEffect, useState, useSyncExternalStore } from 'react';
+import { DiscordIcon, GoogleIcon } from '../components/ui/BrandIcons';
 import { Button } from '../components/ui/Button';
 import { Field } from '../components/ui/Field';
 import { authClient } from '../helpers/auth-client';
@@ -90,11 +91,13 @@ export default function SignIn() {
           <div className="mt-6 flex flex-col gap-2">
             {providers.google && (
               <Button variant="outline" onClick={() => void social('google')}>
+                <GoogleIcon />
                 Continue with Google
               </Button>
             )}
             {providers.discord && (
               <Button variant="outline" onClick={() => void social('discord')}>
+                <DiscordIcon />
                 Continue with Discord
               </Button>
             )}
