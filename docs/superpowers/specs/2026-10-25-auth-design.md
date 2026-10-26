@@ -158,6 +158,33 @@ The session cookie is shared by every tab, but each tab has its own active store
   - After sign-in it returns to where the person came from.
 - **Styling:** follows the existing components in `components/ui/`. Exact layout is the builder's call.
 
+## Decided after implementation: stored personal data
+
+Checked against Better Auth 1.7.13 source and docs on 2026-10-26.
+
+**What MongoDB holds for auth:**
+
+| Collection     | Contents                                                                 | Kept                         |
+| -------------- | ------------------------------------------------------------------------ | ---------------------------- |
+| `user`         | email, name, `emailVerified`, dates                                      | until the account is deleted |
+| `session`      | token, expiry, user id. `ipAddress` and `userAgent` are stored **empty** | 30 days, renewed on use      |
+| `account`      | one row per linked Google or Discord login                               | with the user                |
+| `verification` | email-link token **hash**, email, expiry                                 | 5 minutes                    |
+
+Resend also sees the email address and the link when it sends the email.
+
+**Email-link tokens are hashed** (`storeToken: 'hashed'`). Better Auth's default is plain text, which would let anyone who can read the database use an unexpired link.
+
+**IP address and user agent are not stored.** A `databaseHooks.session.create.before` hook in `server/auth.ts` blanks both.
+
+- **Why:** nothing in the app reads them, and they are personal data a privacy policy would have to cover.
+- **Not `advanced.ipAddress.disableIpTracking`:** it makes Better Auth's IP lookup return nothing, which also turns off the rate limiter. The limiter reads the IP from each live request and does not need it stored.
+- **Safe long term:** the session schema marks both fields `required: false`. Core Better Auth only writes them, at session creation, and never reads them back. Session validation uses the signed cookie, token, expiry and freshness. The admin and multi-session plugins never reference them either; admin bans work per account, and impersonation sessions get blanked like any other.
+- **What it costs:**
+  - **A "your devices" page** (`listSessions`, `revokeSession`, `revokeOtherSessions`) still works, but shows unlabelled lines, so it's hard to tell which session to sign out. If one is built, store a coarse label like "Chrome on Android", derived from the user agent at sign-in, instead of the raw user agent and IP. That's a small change to the same hook.
+  - **No IP history** for spotting many accounts made from one address, or for ban evasion. Neither plugin does that itself. The rate limiter or a CAPTCHA plugin is the usual first answer to abuse.
+- **Watch on upgrades:** a future Better Auth version or new plugin could start using these fields, for example for suspicious-login alerts. They would then see empty values rather than an error.
+
 ## Testing (what must be proven)
 
 - **Server store** (Mongo, extends `server/character-store.test.ts`):
