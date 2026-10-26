@@ -39,6 +39,16 @@ function buildAuth(db: Db) {
         },
       }),
     },
+    // Don't keep sign-in IPs or browsers: nothing uses them, and they are
+    // personal data. (`disableIpTracking` would also switch off rate limiting,
+    // which reads the IP from each request without storing it.)
+    databaseHooks: {
+      session: {
+        create: {
+          before: async (session) => ({ data: { ...session, ipAddress: '', userAgent: '' } }),
+        },
+      },
+    },
     // Linking needs a verified email. `trustedProviders` would skip that check
     // and let an unverified Discord email take over an account.
     account: { accountLinking: { enabled: true } },
