@@ -1,7 +1,9 @@
-import { CloudOff, CloudUpload, RefreshCw } from 'lucide-react';
+import { CloudOff, CloudUpload, LogIn, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { useSyncExternalStore } from 'react';
 import { cn } from '../../helpers/cn';
+import { getActiveOwner, subscribeActive, syncNow } from '../../helpers/offline/active';
 import { useSyncStatus } from '../../helpers/offline/hooks';
-import { syncNow } from '../../helpers/offline/sync';
 
 function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`;
@@ -9,6 +11,22 @@ function plural(count: number, one: string, many: string) {
 
 export function SyncStatus() {
   const status = useSyncStatus();
+  const owner = useSyncExternalStore(subscribeActive, getActiveOwner, () => null);
+
+  // Signed out there is nothing to sync; the header's "Sign in" covers it.
+  if (!owner) return null;
+
+  if (status.online && status.signedOut) {
+    return (
+      <Link
+        href="/sign-in"
+        className="inline-flex h-8 items-center gap-1.5 rounded-[var(--radius)] px-2 text-[11px] font-medium text-warn transition-colors hover:bg-surface-2"
+      >
+        <LogIn size={14} />
+        <span className="hidden sm:inline">Sign in to sync</span>
+      </Link>
+    );
+  }
 
   if (status.online && status.pending === 0 && !status.lastError) return null;
 

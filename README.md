@@ -14,7 +14,7 @@ The browser is the source of truth. Characters live in IndexedDB and MongoDB is 
 - Portraits are stored as blobs and synced through their own endpoint, so editing a character never re-sends image bytes.
 - If the server is unreachable or returns 5xx, sync backs off (5 s, 15 s, 30 s, 60 s). If the server rejects a character with another 4xx, only that character is marked, and it is retried after its next edit or with the badge's sync button.
 - Only one tab syncs at a time (Web Locks).
-- A service worker built by [Serwist](https://serwist.pages.dev/) precaches the app shell, so pages load offline. It is registered in production builds; set `NEXT_PUBLIC_ENABLE_SW=1` to register it under `next dev` after a `bun run build`.
+- A service worker built by [Serwist](https://serwist.pages.dev/) precaches the app shell, so pages load offline. It is registered in production builds; set `NEXT_PUBLIC_ENABLE_SW=1` to register it under `next dev` after a `bun run build`. Otherwise `next dev` unregisters any worker left from an earlier production run.
 
 ### API
 
@@ -22,7 +22,31 @@ The browser is the source of truth. Characters live in IndexedDB and MongoDB is 
 | ----------- | ---------------------------------------- | ------------------------------------------------- |
 | `GET`       | `/api/characters?since=<ms>`             | Characters changed at or after the cursor         |
 | `PUT`       | `/api/characters/:id`                    | Versioned write: `{ baseVersion, deleted, data }` |
-| `GET`/`PUT` | `/api/characters/:id/portrait?rev=<rev>` | Portrait bytes, up to 2 MiB                       |
+| `GET`/`PUT` | `/api/characters/:id/portrait?rev=<rev>` | Portrait bytes (JPEG, PNG or WebP), up to 2 MiB   |
+
+Every `/api/characters` request needs a session and an `X-WCG-Store-Owner` header naming the account whose local store it syncs. A missing session, or a header that doesn't match the signed-in user, answers `401`. Another user's character answers `404`. A store whose account was deleted answers `410`, and the client wipes it.
+
+## Accounts
+
+Sign-in uses [Better Auth](https://www.better-auth.com/) with Google, Discord and email links. Users and sessions live in the same MongoDB. Signing in only turns sync on: the app works fully signed out, and characters made signed out can be added to an account later.
+
+**Deleting an account** (account menu → _Delete account…_) emails a link to `/delete-account`, which confirms with one more click in a browser signed in to that account, offering sign-in first if needed. Confirming deletes the account's characters and portraits, then the user, sessions and linked logins. Only the deleted user's random id is kept, in `deletedUsers`, so the account's other devices get `410` on their next sync and wipe their local copy. Hidden account stores on a device (signed out, or another account open) are checked the same way once per app start.
+
+Each account has its own local store (`wcg-u-<userId>`); signed-out characters live in `wcg`. Signing out hides the account's characters on that device until it signs in again.
+
+| Variable                                     | Purpose                                                |
+| -------------------------------------------- | ------------------------------------------------------ |
+| `BETTER_AUTH_SECRET`                         | Session signing (`openssl rand -base64 32`)            |
+| `BETTER_AUTH_URL`                            | Public base URL, e.g. `http://localhost:3000`          |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | Optional; Google sign-in shows only when both are set  |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Optional; Discord sign-in shows only when both are set |
+| `SMTP_URL`, `EMAIL_FROM`                     | Email links over SMTP; required in production          |
+
+Sign-in emails go out over SMTP, so any provider works: `SMTP_URL=smtp://<login>:<key>@<host>:587` (URL-encode `@` in the login as `%40`). `EMAIL_FROM` must use a domain verified with that provider. In development without `SMTP_URL`, sign-in links print to the server console; production refuses to start without both.
+
+To enable a social provider, register an OAuth app ([Google](https://console.cloud.google.com/apis/credentials), [Discord](https://discord.com/developers/applications)) with the redirect URL `<BETTER_AUTH_URL>/api/auth/callback/google` or `.../callback/discord`.
+
+Characters written before accounts existed have no owner and are never returned. Drop the dev `characters` and `portraits` collections once.
 
 ## Development
 
@@ -32,7 +56,7 @@ bun run start:mongo   # MongoDB in Docker
 bun run dev
 ```
 
-`.env.local` needs `MONGODB_URI` and `MONGODB_DB`. While MongoDB is down the API answers `503` and the client keeps retrying; edits are safe in the browser meanwhile.
+Copy `.env.example` to `.env.local` and fill in at least `MONGODB_URI`, `MONGODB_DB` and `BETTER_AUTH_SECRET`. While MongoDB is down the API answers `503` and the client keeps retrying; edits are safe in the browser meanwhile.
 
 Other scripts:
 

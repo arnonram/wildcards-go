@@ -1,10 +1,11 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CharacterSheet from '../../components/character-sheet/CharacterSheet';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
+import { subscribeActive } from '../../helpers/offline/active';
 import { deleteCharacter } from '../../helpers/offline/characters';
 import { useCharacter } from '../../helpers/offline/hooks';
 
@@ -14,6 +15,9 @@ export default function Character() {
   const rawId = router.query.characterId;
   const characterId = Array.isArray(rawId) ? rawId[0] : rawId;
   const row = useCharacter(characterId);
+
+  // Another account's store has no business showing this sheet.
+  useEffect(() => subscribeActive(() => void router.replace('/')), [router]);
 
   const handleDelete = async () => {
     if (!characterId) return;

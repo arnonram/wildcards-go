@@ -1,6 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { AccountDeletedNotice } from './AccountDeletedNotice';
+import { AccountMenu } from './AccountMenu';
+import { AdoptDialog } from './AdoptDialog';
 import { SyncStatus } from './SyncStatus';
 import { ModeToggle, SkinMenu } from './ThemeControls';
 
@@ -20,11 +23,15 @@ export default function Layout({ children }: { children: ReactNode }) {
           </span>
           <div className="ml-auto flex items-center gap-1">
             <SyncStatus />
+            <AccountMenu />
             <SkinMenu />
             <ModeToggle />
           </div>
         </div>
       </header>
+
+      <AdoptDialog />
+      <AccountDeletedNotice />
 
       <main className="flex-1">
         <div className="mx-auto w-full max-w-7xl px-4 py-6">{children}</div>

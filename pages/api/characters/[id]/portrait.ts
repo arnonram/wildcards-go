@@ -2,7 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { CHARACTER_ID } from '../../../../dtos/sync';
 import { respondWithApiError } from '../../../../helpers/api-error';
 import { connectToDb } from '../../../../helpers/db-util';
-import { getPortrait, putPortrait } from '../../../../server/character-store';
+import { getPortrait, isPortraitType, putPortrait } from '../../../../server/character-store';
+import { authorize } from '../../../../server/session';
 
 const MAX_PORTRAIT_BYTES = 2 * 1024 * 1024;
 
@@ -27,11 +28,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return;
   }
 
+  if (req.method !== 'GET' && req.method !== 'PUT') {
+    res.status(405).json({ message: 'Method not allowed' });
+    return;
+  }
+
   try {
+    const ownerId = await authorize(req, res);
+    if (!ownerId) return;
+
     switch (req.method) {
       case 'GET': {
         const { db } = await connectToDb();
-        const portrait = await getPortrait(db, id);
+        const portrait = await getPortrait(db, ownerId, id);
         if (!portrait) {
           res.status(404).json({ message: 'No portrait' });
           return;
@@ -39,14 +48,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.setHeader('Content-Type', portrait.contentType);
         res.setHeader('X-Portrait-Rev', portrait.rev);
         res.setHeader('Cache-Control', 'no-store');
+        // Never let a browser treat the bytes as anything but an image.
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Security-Policy', "default-src 'none'");
         res.status(200).send(Buffer.from(portrait.bytes));
         return;
       }
       case 'PUT': {
         const rev = Array.isArray(req.query.rev) ? req.query.rev[0] : req.query.rev;
         const contentType = req.headers['content-type'] ?? '';
-        if (!rev || !contentType.startsWith('image/')) {
-          res.status(400).json({ message: 'Expected an image body and a rev query parameter' });
+        if (!rev) {
+          res.status(400).json({ message: 'Expected a rev query parameter' });
+          return;
+        }
+        if (!isPortraitType(contentType)) {
+          res.status(415).json({ message: 'Portrait must be JPEG, PNG or WebP' });
           return;
         }
         const bytes = await readBody(req);
@@ -55,15 +71,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return;
         }
         const { db } = await connectToDb();
-        if (!(await putPortrait(db, id, rev, contentType, bytes))) {
+        if (!(await putPortrait(db, ownerId, id, rev, contentType, bytes))) {
           res.status(404).json({ message: 'No such character' });
           return;
         }
         res.status(204).end();
         return;
       }
-      default:
-        res.status(405).json({ message: 'Method not allowed' });
     }
   } catch (error) {
     respondWithApiError(res, error, `${req.method} /api/characters/${id}/portrait`);

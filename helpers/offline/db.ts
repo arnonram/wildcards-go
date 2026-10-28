@@ -48,8 +48,6 @@ export class WcgDb extends Dexie {
   }
 }
 
-export const db = new WcgDb('wcg');
-
 /** A separate database per test, so tests never share state. */
 export function openTestDb(name: string): WcgDb {
   return new WcgDb(name);

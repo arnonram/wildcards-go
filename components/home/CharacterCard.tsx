@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { PlayingCards, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import type { CharToLoad } from '../../dtos/CharToLoad';
 import { usePortraitUrl } from '../../helpers/offline/hooks';
@@ -22,7 +22,7 @@ export function CharacterCard({ character, onDelete }: CharacterCardProps) {
             // biome-ignore lint/performance/noImgElement: portraits are local blob URLs
             <img src={portraitUrl} alt={character.name} className="size-full object-cover" />
           ) : (
-            <span className="text-[10px] uppercase tracking-wider text-faint">No image</span>
+            <PlayingCards size={36} strokeWidth={1.5} className="text-faint" aria-hidden="true" />
           )}
         </div>
         <div className="min-w-0">

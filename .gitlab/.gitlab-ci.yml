@@ -39,7 +39,7 @@ build:
 test:
   extends: .bun
   services:
-    - name: mongo:6
+    - name: mongo:9.0.2
       alias: mongo
   variables:
     MONGODB_URI: mongodb://mongo:27017
