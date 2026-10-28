@@ -9,11 +9,16 @@ import { Dialog } from '../ui/Dialog';
 import { Menu } from '../ui/Menu';
 import { DeleteAccountDialog } from './DeleteAccountDialog';
 
-const serverOwner = () => null;
+/** Before hydration the account is unknown: show neither Sign in nor an avatar. */
+const unknownOwner = () => undefined;
 
 export function AccountMenu() {
   const router = useRouter();
-  const owner = useSyncExternalStore(subscribeActive, getActiveOwner, serverOwner);
+  const owner = useSyncExternalStore<string | null | undefined>(
+    subscribeActive,
+    getActiveOwner,
+    unknownOwner,
+  );
   // Read storage only once `owner` is set: during hydration it is the server
   // snapshot (null), so the first render matches the server's "Sign in".
   const account = useMemo(() => (owner ? getRememberedAccount() : null), [owner]);
@@ -27,6 +32,8 @@ export function AccountMenu() {
   useEffect(() => {
     setSignInHref(`/sign-in?next=${encodeURIComponent(router.asPath)}`);
   }, [router.asPath]);
+
+  if (owner === undefined) return <span className="size-9" aria-hidden="true" />;
 
   if (!account) {
     // The sign-in page needs no link to itself.

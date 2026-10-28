@@ -64,7 +64,10 @@ export function ModeToggle() {
       title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
       className="inline-flex size-9 items-center justify-center rounded-[var(--radius)] text-muted transition-colors hover:bg-surface-2 hover:text-ink"
     >
-      {dark ? <Sun size={18} /> : <Moon size={18} />}
+      {/* Picked by CSS from the mode _document's script set before first
+          paint; React state only catches up after hydration. */}
+      <Sun size={18} className="hidden dark:block" />
+      <Moon size={18} className="dark:hidden" />
     </button>
   );
 }
