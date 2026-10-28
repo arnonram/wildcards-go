@@ -9,8 +9,15 @@ import { createSyncEngine, type SyncEngine, type SyncStatus } from './sync';
  * switching accounts swaps the store and its sync engine in one step.
  */
 
+const ACCOUNT_STORE_PREFIX = 'wcg-u-';
+
 export function storeName(userId: string | null): string {
-  return userId ? `wcg-u-${userId}` : 'wcg';
+  return userId ? `${ACCOUNT_STORE_PREFIX}${userId}` : 'wcg';
+}
+
+/** The account a store belongs to, or null for the signed-out store and others. */
+export function storeOwner(name: string): string | null {
+  return name.startsWith(ACCOUNT_STORE_PREFIX) ? name.slice(ACCOUNT_STORE_PREFIX.length) : null;
 }
 
 const stores = new Map<string, WcgDb>();

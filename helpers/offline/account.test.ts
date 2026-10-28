@@ -1,6 +1,7 @@
 import { beforeEach, expect, test } from 'bun:test';
 import Dexie from 'dexie';
 import {
+  confirmAccountDeletion,
   dismissDeletedNotice,
   forgetDeletedAccount,
   getDeletedNotice,
@@ -11,6 +12,7 @@ import {
   restoreRememberedAccount,
   signOutOfDevice,
   startAccounts,
+  sweepDeletedStores,
   toAccount,
 } from './account';
 import { activateStore, getActiveOwner } from './active';
@@ -189,4 +191,65 @@ test('a refused deletion request throws', async () => {
   await expect(
     requestAccountDeletion(async () => ({ error: { message: 'Too many requests' } })),
   ).rejects.toThrow('Too many requests');
+});
+
+test('confirming deletion wipes this device at once', async () => {
+  const user = `u-${crypto.randomUUID()}`;
+  rememberAccount(account(user));
+  await createCharacter();
+  expect(await confirmAccountDeletion('tok', async () => ({ error: null }))).toBe('deleted');
+  expect(getActiveOwner()).toBeNull();
+  expect(getRememberedAccount()).toBeNull();
+  expect(await Dexie.exists(`wcg-u-${user}`)).toBe(false);
+  expect(getDeletedNotice()).toBe(true);
+  dismissDeletedNotice();
+});
+
+test('confirming deletion without a session asks to sign in and keeps everything', async () => {
+  rememberAccount(account('u-a'));
+  const result = await confirmAccountDeletion('tok', async () => ({
+    error: { status: 401, message: 'Unauthorized' },
+  }));
+  expect(result).toBe('signed-out');
+  expect(getActiveOwner()).toBe('u-a');
+});
+
+test('confirming deletion with a used or expired link reports it', async () => {
+  rememberAccount(account('u-a'));
+  const result = await confirmAccountDeletion('tok', async () => ({
+    error: { status: 404, code: 'INVALID_TOKEN', message: 'Invalid token' },
+  }));
+  expect(result).toBe('invalid');
+  expect(getActiveOwner()).toBe('u-a');
+});
+
+test('hidden stores of deleted accounts are wiped; live and active ones stay', async () => {
+  const gone = `u-${crypto.randomUUID()}`;
+  const alive = `u-${crypto.randomUUID()}`;
+  const active = `u-${crypto.randomUUID()}`;
+  for (const user of [gone, alive]) {
+    activateStore(user);
+    await createCharacter();
+  }
+  rememberAccount(account(active));
+  const probed: string[] = [];
+  await sweepDeletedStores(async (userId) => {
+    probed.push(userId);
+    return userId === gone;
+  });
+  expect(probed).not.toContain(active);
+  expect(probed).toEqual(expect.arrayContaining([gone, alive]));
+  expect(await Dexie.exists(`wcg-u-${gone}`)).toBe(false);
+  expect(await Dexie.exists(`wcg-u-${alive}`)).toBe(true);
+  expect(getActiveOwner()).toBe(active);
+});
+
+test('the sweep does nothing offline', async () => {
+  setOnline(false);
+  let probed = false;
+  await sweepDeletedStores(async () => {
+    probed = true;
+    return true;
+  });
+  expect(probed).toBe(false);
 });

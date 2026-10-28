@@ -1,9 +1,12 @@
+import Dexie from 'dexie';
+import { STORE_OWNER_HEADER } from '../../dtos/sync';
 import {
   activateStore,
   deleteStore,
   getActiveDb,
   getActiveOwner,
   getSyncStatus,
+  storeOwner,
   subscribeSync,
 } from './active';
 
@@ -103,6 +106,61 @@ export async function forgetDeletedAccount(userId: string): Promise<void> {
   setDeletedNotice(true);
 }
 
+type AuthResult = { error?: { status?: number; code?: string; message?: string } | null };
+
+async function serverConfirmDeletion(token: string): Promise<AuthResult> {
+  const { authClient } = await import('../auth-client');
+  return authClient.deleteUser({ token }) as Promise<AuthResult>;
+}
+
+/**
+ * Finish a deletion from the emailed link. Better Auth only deletes with the
+ * account's session in this browser; on success this device is wiped at once.
+ */
+export async function confirmAccountDeletion(
+  token: string,
+  request: (token: string) => Promise<AuthResult> = serverConfirmDeletion,
+): Promise<'deleted' | 'signed-out' | 'invalid'> {
+  const owner = getActiveOwner();
+  const { error } = await request(token);
+  if (error) {
+    if (error.status === 401 || error.code === 'FAILED_TO_GET_USER_INFO') return 'signed-out';
+    if (error.code === 'INVALID_TOKEN') return 'invalid';
+    throw new Error(error.message || 'Could not delete the account');
+  }
+  if (owner) await forgetDeletedAccount(owner);
+  return 'deleted';
+}
+
+/** True when the server says this account was deleted (410 before any session check). */
+async function accountWasDeleted(userId: string): Promise<boolean> {
+  const response = await fetch(`/api/characters?since=${Date.now()}`, {
+    cache: 'no-store',
+    headers: { [STORE_OWNER_HEADER]: userId },
+  });
+  return response.status === 410;
+}
+
+/**
+ * Hidden account stores (signed out, or another account open) never sync, so
+ * they would never see a 410. Ask about each one once per start and wipe the
+ * stores of deleted accounts.
+ */
+export async function sweepDeletedStores(
+  isDeleted: (userId: string) => Promise<boolean> = accountWasDeleted,
+): Promise<void> {
+  if (!navigator.onLine) return;
+  for (const name of await Dexie.getDatabaseNames()) {
+    const userId = storeOwner(name);
+    if (!userId || userId === getActiveOwner()) continue;
+    try {
+      if (await isDeleted(userId)) await deleteStore(userId);
+    } catch (error) {
+      console.warn(`Could not check whether account ${userId} still exists:`, error);
+    }
+  }
+}
+
 /** Watch the sync status of whichever account is open for a 410. */
 function watchForDeletion(): () => void {
   return subscribeSync(() => {
@@ -169,6 +227,7 @@ export async function startAccounts(
     } catch (error) {
       console.warn('Could not check the session; using the remembered account:', error);
     }
+    if (typeof window !== 'undefined') void sweepDeletedStores();
   }
   return stop;
 }

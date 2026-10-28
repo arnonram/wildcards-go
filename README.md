@@ -30,7 +30,7 @@ Every `/api/characters` request needs a session and an `X-WCG-Store-Owner` heade
 
 Sign-in uses [Better Auth](https://www.better-auth.com/) with Google, Discord and email links. Users and sessions live in the same MongoDB. Signing in only turns sync on: the app works fully signed out, and characters made signed out can be added to an account later.
 
-**Deleting an account** (account menu → _Delete account…_) emails a confirmation link that must be opened in a browser signed in to that account. Confirming deletes the account's characters and portraits, then the user, sessions and linked logins. Only the deleted user's random id is kept, in `deletedUsers`, so the account's other devices get `410` on their next sync and wipe their local copy.
+**Deleting an account** (account menu → _Delete account…_) emails a link to `/delete-account`, which confirms with one more click in a browser signed in to that account, offering sign-in first if needed. Confirming deletes the account's characters and portraits, then the user, sessions and linked logins. Only the deleted user's random id is kept, in `deletedUsers`, so the account's other devices get `410` on their next sync and wipe their local copy. Hidden account stores on a device (signed out, or another account open) are checked the same way once per app start.
 
 Each account has its own local store (`wcg-u-<userId>`); signed-out characters live in `wcg`. Signing out hides the account's characters on that device until it signs in again.
 

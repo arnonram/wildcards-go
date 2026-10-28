@@ -23,8 +23,9 @@ export function deleteAccountEmail(to: string, url: string): Email {
     subject: 'Confirm deleting your Wild Cards Go account',
     text:
       'Open this link in the browser where you are signed in to Wild Cards Go to delete your ' +
-      `account and all its characters:\n\n${url}\n\nThis link expires in 1 hour. If you did ` +
-      'not ask to delete your account, ignore this email.',
+      `account and all its characters:\n\n${url}\n\nIf it asks you to sign in, do that ` +
+      'first. This link expires in 1 hour. If you did not ask to delete your account, ' +
+      'ignore this email.',
   };
 }
 

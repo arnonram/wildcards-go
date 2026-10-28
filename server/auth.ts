@@ -16,6 +16,15 @@ export function enabledProviders() {
   };
 }
 
+/**
+ * The emailed link opens an app page rather than Better Auth's bare callback,
+ * which answers JSON errors and needs the session in whatever browser the
+ * mail client picks. The page explains, offers sign-in, then confirms.
+ */
+export function deleteAccountPageUrl(callbackUrl: string, token: string): string {
+  return new URL(`/delete-account?token=${encodeURIComponent(token)}`, callbackUrl).toString();
+}
+
 function buildAuth(db: Db) {
   const enabled = enabledProviders();
   return betterAuth({
@@ -57,8 +66,8 @@ function buildAuth(db: Db) {
       deleteUser: {
         enabled: true,
         deleteTokenExpiresIn: 60 * 60,
-        sendDeleteAccountVerification: ({ user, url }) =>
-          sendEmail(deleteAccountEmail(user.email, url)),
+        sendDeleteAccountVerification: ({ user, url, token }) =>
+          sendEmail(deleteAccountEmail(user.email, deleteAccountPageUrl(url, token))),
         beforeDelete: (user) => deleteOwnerData(db, user.id),
         afterDelete: (user) => markUserDeleted(db, user.id, Date.now()),
       },
