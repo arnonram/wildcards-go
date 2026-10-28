@@ -1,7 +1,7 @@
 import { LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { getRememberedAccount, signOutOfDevice } from '../../helpers/offline/account';
 import { getActiveOwner, subscribeActive } from '../../helpers/offline/active';
 import { Button } from '../ui/Button';
@@ -19,11 +19,19 @@ export function AccountMenu() {
   const [unsynced, setUnsynced] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const answer = useRef<((proceed: boolean) => void) | null>(null);
+  // A prerendered page's asPath lacks the query on the server, so the return
+  // path is only added after hydration.
+  const [signInHref, setSignInHref] = useState('/sign-in');
+  useEffect(() => {
+    setSignInHref(`/sign-in?next=${encodeURIComponent(router.asPath)}`);
+  }, [router.asPath]);
 
   if (!account) {
+    // The sign-in page needs no link to itself.
+    if (router.pathname === '/sign-in') return null;
     return (
       <Link
-        href={`/sign-in?next=${encodeURIComponent(router.asPath)}`}
+        href={signInHref}
         className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius)] px-2 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-ink"
       >
         <LogIn size={16} />
