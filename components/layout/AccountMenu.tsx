@@ -13,8 +13,9 @@ const serverOwner = () => null;
 export function AccountMenu() {
   const router = useRouter();
   const owner = useSyncExternalStore(subscribeActive, getActiveOwner, serverOwner);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-read when the active account changes
-  const account = useMemo(() => getRememberedAccount(), [owner]);
+  // Read storage only once `owner` is set: during hydration it is the server
+  // snapshot (null), so the first render matches the server's "Sign in".
+  const account = useMemo(() => (owner ? getRememberedAccount() : null), [owner]);
   const [unsynced, setUnsynced] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
   const answer = useRef<((proceed: boolean) => void) | null>(null);
