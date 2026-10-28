@@ -32,6 +32,9 @@ function buildAuth(db: Db) {
     secret: process.env.BETTER_AUTH_SECRET,
     // Standalone MongoDB has no transactions, so no `client` option.
     database: mongodbAdapter(db),
+    // Counters in MongoDB, shared by every serverless instance; in memory each
+    // instance would count alone. The limiter itself only runs in production.
+    rateLimit: { storage: 'database' },
     // Long and rolling, so offline play at the table never logs anyone out.
     // No cookie cache: revoking a session takes effect at once.
     session: { expiresIn: 30 * DAY, updateAge: DAY },

@@ -40,7 +40,7 @@ The plan for the first public deployment of Wild Cards Go, as agreed on 2026-10-
   5. Two tabs: sign in as someone else in one; the other tab switches.
   6. Offline: sign-out shows "Signing out needs a connection".
   7. Delete the session cookie: the badge shows "Sign in to sync".
-- [ ] **Switch Better Auth's rate limiter to the database.** It keeps counts in memory by default, which on Vercel is per serverless instance, so it barely limits. In `server/auth.ts`: `rateLimit: { storage: 'database' }`.
+- [x] **Better Auth's rate limiter keeps its counters in MongoDB** (`rateLimit: { storage: 'database' }`), shared by every Vercel instance; in memory each instance would count alone. It only runs in production.
 - [ ] **Send a real email from dev through Brevo:**
   - set `SMTP_URL` and `EMAIL_FROM` in `.env.local` and sign in with your own address
   - check the email arrives, isn't in spam, and its link points straight at the app, not a Brevo tracking domain
