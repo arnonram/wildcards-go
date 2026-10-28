@@ -2,11 +2,31 @@ import nodemailer from 'nodemailer';
 
 type EmailEnv = { NODE_ENV?: string; SMTP_URL?: string; EMAIL_FROM?: string };
 
-type Message = { from: string; to: string; subject: string; text: string };
-type Transport = { sendMail(message: Message): Promise<unknown> };
+export type Email = { to: string; subject: string; text: string };
+type Transport = { sendMail(message: Email & { from: string }): Promise<unknown> };
 type CreateTransport = (smtpUrl: string) => Transport;
 
-export type SendSignInEmail = (email: string, url: string) => Promise<void>;
+export type SendEmail = (message: Email) => Promise<void>;
+
+export function signInEmail(to: string, url: string): Email {
+  return {
+    to,
+    subject: 'Sign in to Wild Cards Go',
+    text: `Sign in to Wild Cards Go:\n\n${url}\n\nThis link expires in 5 minutes.`,
+  };
+}
+
+/** The confirmation only works in a browser with that account's session. */
+export function deleteAccountEmail(to: string, url: string): Email {
+  return {
+    to,
+    subject: 'Confirm deleting your Wild Cards Go account',
+    text:
+      'Open this link in the browser where you are signed in to Wild Cards Go to delete your ' +
+      `account and all its characters:\n\n${url}\n\nThis link expires in 1 hour. If you did ` +
+      'not ask to delete your account, ignore this email.',
+  };
+}
 
 /**
  * Sends sign-in links over SMTP, so the provider is a configuration choice:
@@ -17,14 +37,14 @@ export type SendSignInEmail = (email: string, url: string) => Promise<void>;
 export function createEmailSender(
   env: EmailEnv,
   createTransport: CreateTransport = (smtpUrl) => nodemailer.createTransport(smtpUrl),
-): SendSignInEmail {
+): SendEmail {
   const { SMTP_URL, EMAIL_FROM } = env;
   if (!SMTP_URL) {
     if (env.NODE_ENV === 'production') {
       throw new Error('SMTP_URL is required in production');
     }
-    return async (email, url) => {
-      console.info(`[auth] Sign-in link for ${email}: ${url}`);
+    return async ({ to, subject, text }) => {
+      console.info(`[email] To ${to}: ${subject}\n${text}`);
     };
   }
 
@@ -38,20 +58,15 @@ export function createEmailSender(
   if (!EMAIL_FROM) throw new Error('EMAIL_FROM is required when SMTP_URL is set');
   const transport = createTransport(SMTP_URL);
 
-  return async (email, url) => {
-    await transport.sendMail({
-      from: EMAIL_FROM,
-      to: email,
-      subject: 'Sign in to Wild Cards Go',
-      text: `Sign in to Wild Cards Go:\n\n${url}\n\nThis link expires in 5 minutes.`,
-    });
+  return async (message) => {
+    await transport.sendMail({ from: EMAIL_FROM, ...message });
   };
 }
 
-let sender: SendSignInEmail | undefined;
+let sender: SendEmail | undefined;
 
 /** Created on first use, so importing this module never throws. */
-export const sendSignInEmail: SendSignInEmail = (email, url) => {
+export const sendEmail: SendEmail = (message) => {
   sender ??= createEmailSender(process.env);
-  return sender(email, url);
+  return sender(message);
 };

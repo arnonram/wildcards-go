@@ -7,6 +7,7 @@ import { getActiveOwner, subscribeActive } from '../../helpers/offline/active';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { Menu } from '../ui/Menu';
+import { DeleteAccountDialog } from './DeleteAccountDialog';
 
 const serverOwner = () => null;
 
@@ -18,6 +19,7 @@ export function AccountMenu() {
   const account = useMemo(() => (owner ? getRememberedAccount() : null), [owner]);
   const [unsynced, setUnsynced] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const answer = useRef<((proceed: boolean) => void) | null>(null);
   // A prerendered page's asPath lacks the query on the server, so the return
   // path is only added after hydration.
@@ -89,6 +91,12 @@ export function AccountMenu() {
               >
                 Sign out
               </Menu.Item>
+              <Menu.Item
+                onClick={() => setDeleting(true)}
+                className="flex cursor-default select-none items-center rounded-[calc(var(--radius)-1px)] px-2 py-1.5 text-sm text-danger outline-none data-[highlighted]:bg-surface-2"
+              >
+                Delete account…
+              </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>
@@ -109,6 +117,8 @@ export function AccountMenu() {
           </>
         }
       />
+
+      <DeleteAccountDialog open={deleting} onOpenChange={setDeleting} />
 
       <Dialog
         open={notice !== null}

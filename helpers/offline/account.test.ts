@@ -1,8 +1,13 @@
 import { beforeEach, expect, test } from 'bun:test';
+import Dexie from 'dexie';
 import {
+  dismissDeletedNotice,
+  forgetDeletedAccount,
+  getDeletedNotice,
   getRememberedAccount,
   onAccountStorage,
   rememberAccount,
+  requestAccountDeletion,
   restoreRememberedAccount,
   signOutOfDevice,
   startAccounts,
@@ -143,4 +148,45 @@ test('sign-out the server refuses keeps the account', async () => {
   ).rejects.toThrow('Database unavailable');
   expect(getActiveOwner()).toBe('u-a');
   expect(getRememberedAccount()?.userId).toBe('u-a');
+});
+
+test('a deleted account is wiped from this device and the app signs out', async () => {
+  const user = `u-${crypto.randomUUID()}`;
+  rememberAccount(account(user));
+  await createCharacter();
+  await forgetDeletedAccount(user);
+  expect(getActiveOwner()).toBeNull();
+  expect(getRememberedAccount()).toBeNull();
+  expect(await Dexie.exists(`wcg-u-${user}`)).toBe(false);
+  expect(getDeletedNotice()).toBe(true);
+  dismissDeletedNotice();
+  expect(getDeletedNotice()).toBe(false);
+});
+
+test('wiping a deleted account that is not the remembered one keeps the current account', async () => {
+  const gone = `u-${crypto.randomUUID()}`;
+  activateStore(gone);
+  await createCharacter();
+  rememberAccount(account('u-current'));
+  await forgetDeletedAccount(gone);
+  expect(getActiveOwner()).toBe('u-current');
+  expect(await Dexie.exists(`wcg-u-${gone}`)).toBe(false);
+});
+
+test('requesting deletion offline sends nothing', async () => {
+  setOnline(false);
+  let sent = false;
+  expect(
+    await requestAccountDeletion(async () => {
+      sent = true;
+      return { error: null };
+    }),
+  ).toBe('offline');
+  expect(sent).toBe(false);
+});
+
+test('a refused deletion request throws', async () => {
+  await expect(
+    requestAccountDeletion(async () => ({ error: { message: 'Too many requests' } })),
+  ).rejects.toThrow('Too many requests');
 });

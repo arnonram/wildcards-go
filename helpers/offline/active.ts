@@ -25,6 +25,14 @@ function storeFor(userId: string | null): WcgDb {
   return store;
 }
 
+/** Delete an account's local store. It must not be the active one. */
+export async function deleteStore(userId: string): Promise<void> {
+  if (userId === owner) throw new Error('Cannot delete the active store');
+  const store = storeFor(userId);
+  stores.delete(store.name);
+  await store.delete();
+}
+
 let owner: string | null = null;
 let database = storeFor(null);
 let engine: SyncEngine | null = null;
@@ -128,6 +136,7 @@ export function getSyncStatus(): SyncStatus {
       conflicts: 0,
       lastError: null,
       signedOut: true,
+      accountDeleted: false,
     };
   }
   return signedOutStatus;

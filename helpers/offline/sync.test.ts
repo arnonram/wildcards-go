@@ -364,3 +364,24 @@ test('a disposed engine neither retries nor reruns', async () => {
   expect(engine.retryScheduled()).toBe(false);
   expect(requests).toHaveLength(1);
 });
+
+test('410 sets accountDeleted without marking rows or scheduling a retry', async () => {
+  const id = await createCharacter(db);
+  handler = () => json(410, { message: 'Account deleted' });
+  await engine.syncNow();
+  expect(engine.getStatus().accountDeleted).toBe(true);
+  expect(engine.getStatus().lastError).toBeNull();
+  expect((await row(id)).syncError).toBeUndefined();
+  expect(engine.retryScheduled()).toBe(false);
+});
+
+test('a run that ends with its store deleted finishes without errors', async () => {
+  await createCharacter(db);
+  handler = () => json(410, { message: 'Account deleted' });
+  engine.subscribe(() => {
+    if (!engine.getStatus().accountDeleted) return;
+    engine.dispose();
+    void db.delete();
+  });
+  await engine.syncNow();
+});

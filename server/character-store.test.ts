@@ -3,10 +3,13 @@ import { type Db, MongoClient } from 'mongodb';
 import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
 import {
   CURSOR_LAG_MS,
+  deleteOwnerData,
   ensureIndexes,
   getPortrait,
   isPortraitType,
+  isUserDeleted,
   listChangedSince,
+  markUserDeleted,
   putCharacter,
   putPortrait,
 } from './character-store';
@@ -255,5 +258,44 @@ describe('ownership', () => {
     expect(isPortraitType('image/png')).toBe(true);
     expect(isPortraitType('image/svg+xml')).toBe(false);
     expect(isPortraitType('text/html')).toBe(false);
+  });
+});
+
+describe('account deletion', () => {
+  test("deleteOwnerData removes the owner's characters and portraits only", async () => {
+    const mine = character('Mine');
+    const theirs = character('Theirs');
+    await putCharacter(db, A, mine.id, { baseVersion: 0, deleted: false, data: mine.data }, 1000);
+    await putCharacter(
+      db,
+      B,
+      theirs.id,
+      { baseVersion: 0, deleted: false, data: theirs.data },
+      1000,
+    );
+    await putPortrait(db, A, mine.id, 'r1', 'image/webp', new Uint8Array([1]));
+    await putPortrait(db, B, theirs.id, 'r2', 'image/webp', new Uint8Array([2]));
+
+    await deleteOwnerData(db, A);
+
+    expect((await listChangedSince(db, A, 0, FAR_FUTURE)).characters).toEqual([]);
+    expect(await db.collection('portraits').countDocuments({ _id: mine.id as never })).toBe(0);
+    expect((await listChangedSince(db, B, 0, FAR_FUTURE)).characters).toHaveLength(1);
+    expect((await getPortrait(db, B, theirs.id))?.rev).toBe('r2');
+  });
+
+  test('a deleted user is remembered by id only', async () => {
+    expect(await isUserDeleted(db, A)).toBe(false);
+    await markUserDeleted(db, A, 5000);
+    expect(await isUserDeleted(db, A)).toBe(true);
+    expect(await isUserDeleted(db, B)).toBe(false);
+    const doc = await db.collection('deletedUsers').findOne({});
+    expect(Object.keys(doc ?? {}).sort()).toEqual(['_id', 'deletedAt']);
+  });
+
+  test('marking a user deleted twice is harmless', async () => {
+    await markUserDeleted(db, A, 5000);
+    await markUserDeleted(db, A, 6000);
+    expect(await db.collection('deletedUsers').countDocuments()).toBe(1);
   });
 });

@@ -192,3 +192,33 @@ export async function getPortrait(
     bytes: doc.data.buffer.subarray(0, doc.data.position),
   };
 }
+
+interface DeletedUserDoc {
+  _id: string;
+  deletedAt: Date;
+}
+
+/** Everything an account owns in this app; Better Auth removes its own records. */
+export async function deleteOwnerData(db: Db, ownerId: string): Promise<void> {
+  const owned = await characters(db)
+    .find({ ownerId }, { projection: { _id: 1 } })
+    .toArray();
+  await db
+    .collection<PortraitDoc>('portraits')
+    .deleteMany({ _id: { $in: owned.map((doc) => doc._id) } });
+  await characters(db).deleteMany({ ownerId });
+}
+
+/**
+ * Remember that an account was deleted, by its random id only, so its devices
+ * can tell "deleted" (410) from "signed out" (401) and wipe their local copy.
+ */
+export async function markUserDeleted(db: Db, userId: string, now: number): Promise<void> {
+  await db
+    .collection<DeletedUserDoc>('deletedUsers')
+    .updateOne({ _id: userId }, { $setOnInsert: { deletedAt: new Date(now) } }, { upsert: true });
+}
+
+export async function isUserDeleted(db: Db, userId: string): Promise<boolean> {
+  return (await db.collection<DeletedUserDoc>('deletedUsers').countDocuments({ _id: userId })) > 0;
+}

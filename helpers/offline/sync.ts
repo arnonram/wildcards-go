@@ -18,6 +18,8 @@ export interface SyncStatus {
   lastError: string | null;
   /** The server answered 401: this store's account is not signed in here. */
   signedOut: boolean;
+  /** The server answered 410: this store's account was deleted. */
+  accountDeleted: boolean;
 }
 
 export interface SyncEngine {
@@ -43,6 +45,7 @@ function isPermanent(error: unknown) {
     error.status >= 400 &&
     error.status < 500 &&
     error.status !== 401 &&
+    error.status !== 410 &&
     error.status !== 408 &&
     error.status !== 429
   );
@@ -72,6 +75,9 @@ function sameContent(server: ServerCharacter, row: LocalCharacter) {
 /** Stops the current run: no request can succeed until this account signs in again. */
 class SignedOut extends Error {}
 
+/** Stops the current run for good: this store's account no longer exists. */
+class AccountDeleted extends Error {}
+
 /** Stops the current run: the server is unreachable, so later requests would fail too. */
 class Unreachable extends Error {
   constructor(readonly cause: unknown) {
@@ -87,6 +93,7 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
     conflicts: 0,
     lastError: null,
     signedOut: false,
+    accountDeleted: false,
   };
   const listeners = new Set<() => void>();
   let running: Promise<void> | null = null;
@@ -154,6 +161,7 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
       return await action();
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) throw new SignedOut();
+      if (error instanceof ApiError && error.status === 410) throw new AccountDeleted();
       if (isPermanent(error)) {
         await onPermanent(error as ApiError);
         return undefined;
@@ -341,6 +349,9 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
         // Not a failure to retry: nothing will succeed until a sign-in.
         resetRetry();
         setStatus({ signedOut: true });
+      } else if (error instanceof AccountDeleted) {
+        resetRetry();
+        setStatus({ accountDeleted: true });
       } else if (error instanceof Unreachable) {
         lastError = error.message;
         scheduleRetry();
@@ -348,14 +359,18 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
         throw error;
       }
     } finally {
-      // Rows rejected earlier keep the badge in its error state until edited.
-      const stillRejected = await database.characters
-        .where('dirty')
-        .equals(1)
-        .filter((row) => Boolean(row.syncError))
-        .first();
-      setStatus({ syncing: false, lastError: lastError ?? stillRejected?.syncError ?? null });
-      await refreshCounts();
+      // Disposed mid-run, e.g. a deleted account whose store is being wiped:
+      // its status no longer matters and its database may be gone.
+      if (!disposed) {
+        // Rows rejected earlier keep the badge in its error state until edited.
+        const stillRejected = await database.characters
+          .where('dirty')
+          .equals(1)
+          .filter((row) => Boolean(row.syncError))
+          .first();
+        setStatus({ syncing: false, lastError: lastError ?? stillRejected?.syncError ?? null });
+        await refreshCounts();
+      }
     }
   }
 

@@ -24,11 +24,13 @@ The browser is the source of truth. Characters live in IndexedDB and MongoDB is 
 | `PUT`       | `/api/characters/:id`                    | Versioned write: `{ baseVersion, deleted, data }` |
 | `GET`/`PUT` | `/api/characters/:id/portrait?rev=<rev>` | Portrait bytes (JPEG, PNG or WebP), up to 2 MiB   |
 
-Every `/api/characters` request needs a session and an `X-WCG-Store-Owner` header naming the account whose local store it syncs. A missing session, or a header that doesn't match the signed-in user, answers `401`. Another user's character answers `404`.
+Every `/api/characters` request needs a session and an `X-WCG-Store-Owner` header naming the account whose local store it syncs. A missing session, or a header that doesn't match the signed-in user, answers `401`. Another user's character answers `404`. A store whose account was deleted answers `410`, and the client wipes it.
 
 ## Accounts
 
 Sign-in uses [Better Auth](https://www.better-auth.com/) with Google, Discord and email links. Users and sessions live in the same MongoDB. Signing in only turns sync on: the app works fully signed out, and characters made signed out can be added to an account later.
+
+**Deleting an account** (account menu → _Delete account…_) emails a confirmation link that must be opened in a browser signed in to that account. Confirming deletes the account's characters and portraits, then the user, sessions and linked logins. Only the deleted user's random id is kept, in `deletedUsers`, so the account's other devices get `410` on their next sync and wipe their local copy.
 
 Each account has its own local store (`wcg-u-<userId>`); signed-out characters live in `wcg`. Signing out hides the account's characters on that device until it signs in again.
 

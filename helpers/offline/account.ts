@@ -1,4 +1,11 @@
-import { activateStore, getActiveDb } from './active';
+import {
+  activateStore,
+  deleteStore,
+  getActiveDb,
+  getActiveOwner,
+  getSyncStatus,
+  subscribeSync,
+} from './active';
 
 /**
  * The last signed-in account, remembered so the app opens the right store at
@@ -61,6 +68,53 @@ export function onAccountStorage(event: { key: string | null }): void {
   activateStore(getRememberedAccount()?.userId ?? null);
 }
 
+/* "This account was deleted" notice. */
+
+let deletedNotice = false;
+const noticeListeners = new Set<() => void>();
+
+function setDeletedNotice(value: boolean) {
+  deletedNotice = value;
+  for (const listener of noticeListeners) listener();
+}
+
+export function getDeletedNotice(): boolean {
+  return deletedNotice;
+}
+
+export function subscribeDeletedNotice(listener: () => void): () => void {
+  noticeListeners.add(listener);
+  return () => noticeListeners.delete(listener);
+}
+
+export function dismissDeletedNotice(): void {
+  setDeletedNotice(false);
+}
+
+/**
+ * The server says this account was deleted: wipe its local store. If it was
+ * the open account, sign out on this device; other tabs follow through the
+ * storage event and their own 410s.
+ */
+export async function forgetDeletedAccount(userId: string): Promise<void> {
+  if (getRememberedAccount()?.userId === userId) rememberAccount(null);
+  else if (getActiveOwner() === userId) restoreRememberedAccount();
+  await deleteStore(userId);
+  setDeletedNotice(true);
+}
+
+/** Watch the sync status of whichever account is open for a 410. */
+function watchForDeletion(): () => void {
+  return subscribeSync(() => {
+    const owner = getActiveOwner();
+    if (owner && getSyncStatus().accountDeleted) {
+      forgetDeletedAccount(owner).catch((error) => {
+        console.error('Could not remove the deleted account from this device:', error);
+      });
+    }
+  });
+}
+
 async function sessionAccount(): Promise<Account | null> {
   const { authClient } = await import('../auth-client');
   const { data } = await authClient.getSession();
@@ -70,6 +124,24 @@ async function sessionAccount(): Promise<Account | null> {
 async function serverSignOut(): Promise<unknown> {
   const { authClient } = await import('../auth-client');
   return authClient.signOut();
+}
+
+async function serverDeleteRequest(): Promise<unknown> {
+  const { authClient } = await import('../auth-client');
+  return authClient.deleteUser({ callbackURL: '/' });
+}
+
+/**
+ * Ask the server to email a confirmation link. Deletion happens when the link
+ * is opened in a browser signed in to this account.
+ */
+export async function requestAccountDeletion(
+  request: () => Promise<unknown> = serverDeleteRequest,
+): Promise<'offline' | 'sent'> {
+  if (!navigator.onLine) return 'offline';
+  const result = (await request()) as { error?: { message?: string } | null } | undefined;
+  if (result?.error) throw new Error(result.error.message || 'Could not send the email');
+  return 'sent';
 }
 
 /**
@@ -84,7 +156,9 @@ export async function startAccounts(
 
   const handleStorage = (event: StorageEvent) => onAccountStorage(event);
   if (typeof window !== 'undefined') window.addEventListener('storage', handleStorage);
+  const stopWatching = watchForDeletion();
   const stop = () => {
+    stopWatching();
     if (typeof window !== 'undefined') window.removeEventListener('storage', handleStorage);
   };
 

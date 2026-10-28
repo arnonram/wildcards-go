@@ -3,7 +3,8 @@ import { betterAuth } from 'better-auth';
 import { magicLink } from 'better-auth/plugins';
 import type { Db } from 'mongodb';
 import { connectToDb } from '../helpers/db-util';
-import { sendSignInEmail } from './email';
+import { deleteOwnerData, markUserDeleted } from './character-store';
+import { deleteAccountEmail, sendEmail, signInEmail } from './email';
 
 const DAY = 60 * 60 * 24;
 
@@ -49,6 +50,19 @@ function buildAuth(db: Db) {
         },
       },
     },
+    // Deleting needs a link sent by email, opened where the account is signed
+    // in. App data goes first, so a failure never leaves orphaned characters;
+    // the deleted id is recorded last, so devices only wipe once it's done.
+    user: {
+      deleteUser: {
+        enabled: true,
+        deleteTokenExpiresIn: 60 * 60,
+        sendDeleteAccountVerification: ({ user, url }) =>
+          sendEmail(deleteAccountEmail(user.email, url)),
+        beforeDelete: (user) => deleteOwnerData(db, user.id),
+        afterDelete: (user) => markUserDeleted(db, user.id, Date.now()),
+      },
+    },
     // Linking needs a verified email. `trustedProviders` would skip that check
     // and let an unverified Discord email take over an account.
     account: { accountLinking: { enabled: true } },
@@ -56,7 +70,7 @@ function buildAuth(db: Db) {
       magicLink({
         // Store only a hash, so a database leak exposes no usable sign-in link.
         storeToken: 'hashed',
-        sendMagicLink: ({ email, url }) => sendSignInEmail(email, url),
+        sendMagicLink: ({ email, url }) => sendEmail(signInEmail(email, url)),
       }),
     ],
   });
@@ -64,15 +78,17 @@ function buildAuth(db: Db) {
 
 export type Auth = ReturnType<typeof buildAuth>;
 
-const cache = globalThis as typeof globalThis & { __wcgAuth?: Promise<Auth> };
+// Module scope, not globalThis: a hot reload rebuilds the instance so config
+// edits apply, while the MongoDB connection underneath stays shared.
+let auth: Promise<Auth> | undefined;
 
 /** One instance on the shared connection; a failed build is retried next call. */
 export function getAuth(): Promise<Auth> {
-  cache.__wcgAuth ??= connectToDb()
+  auth ??= connectToDb()
     .then(({ db }) => buildAuth(db))
     .catch((error) => {
-      cache.__wcgAuth = undefined;
+      auth = undefined;
       throw error;
     });
-  return cache.__wcgAuth;
+  return auth;
 }

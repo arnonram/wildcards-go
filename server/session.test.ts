@@ -22,9 +22,14 @@ function fakeRes() {
   return res;
 }
 
-function call(headers: Record<string, string>, user: string | null) {
+function call(headers: Record<string, string>, user: string | null, deleted: string[] = []) {
   const res = fakeRes();
-  const result = authorize(req(headers), res as unknown as NextApiResponse, async () => user);
+  const result = authorize(
+    req(headers),
+    res as unknown as NextApiResponse,
+    async () => user,
+    async (id) => deleted.includes(id),
+  );
   return { res, result };
 }
 
@@ -50,4 +55,16 @@ test('matching store owner returns the user id', async () => {
   const { res, result } = call({ 'x-wcg-store-owner': 'u1' }, 'u1');
   expect(await result).toBe('u1');
   expect(res.statusCode).toBeUndefined();
+});
+
+test('a store whose account was deleted gets 410', async () => {
+  const { res, result } = call({ 'x-wcg-store-owner': 'gone' }, null, ['gone']);
+  expect(await result).toBeNull();
+  expect(res.statusCode).toBe(410);
+});
+
+test('a deleted store owner gets 410 even when another user is signed in', async () => {
+  const { res, result } = call({ 'x-wcg-store-owner': 'gone' }, 'u1', ['gone']);
+  expect(await result).toBeNull();
+  expect(res.statusCode).toBe(410);
 });

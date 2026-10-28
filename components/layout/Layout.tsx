@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { AccountDeletedNotice } from './AccountDeletedNotice';
 import { AccountMenu } from './AccountMenu';
 import { AdoptDialog } from './AdoptDialog';
 import { SyncStatus } from './SyncStatus';
@@ -30,6 +31,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </header>
 
       <AdoptDialog />
+      <AccountDeletedNotice />
 
       <main className="flex-1">
         <div className="mx-auto w-full max-w-7xl px-4 py-6">{children}</div>
