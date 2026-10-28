@@ -1,42 +1,43 @@
-type EmailEnv = { NODE_ENV?: string; RESEND_API_KEY?: string; EMAIL_FROM?: string };
+import nodemailer from 'nodemailer';
+
+type EmailEnv = { NODE_ENV?: string; SMTP_URL?: string; EMAIL_FROM?: string };
+
+type Message = { from: string; to: string; subject: string; text: string };
+type Transport = { sendMail(message: Message): Promise<unknown> };
+type CreateTransport = (smtpUrl: string) => Transport;
 
 export type SendSignInEmail = (email: string, url: string) => Promise<void>;
 
 /**
- * Sends sign-in links through Resend. Without a key, development prints the
- * link to the console instead; production refuses to start, so links never
- * end up in server logs.
+ * Sends sign-in links over SMTP, so the provider is a configuration choice:
+ * `SMTP_URL` is e.g. `smtp://login:key@smtp-relay.brevo.com:587`. Without it,
+ * development prints the link to the console instead; production refuses to
+ * start, so links never end up in server logs.
  */
-export function createEmailSender(env: EmailEnv): SendSignInEmail {
-  const { RESEND_API_KEY, EMAIL_FROM } = env;
-  if (!RESEND_API_KEY) {
+export function createEmailSender(
+  env: EmailEnv,
+  createTransport: CreateTransport = (smtpUrl) => nodemailer.createTransport(smtpUrl),
+): SendSignInEmail {
+  const { SMTP_URL, EMAIL_FROM } = env;
+  if (!SMTP_URL) {
     if (env.NODE_ENV === 'production') {
-      throw new Error('RESEND_API_KEY is required in production');
+      throw new Error('SMTP_URL is required in production');
     }
     return async (email, url) => {
       console.info(`[auth] Sign-in link for ${email}: ${url}`);
     };
   }
 
-  if (!EMAIL_FROM) throw new Error('EMAIL_FROM is required when RESEND_API_KEY is set');
+  if (!EMAIL_FROM) throw new Error('EMAIL_FROM is required when SMTP_URL is set');
+  const transport = createTransport(SMTP_URL);
 
   return async (email, url) => {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: EMAIL_FROM,
-        to: email,
-        subject: 'Sign in to Wild Cards Go',
-        text: `Sign in to Wild Cards Go:\n\n${url}\n\nThis link expires in 5 minutes.`,
-      }),
+    await transport.sendMail({
+      from: EMAIL_FROM,
+      to: email,
+      subject: 'Sign in to Wild Cards Go',
+      text: `Sign in to Wild Cards Go:\n\n${url}\n\nThis link expires in 5 minutes.`,
     });
-    if (!response.ok) {
-      throw new Error(`Resend answered ${response.status}: ${await response.text()}`);
-    }
   };
 }
 

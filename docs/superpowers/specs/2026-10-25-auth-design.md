@@ -45,7 +45,7 @@ The app stays offline-first. Signing in is what turns sync on. It is never what 
   - **Builder:** `connectToDb()` is async while Better Auth wants its config up front; choose how to bridge that, for example a lazily built instance. Pick one approach, use it everywhere, and say why.
 - **Session:** `expiresIn` 30 days, `updateAge` 1 day. Leave the cookie cache **off**, so revoking a session takes effect at once (low traffic, so the DB lookup is fine).
 - **Email link:** the `magicLink` plugin with the default 5-minute expiry.
-  - **Sending:** through **Resend** when `RESEND_API_KEY` is set.
+  - **Sending:** through **Resend** when `RESEND_API_KEY` is set. (Superseded: now SMTP, see "Decided after implementation: email over SMTP".)
   - **Development:** when it isn't set, the link is logged to the server console (development only; refuse to start without it in production).
 - **Social providers:** Google and Discord. A provider is enabled only when both its client id and secret are set, so development works with email links alone.
   - The sign-in page shows only enabled providers. How the client learns which are enabled is the builder's call.
@@ -60,7 +60,7 @@ The app stays offline-first. Signing in is what turns sync on. It is never what 
 | `BETTER_AUTH_URL`                            | public base URL                           |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | optional provider                         |
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | optional provider                         |
-| `RESEND_API_KEY`, `EMAIL_FROM`               | email links; console fallback in dev only |
+| `SMTP_URL`, `EMAIL_FROM`                     | email links; console fallback in dev only |
 
 README gets short steps for registering the Google and Discord apps: the callback URL is `<BETTER_AUTH_URL>/api/auth/callback/<provider>`.
 
@@ -158,6 +158,10 @@ The session cookie is shared by every tab, but each tab has its own active store
   - After sign-in it returns to where the person came from.
 - **Styling:** follows the existing components in `components/ui/`. Exact layout is the builder's call.
 
+## Decided after implementation: email over SMTP
+
+Sign-in emails go out over SMTP (`SMTP_URL`, sent with nodemailer) instead of Resend's HTTP API, so the provider is a configuration choice. The planned provider is Brevo, an EU company, with the app on a subdomain of the owner's domain. The development console fallback and the production start-up refusal stay as designed, now keyed on `SMTP_URL` and `EMAIL_FROM`.
+
 ## Decided after implementation: stored personal data
 
 Checked against Better Auth 1.7.13 source and docs on 2026-10-26.
@@ -171,7 +175,7 @@ Checked against Better Auth 1.7.13 source and docs on 2026-10-26.
 | `account`      | one row per linked Google or Discord login                               | with the user                |
 | `verification` | email-link token **hash**, email, expiry                                 | 5 minutes                    |
 
-Resend also sees the email address and the link when it sends the email.
+The SMTP provider (Brevo is the planned choice) also sees the email address and the link when it sends the email.
 
 **Email-link tokens are hashed** (`storeToken: 'hashed'`). Better Auth's default is plain text, which would let anyone who can read the database use an unexpired link.
 

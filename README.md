@@ -38,9 +38,9 @@ Each account has its own local store (`wcg-u-<userId>`); signed-out characters l
 | `BETTER_AUTH_URL`                            | Public base URL, e.g. `http://localhost:3000`          |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | Optional; Google sign-in shows only when both are set  |
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Optional; Discord sign-in shows only when both are set |
-| `RESEND_API_KEY`, `EMAIL_FROM`               | Email links; required in production                    |
+| `SMTP_URL`, `EMAIL_FROM`                     | Email links over SMTP; required in production          |
 
-In development without `RESEND_API_KEY`, sign-in links print to the server console.
+Sign-in emails go out over SMTP, so any provider works: `SMTP_URL=smtp://<login>:<key>@<host>:587` (URL-encode `@` in the login as `%40`). `EMAIL_FROM` must use a domain verified with that provider. In development without `SMTP_URL`, sign-in links print to the server console; production refuses to start without both.
 
 To enable a social provider, register an OAuth app ([Google](https://console.cloud.google.com/apis/credentials), [Discord](https://discord.com/developers/applications)) with the redirect URL `<BETTER_AUTH_URL>/api/auth/callback/google` or `.../callback/discord`.
 

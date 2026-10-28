@@ -9,12 +9,12 @@ afterEach(() => {
 
 test('server start refuses production without email settings', () => {
   process.env = { ...saved, NODE_ENV: 'production' };
-  delete process.env.RESEND_API_KEY;
-  expect(() => checkServerConfig()).toThrow('RESEND_API_KEY');
+  delete process.env.SMTP_URL;
+  expect(() => checkServerConfig()).toThrow('SMTP_URL');
 });
 
 test('server start is fine in development without email settings', () => {
   process.env = { ...saved, NODE_ENV: 'development' };
-  delete process.env.RESEND_API_KEY;
+  delete process.env.SMTP_URL;
   checkServerConfig();
 });
