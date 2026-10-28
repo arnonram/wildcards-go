@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   mongo:
-    image: mongo:6
+    image: mongo:9.0.2
     container_name: wildcards-mongo
     ports:
       - "27017:27017"
