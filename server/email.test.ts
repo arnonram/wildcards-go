@@ -12,6 +12,12 @@ test('email sender refuses an SMTP server without a from address', () => {
   ).toThrow('EMAIL_FROM');
 });
 
+test('email sender explains an SMTP_URL that is not an smtp:// URL', () => {
+  expect(() =>
+    createEmailSender({ SMTP_URL: 'xsmtpsib-just-the-key', EMAIL_FROM: 'a@b.c' }),
+  ).toThrow('SMTP_URL must look like smtp://login:key@host:587');
+});
+
 test('email sender logs the link in development', async () => {
   const info = spyOn(console, 'info').mockImplementation(() => {});
   try {

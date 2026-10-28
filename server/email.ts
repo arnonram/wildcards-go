@@ -28,6 +28,13 @@ export function createEmailSender(
     };
   }
 
+  // nodemailer treats any other string as a transport plugin and fails with a
+  // confusing error, so say what is expected instead.
+  if (!/^smtps?:\/\//i.test(SMTP_URL)) {
+    throw new Error(
+      'SMTP_URL must look like smtp://login:key@host:587 (URL-encode @ in the login)',
+    );
+  }
   if (!EMAIL_FROM) throw new Error('EMAIL_FROM is required when SMTP_URL is set');
   const transport = createTransport(SMTP_URL);
 
