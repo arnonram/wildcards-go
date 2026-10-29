@@ -40,17 +40,19 @@ export default function Layout({ children }: { children: ReactNode }) {
       <footer className="border-t border-line bg-bg-deep/60">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-4 py-6 text-center sm:flex-row sm:text-left">
           <p className="max-w-2xl text-xs leading-relaxed text-muted">
-            This product uses the{' '}
+            This game references the Savage Worlds game system, available from Pinnacle
+            Entertainment Group at{' '}
             <a
-              href="https://peginc.com/licensing/"
+              href="https://www.peginc.com"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-accent underline-offset-2 hover:underline"
             >
-              Savage Worlds Fan License
+              www.peginc.com
             </a>
             . Savage Worlds and all associated logos and trademarks are copyrights of Pinnacle
-            Entertainment Group.{' '}
+            Entertainment Group. Used with permission. Pinnacle makes no representation or warranty
+            as to the quality, viability, or suitability for purpose of this product.{' '}
             <Link
               href="/privacy"
               className="font-medium text-accent underline-offset-2 hover:underline"
@@ -61,9 +63,10 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Image
             src="/images/SW_LOGO_FP_2018-300x200-1.png"
             alt="Savage Worlds Fan License Logo"
-            width={120}
-            height={80}
-            className="h-auto w-24 object-contain sm:ml-auto"
+            // The Fan License requires the logo "unaltered in size or dimension".
+            width={300}
+            height={200}
+            className="shrink-0 sm:ml-auto"
           />
         </div>
       </footer>

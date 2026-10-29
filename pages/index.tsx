@@ -1,11 +1,11 @@
 import { FolderOpen, Plus, Sparkles } from 'lucide-react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { CharacterCard } from '../components/home/CharacterCard';
+import { AppLogo } from '../components/ui/AppLogo';
 import { Button } from '../components/ui/Button';
 import { createCharacter } from '../helpers/offline/characters';
 import { useCharacterList } from '../helpers/offline/hooks';
@@ -59,13 +59,7 @@ const Home: NextPage = () => {
               Load Wildcard
             </Button>
           </div>
-          <Image
-            src="/images/SW_LOGO_FP_2018-300x200-1.png"
-            alt="Savage Worlds"
-            width={180}
-            height={120}
-            className="mt-8 h-auto w-36 object-contain opacity-90 sm:w-44"
-          />
+          <AppLogo className="mt-8 h-auto w-40 text-ink sm:w-48" />
         </div>
       </section>
 
