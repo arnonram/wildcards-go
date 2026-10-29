@@ -48,6 +48,8 @@ To enable a social provider, register an OAuth app ([Google](https://console.clo
 
 Characters written before accounts existed have no owner and are never returned. Drop the dev `characters` and `portraits` collections once.
 
+See [docs/deployment.md](docs/deployment.md) for the hosting plan.
+
 ## Development
 
 ```bash
