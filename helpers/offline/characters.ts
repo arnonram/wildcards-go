@@ -22,7 +22,8 @@ export function nextStamp(previous = 0): number {
   return Math.max(Date.now(), previous + 1);
 }
 
-function changed() {
+/** For other modules that write characters, such as an import. */
+export function changed() {
   onLocalChange?.();
 }
 

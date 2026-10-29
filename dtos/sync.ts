@@ -35,6 +35,23 @@ export interface ConflictBody {
   server: ServerCharacter | null;
 }
 
+/**
+ * The fields every sheet reads on load. Anything that becomes a stored
+ * character passes this first, so a malformed one cannot break the owner's
+ * other devices when they pull it.
+ */
+export function isCharacterData(data: unknown): data is WildCardCharacter {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  const { name, wounds, fatigue, attributes, skills } = data as Record<string, unknown>;
+  return (
+    typeof name === 'string' &&
+    typeof wounds === 'number' &&
+    typeof fatigue === 'number' &&
+    Array.isArray(attributes) &&
+    Array.isArray(skills)
+  );
+}
+
 export interface PullResponse {
   characters: ServerCharacter[];
   cursor: number;
