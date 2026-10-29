@@ -50,7 +50,13 @@ export default function Layout({ children }: { children: ReactNode }) {
               Savage Worlds Fan License
             </a>
             . Savage Worlds and all associated logos and trademarks are copyrights of Pinnacle
-            Entertainment Group.
+            Entertainment Group.{' '}
+            <Link
+              href="/privacy"
+              className="font-medium text-accent underline-offset-2 hover:underline"
+            >
+              Privacy
+            </Link>
           </p>
           <Image
             src="/images/SW_LOGO_FP_2018-300x200-1.png"

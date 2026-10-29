@@ -41,7 +41,7 @@ The plan for the first public deployment of Wild Cards Go, as agreed on 2026-10-
   6. Offline: sign-out shows "Signing out needs a connection".
   7. Delete the session cookie: the badge shows "Sign in to sync".
 - [x] **Better Auth's rate limiter keeps its counters in MongoDB** (`rateLimit: { storage: 'database' }`), shared by every Vercel instance; in memory each instance would count alone. It only runs in production.
-- [ ] **Send a real email from dev through Brevo:**
+- [x] **Send a real email from dev through Brevo:**
   - set `SMTP_URL` and `EMAIL_FROM` in `.env.local` and sign in with your own address
   - check the email arrives, isn't in spam, and its link points straight at the app, not a Brevo tracking domain
   - in the original message (Gmail: ⋮ → **Show original**), SPF, DKIM and DMARC show **PASS**
@@ -61,10 +61,10 @@ The DKIM CNAMEs must stay **DNS only**: proxied, they break DKIM. No SPF record 
 
 Remaining:
 
-- [ ] Click **Verify** on the domain in Brevo.
-- [ ] Add the sender `signin@wildcards.orderofthenuts.club`, named "Wild Cards Go".
-- [ ] If Brevo has a click-tracking setting for transactional email, turn it off.
-- [ ] Create a 64-character SMTP key under **SMTP & API → SMTP** (keys start with `xsmtpsib-`; API keys, `xkeysib-`, don't work over SMTP).
+- [x] Click **Verify** on the domain in Brevo.
+- [x] Add the sender `signin@wildcards.orderofthenuts.club`, named "Wild Cards Go".
+- [x] If Brevo has a click-tracking setting for transactional email, turn it off.
+- [x] Create a 64-character SMTP key under **SMTP & API → SMTP** (keys start with `xsmtpsib-`; API keys, `xkeysib-`, don't work over SMTP).
 
 The SMTP settings, for both `.env.local` and Vercel:
 
@@ -79,10 +79,10 @@ The subdomain has no MX record, so replies to sign-in emails bounce. That's acce
 
 ## Database: MongoDB Atlas
 
-- [ ] Create an **M0** cluster in an **EU region**. Pick the major version to match local development and CI, currently `mongo:9.0.2` in `docker-compose.yml` and `.gitlab/.gitlab-ci.yml`. If Atlas offers a different major, change those two files to match and run `bun test` against it.
-- [ ] Create a database user with a strong generated password, with access only to this app's database.
+- [x] Create an **M0** cluster in an **EU region**. Pick the major version to match local development and CI, currently `mongo:9.0.2` in `docker-compose.yml` and `.gitlab/.gitlab-ci.yml`. If Atlas offers a different major, change those two files to match and run `bun test` against it.
+- [x] Create a database user with a strong generated password, with access only to this app's database.
 - [ ] **Network access:** allow `0.0.0.0/0`. Vercel's outgoing IPs aren't fixed, so on the free tier the password is the protection.
-- [ ] Copy the connection string into `MONGODB_URI` and choose a database name for `MONGODB_DB`.
+- [x] Copy the connection string into `MONGODB_URI` and choose a database name for `MONGODB_DB`.
 - [ ] **Backups:** I'm not aware of M0 getting Atlas's managed backups. Schedule a regular `mongodump` export, e.g. a weekly job from the home server or a CI schedule, and store it somewhere other than Atlas.
 
 The app creates its own indexes on first connect, and needs no other setup or migration. Atlas encrypts data at rest on every tier.
@@ -91,8 +91,8 @@ The app creates its own indexes on first connect, and needs no other setup or mi
 
 ## App: Vercel
 
-- [ ] Create a Vercel project from the GitLab repo. It should detect Bun from `bun.lock`; the build command is `bun run build`, which also builds the service worker.
-- [ ] Set environment variables for **Production**:
+- [xdon'] Create a Vercel project from the GitLab repo. It should detect Bun from `bun.lock`; the build command is `bun run build`, which also builds the service worker.
+- [x] Set environment variables for **Production**:
 
 | Variable                                     | Value                                                      |
 | -------------------------------------------- | ---------------------------------------------------------- |
@@ -102,7 +102,7 @@ The app creates its own indexes on first connect, and needs no other setup or mi
 | `SMTP_URL`, `EMAIL_FROM`                     | from Brevo, as above                                       |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | optional; the Google button shows only when both are set   |
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | optional; the Discord button shows only when both are set  |
-- [ ] **Preview deployments** also run in production mode, and the server **refuses to start** without `SMTP_URL` and `EMAIL_FROM`. Either set those (and the rest) for Preview too, or accept that previews fail.
+- [x] **Preview deployments** also run in production mode, and the server **refuses to start** without `SMTP_URL` and `EMAIL_FROM`. Either set those (and the rest) for Preview too, or accept that previews fail.
 
 ## Address: DNS on Cloudflare
 
@@ -118,6 +118,7 @@ Each provider needs its production redirect URL added. Keep the `localhost` ones
 
 - [ ] **Google** ([Cloud Console](https://console.cloud.google.com/) → Google Auth Platform):
   - **Clients:** add origin `https://wildcards.orderofthenuts.club` and redirect `https://wildcards.orderofthenuts.club/api/auth/callback/google`.
+  - **Branding:** app name, support email, home page `https://wildcards.orderofthenuts.club`, privacy policy `https://wildcards.orderofthenuts.club/privacy`, authorized domain `orderofthenuts.club`. No logo: one triggers Google's brand verification. Publishing stays greyed out until this is complete.
   - **Audience:** publish the app. While it's in Testing, only listed test users can sign in. It only asks for name, email and picture, so publishing shouldn't need Google's full verification.
 - [ ] **Discord** ([Developer Portal](https://discord.com/developers/applications) → OAuth2): add redirect `https://wildcards.orderofthenuts.club/api/auth/callback/discord`.
 
@@ -140,5 +141,5 @@ Both are free. Accounts link by **verified** email only, so the same address thr
   - **Cheapest option:** buy the name before launch, if there's one you'd keep.
 - **Outgrowing the free tiers, or going commercial:** a small VPS with Docker Compose, Caddy and MongoDB alongside the app (e.g. Hetzner, about €5/month), or Vercel Pro.
 - **Before a wider launch:**
-  - a privacy policy covering what's stored (see "stored personal data" in `docs/superpowers/specs/2026-10-25-auth-design.md`), Brevo's sending logs and backups
+  - review `/privacy` (`pages/privacy.tsx`) whenever what's stored changes, and add backups to it once they exist
   - the deferred auth review findings
