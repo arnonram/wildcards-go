@@ -62,3 +62,25 @@ test('delete-account email says to open it where you are signed in', () => {
   expect(message.text).toContain('browser where you are signed in');
   expect(message.text).toContain('expires in 1 hour');
 });
+
+test('emails carry an HTML version with the escaped link and the embedded logo', () => {
+  for (const message of [
+    signInEmail('a@b.c', 'http://x/l?a=1&b="2"'),
+    deleteAccountEmail('a@b.c', 'http://x/l?a=1&b="2"'),
+  ]) {
+    expect(message.html).toContain('href="http://x/l?a=1&amp;b=&quot;2&quot;"');
+    expect(message.html).toContain('src="cid:logo"');
+  }
+});
+
+test('email sender attaches the logo the HTML refers to', async () => {
+  const sent: Record<string, unknown>[] = [];
+  const send = createEmailSender(
+    { SMTP_URL: 'smtp://u:k@smtp.example.com:587', EMAIL_FROM: 'from@x.y' },
+    () => ({ sendMail: async (message) => sent.push(message) }),
+  );
+  await send(signInEmail('a@b.c', 'http://x/l'));
+  const [logo] = sent[0].attachments as { cid: string; path: string }[];
+  expect(logo.cid).toBe('logo');
+  expect(await Bun.file(logo.path).exists()).toBe(true);
+});

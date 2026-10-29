@@ -1,5 +1,7 @@
+import { Download } from 'lucide-react';
 import { useState } from 'react';
 import { requestAccountDeletion } from '../../helpers/offline/account';
+import { downloadExport } from '../../helpers/offline/transfer';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 
@@ -69,6 +71,13 @@ export function DeleteAccountDialog({
           Other devices remove their copy the next time they go online. Characters you made while
           signed out are not affected.
         </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius)] border border-line bg-surface-2 px-3 py-2">
+          <span>Want to keep your characters? Export them first.</span>
+          <Button size="sm" onClick={() => void downloadExport()}>
+            <Download size={13} />
+            Export characters
+          </Button>
+        </div>
         <p>We&apos;ll email you a link to confirm. Open it in this browser.</p>
         {step === 'offline' && (
           <p className="text-danger" role="alert">

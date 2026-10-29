@@ -1,9 +1,10 @@
-import { Camera, Pencil, Trash2 } from 'lucide-react';
+import { Camera, Download, Pencil, Trash2 } from 'lucide-react';
 import { Ranks } from '../../dtos/wildcards-consts';
 import { type SaveState, useWildcard } from '../../helpers/context/wildcard-context';
 import { fileToPortraitBlob } from '../../helpers/image-helpers';
 import { setPortrait } from '../../helpers/offline/characters';
 import { usePortraitUrl } from '../../helpers/offline/hooks';
+import { downloadExport } from '../../helpers/offline/transfer';
 import { Button } from '../ui/Button';
 
 const saveLabels: Record<SaveState, { text: string; className: string }> = {
@@ -106,10 +107,20 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
 
       <div className="col-span-2 flex items-center gap-3 sm:col-span-1 sm:flex-col sm:items-end">
         <SaveIndicator state={saveState} />
-        <Button variant="outline" size="sm" onClick={onDelete}>
-          <Trash2 size={13} />
-          Delete
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void downloadExport({ id: characterId, name: wildcardData.name })}
+          >
+            <Download size={13} />
+            Export
+          </Button>
+          <Button variant="outline" size="sm" onClick={onDelete}>
+            <Trash2 size={13} />
+            Delete
+          </Button>
+        </div>
       </div>
     </div>
   );
