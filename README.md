@@ -1,6 +1,8 @@
-# WildCards Go
+# Wild Cards Go
 
 Have your Savage Worlds characters with you anywhere!
+
+A character sheet app that works offline and syncs across devices once you sign in. It is a Savage Worlds fan product under Pinnacle's Fan License: the footer carries the required notice and the Fan License logo, which must stay unaltered in size.
 
 ## Offline-first
 
@@ -42,13 +44,28 @@ Each account has its own local store (`wcg-u-<userId>`); signed-out characters l
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Optional; Discord sign-in shows only when both are set |
 | `SMTP_URL`, `EMAIL_FROM`                     | Email links over SMTP; required in production          |
 
-Sign-in emails go out over SMTP, so any provider works: `SMTP_URL=smtp://<login>:<key>@<host>:587` (URL-encode `@` in the login as `%40`). `EMAIL_FROM` must use a domain verified with that provider. In development without `SMTP_URL`, sign-in links print to the server console; production refuses to start without both.
+Sign-in and account-deletion emails are HTML with a plain-text part, sent over SMTP, so any provider works: `SMTP_URL=smtp://<login>:<key>@<host>:587` (URL-encode `@` in the login as `%40`). `EMAIL_FROM` must use a domain verified with that provider. In development without `SMTP_URL`, sign-in links print to the server console; production refuses to start without both.
 
 To enable a social provider, register an OAuth app ([Google](https://console.cloud.google.com/apis/credentials), [Discord](https://discord.com/developers/applications)) with the redirect URL `<BETTER_AUTH_URL>/api/auth/callback/google` or `.../callback/discord`.
+
+Better Auth rate-limits its endpoints with counters stored in MongoDB, so limits hold across server instances.
 
 Characters written before accounts existed have no owner and are never returned. Drop the dev `characters` and `portraits` collections once.
 
 See [docs/deployment.md](docs/deployment.md) for the hosting plan.
+
+## Export and import
+
+Characters can be saved to a `.json` file and loaded back, to keep a backup or move characters between accounts or devices without syncing.
+
+- **Export all** on _Load a Character_ (also offered in the delete-account dialog) saves every character in the open store as `wild-cards-go-<date>.json`. It is disabled while there are none.
+- The download button on a character sheet saves just that character as `<name>.wildcards.json`.
+- Portraits are embedded as data URLs, so one file holds everything.
+- **Import** adds every character in the file as a new one with a fresh id, so it never overwrites or conflicts with an existing character. It is all or nothing: a damaged file imports nothing. Imported characters sync like any other edit.
+
+## Privacy and feedback
+
+`/privacy` explains what the app stores and why; questions go to `privacy@orderofthenuts.club`. The footer's _Feedback_ link opens an email to `feedback@orderofthenuts.club` for bug reports and feature requests.
 
 ## Development
 
