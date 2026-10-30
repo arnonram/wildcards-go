@@ -39,7 +39,24 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-line bg-bg-deep/60">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-4 py-6 text-center sm:flex-row sm:text-left">
-          <p className="max-w-2xl text-xs leading-relaxed text-muted">
+          <nav
+            aria-label="Site"
+            className="flex shrink-0 gap-4 text-xs sm:flex-col sm:gap-1.5 sm:self-stretch sm:border-r sm:border-line sm:pr-6"
+          >
+            <Link
+              href="/privacy"
+              className="font-medium text-accent underline-offset-2 hover:underline"
+            >
+              Privacy
+            </Link>
+            <a
+              href="mailto:feedback@orderofthenuts.club?subject=Wild%20Cards%20Go%20feedback"
+              className="font-medium text-accent underline-offset-2 hover:underline"
+            >
+              Feedback
+            </a>
+          </nav>
+          <p className="max-w-md text-xs leading-normal text-muted sm:ml-auto sm:text-right">
             This game references the Savage Worlds game system, available from Pinnacle
             Entertainment Group at{' '}
             <a
@@ -52,13 +69,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             </a>
             . Savage Worlds and all associated logos and trademarks are copyrights of Pinnacle
             Entertainment Group. Used with permission. Pinnacle makes no representation or warranty
-            as to the quality, viability, or suitability for purpose of this product.{' '}
-            <Link
-              href="/privacy"
-              className="font-medium text-accent underline-offset-2 hover:underline"
-            >
-              Privacy
-            </Link>
+            as to the quality, viability, or suitability for purpose of this product.
           </p>
           <Image
             src="/images/SW_LOGO_FP_2018-300x200-1.png"
@@ -66,7 +77,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             // The Fan License requires the logo "unaltered in size or dimension".
             width={300}
             height={200}
-            className="shrink-0 sm:ml-auto"
+            className="shrink-0"
           />
         </div>
       </footer>
