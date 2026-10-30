@@ -5,12 +5,14 @@ import { useRef, useState } from 'react';
 import LoadCharactersGrid from '../components/load-characters/LoadCharacterGrid';
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
+import { useCharacterList } from '../helpers/offline/hooks';
 import { downloadExport, importCharacters } from '../helpers/offline/transfer';
 
 export default function LoadCharacter() {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const characters = useCharacterList();
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -50,7 +52,12 @@ export default function LoadCharacter() {
             <Upload size={13} />
             Import
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => void downloadExport()}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => void downloadExport()}
+            disabled={!characters?.length}
+          >
             <Download size={13} />
             Export all
           </Button>
