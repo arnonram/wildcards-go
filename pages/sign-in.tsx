@@ -1,4 +1,5 @@
 import { CloudOff, MailCheck } from 'lucide-react';
+import type { GetStaticProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { type FormEvent, useEffect, useState, useSyncExternalStore } from 'react';
@@ -7,8 +8,17 @@ import { Button } from '../components/ui/Button';
 import { Field } from '../components/ui/Field';
 import { authClient } from '../helpers/auth-client';
 import { safeNext } from '../helpers/safe-next';
+import { enabledProviders, type Providers } from '../server/providers';
 
-type Providers = { google: boolean; discord: boolean };
+type SignInProps = { providers: Providers };
+
+/**
+ * Bakes the buttons into the prerendered page so they show at once. The page
+ * still asks `/api/providers`, which wins if the env changed since the build.
+ */
+export const getStaticProps: GetStaticProps<SignInProps> = () => ({
+  props: { providers: enabledProviders() },
+});
 
 function subscribeOnline(listener: () => void) {
   window.addEventListener('online', listener);
@@ -19,7 +29,7 @@ function subscribeOnline(listener: () => void) {
   };
 }
 
-export default function SignIn() {
+export default function SignIn({ providers: builtProviders }: SignInProps) {
   const router = useRouter();
   const next = safeNext(router.query.next);
   const online = useSyncExternalStore(
@@ -27,7 +37,7 @@ export default function SignIn() {
     () => navigator.onLine,
     () => true,
   );
-  const [providers, setProviders] = useState<Providers>({ google: false, discord: false });
+  const [providers, setProviders] = useState<Providers>(builtProviders);
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);

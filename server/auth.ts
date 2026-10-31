@@ -5,16 +5,9 @@ import type { Db } from 'mongodb';
 import { connectToDb } from '../helpers/db-util';
 import { deleteOwnerData, markUserDeleted } from './character-store';
 import { deleteAccountEmail, sendEmail, signInEmail } from './email';
+import { enabledProviders } from './providers';
 
 const DAY = 60 * 60 * 24;
-
-/** A provider is on only when both its id and secret are configured. */
-export function enabledProviders() {
-  return {
-    google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-    discord: Boolean(process.env.DISCORD_CLIENT_ID && process.env.DISCORD_CLIENT_SECRET),
-  };
-}
 
 /**
  * The emailed link opens an app page rather than Better Auth's bare callback,

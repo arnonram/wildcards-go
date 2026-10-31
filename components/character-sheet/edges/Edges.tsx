@@ -8,6 +8,7 @@ import { DeleteButton } from '../../ui/DeleteButton';
 import { Field } from '../../ui/Field';
 import { Section } from '../../ui/Section';
 import { Textarea } from '../../ui/Textarea';
+import { SortByNameButton } from '../SortByNameButton';
 
 function EdgeRow({
   edge,
@@ -27,6 +28,7 @@ function EdgeRow({
           aria-label="Edge name"
           placeholder="New edge"
           variant="quiet"
+          flush
           containerClassName="min-w-36 flex-1"
           value={edge.name}
           onChange={(event) => onChange({ name: event.target.value })}
@@ -112,10 +114,17 @@ export default function Edges() {
       id="edges"
       title="Edges"
       actions={
-        <Button size="sm" variant="outline" onClick={add}>
-          <Plus size={13} />
-          Add
-        </Button>
+        <>
+          <SortByNameButton
+            items={edges}
+            onSort={(sorted) => setWildcardData((previous) => ({ ...previous, edges: sorted }))}
+            label="edges"
+          />
+          <Button size="sm" variant="outline" onClick={add}>
+            <Plus size={13} />
+            Add
+          </Button>
+        </>
       }
     >
       {edges.length === 0 ? (

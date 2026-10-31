@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Field, type FieldProps } from './Field';
 
-export interface NumberFieldProps extends Omit<FieldProps, 'type' | 'value' | 'onChange'> {
+export interface NumberFieldProps extends Omit<FieldProps, 'type' | 'value' | 'onChange' | 'min'> {
   value: number;
+  /** Lowest accepted value; also blocks typing "-" when non-negative. */
+  min?: number;
   onValueChange: (value: number) => void;
 }
 
@@ -12,7 +14,14 @@ const NUMERIC_PATTERN = /^-?\d*(?:\.\d*)?$/;
  * Numeric input that keeps a text draft while editing so intermediate values
  * like "" or "-" don't get coerced to 0 before the user can finish typing.
  */
-export function NumberField({ value, onValueChange, onFocus, onBlur, ...props }: NumberFieldProps) {
+export function NumberField({
+  value,
+  min,
+  onValueChange,
+  onFocus,
+  onBlur,
+  ...props
+}: NumberFieldProps) {
   const [draft, setDraft] = useState(String(value));
   const [focused, setFocused] = useState(false);
 
@@ -34,6 +43,7 @@ export function NumberField({ value, onValueChange, onFocus, onBlur, ...props }:
       onChange={(event) => {
         const next = event.target.value.replace('−', '-');
         if (!NUMERIC_PATTERN.test(next)) return;
+        if (min !== undefined && min >= 0 && next.includes('-')) return;
 
         setDraft(next);
         if (next !== '' && next !== '-' && next !== '.' && next !== '-.') {
@@ -50,8 +60,12 @@ export function NumberField({ value, onValueChange, onFocus, onBlur, ...props }:
           draft === '-.' ||
           !Number.isFinite(parsed)
         ) {
-          setDraft('0');
-          onValueChange(0);
+          const fallback = Math.max(0, min ?? 0);
+          setDraft(String(fallback));
+          onValueChange(fallback);
+        } else if (min !== undefined && parsed < min) {
+          setDraft(String(min));
+          onValueChange(min);
         } else {
           setDraft(String(parsed));
         }

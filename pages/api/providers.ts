@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { enabledProviders } from '../../server/auth';
+import { enabledProviders } from '../../server/providers';
 
 /** Which social sign-in buttons the sign-in page shows. */
 export default function handler(req: NextApiRequest, res: NextApiResponse) {

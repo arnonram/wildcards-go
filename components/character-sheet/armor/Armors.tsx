@@ -11,6 +11,7 @@ import { Field } from '../../ui/Field';
 import { Section } from '../../ui/Section';
 import { SheetTable, Td, Th, Tr } from '../../ui/Table';
 import { Textarea } from '../../ui/Textarea';
+import { SortByNameButton } from '../SortByNameButton';
 import ArmorLocationSelect from './ArmorLocationSelect';
 
 const COLUMN_COUNT = 6;
@@ -59,10 +60,17 @@ export default function Armors() {
       id="armor"
       title="Armor & Shields"
       actions={
-        <Button size="sm" variant="outline" onClick={add}>
-          <Plus size={13} />
-          Add
-        </Button>
+        <>
+          <SortByNameButton
+            items={armors}
+            onSort={(sorted) => setWildcardData((previous) => ({ ...previous, armors: sorted }))}
+            label="armors"
+          />
+          <Button size="sm" variant="outline" onClick={add}>
+            <Plus size={13} />
+            Add
+          </Button>
+        </>
       }
     >
       {armors.length === 0 ? (

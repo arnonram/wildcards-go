@@ -9,6 +9,7 @@ import { Field } from '../../ui/Field';
 import { Section } from '../../ui/Section';
 import { SheetTable, Td, Th, Tr } from '../../ui/Table';
 import { Textarea } from '../../ui/Textarea';
+import { SortByNameButton } from '../SortByNameButton';
 
 const COLUMN_COUNT = 7;
 const compactField = 'px-1.5 sm:px-2.5';
@@ -56,10 +57,17 @@ export default function Weapons() {
       id="weapons"
       title="Weapons"
       actions={
-        <Button size="sm" variant="outline" onClick={add}>
-          <Plus size={13} />
-          Add
-        </Button>
+        <>
+          <SortByNameButton
+            items={weapons}
+            onSort={(sorted) => setWildcardData((previous) => ({ ...previous, weapons: sorted }))}
+            label="weapons"
+          />
+          <Button size="sm" variant="outline" onClick={add}>
+            <Plus size={13} />
+            Add
+          </Button>
+        </>
       }
     >
       {weapons.length === 0 ? (
@@ -93,8 +101,7 @@ export default function Weapons() {
                         aria-label="Weapon name"
                         placeholder="Weapon name"
                         variant="quiet"
-                        className={compactField}
-                        containerClassName={compactContainer}
+                        flush
                         value={weapon.name}
                         onChange={(event) => update(weapon._id, { name: event.target.value })}
                       />

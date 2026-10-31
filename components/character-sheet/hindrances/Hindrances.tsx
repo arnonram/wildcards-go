@@ -9,6 +9,7 @@ import { DeleteButton } from '../../ui/DeleteButton';
 import { Field } from '../../ui/Field';
 import { Section } from '../../ui/Section';
 import { Textarea } from '../../ui/Textarea';
+import { SortByNameButton } from '../SortByNameButton';
 
 function HindranceRow({
   hindrance,
@@ -28,6 +29,7 @@ function HindranceRow({
           aria-label="Hindrance name"
           placeholder="New hindrance"
           variant="quiet"
+          flush
           containerClassName="min-w-40 flex-1"
           value={hindrance.name}
           onChange={(event) => onChange({ name: event.target.value })}
@@ -103,10 +105,19 @@ export default function Hindrances() {
       id="hindrances"
       title="Hindrances"
       actions={
-        <Button size="sm" variant="outline" onClick={add}>
-          <Plus size={13} />
-          Add
-        </Button>
+        <>
+          <SortByNameButton
+            items={hindrances}
+            onSort={(sorted) =>
+              setWildcardData((previous) => ({ ...previous, hindrances: sorted }))
+            }
+            label="hindrances"
+          />
+          <Button size="sm" variant="outline" onClick={add}>
+            <Plus size={13} />
+            Add
+          </Button>
+        </>
       }
     >
       {hindrances.length === 0 ? (

@@ -49,12 +49,11 @@ export default function Basics() {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="grid grid-cols-2 gap-2">
-          <Field
+          <NumberField
             label="Pace"
-            type="number"
             min={0}
             value={toNumber(wildcardData.pace)}
-            onChange={(event) => update({ pace: Number(event.target.value) })}
+            onValueChange={(value) => update({ pace: value })}
           />
           <NumberField
             label="Pace mod"
@@ -63,12 +62,11 @@ export default function Basics() {
           />
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Field
+          <NumberField
             label="Parry"
-            type="number"
             min={0}
             value={toNumber(wildcardData.parry)}
-            onChange={(event) => update({ parry: Number(event.target.value) })}
+            onValueChange={(value) => update({ parry: value })}
           />
           <NumberField
             label="Parry mod"
@@ -77,12 +75,11 @@ export default function Basics() {
           />
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Field
+          <NumberField
             label="Toughness"
-            type="number"
             min={0}
             value={toNumber(wildcardData.toughness)}
-            onChange={(event) => update({ toughness: Number(event.target.value) })}
+            onValueChange={(value) => update({ toughness: value })}
             hint={toughnessHint}
           />
           <NumberField

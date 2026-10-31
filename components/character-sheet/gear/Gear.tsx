@@ -9,6 +9,7 @@ import { Field } from '../../ui/Field';
 import { Section } from '../../ui/Section';
 import { SheetTable, Td, Th, Tr } from '../../ui/Table';
 import { Textarea } from '../../ui/Textarea';
+import { SortByNameButton } from '../SortByNameButton';
 
 const COLUMN_COUNT = 4;
 
@@ -52,10 +53,17 @@ export default function GearList() {
       id="gear"
       title="Gear"
       actions={
-        <Button size="sm" variant="outline" onClick={add}>
-          <Plus size={13} />
-          Add
-        </Button>
+        <>
+          <SortByNameButton
+            items={gear}
+            onSort={(sorted) => setWildcardData((previous) => ({ ...previous, gear: sorted }))}
+            label="gear"
+          />
+          <Button size="sm" variant="outline" onClick={add}>
+            <Plus size={13} />
+            Add
+          </Button>
+        </>
       }
     >
       {gear.length === 0 ? (
@@ -83,6 +91,7 @@ export default function GearList() {
                         aria-label="Gear name"
                         placeholder="Item name"
                         variant="quiet"
+                        flush
                         value={item.name}
                         onChange={(event) => update(item._id, { name: event.target.value })}
                       />
