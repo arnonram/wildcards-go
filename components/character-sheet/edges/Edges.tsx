@@ -54,7 +54,7 @@ function EdgeRow({
       </div>
 
       {expanded && (
-        <div className="mt-2 grid gap-2 pl-1 sm:grid-cols-2">
+        <div className="mt-2 grid gap-2 pl-1">
           <Field
             label="Requirements"
             variant="quiet"
@@ -62,17 +62,9 @@ function EdgeRow({
             value={edge.requirements ?? ''}
             onChange={(event) => onChange({ requirements: event.target.value })}
           />
-          <Field
-            label="Blurb"
-            variant="quiet"
-            placeholder="One-line summary"
-            value={edge.blurb ?? ''}
-            onChange={(event) => onChange({ blurb: event.target.value })}
-          />
           <Textarea
             label="Description"
             rows={2}
-            containerClassName="sm:col-span-2"
             value={edge.description ?? ''}
             onChange={(event) => onChange({ description: event.target.value })}
           />

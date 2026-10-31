@@ -109,7 +109,7 @@ export default function Weapons() {
                     <Td>
                       <Field
                         aria-label="Range"
-                        placeholder="3/6/12"
+                        placeholder="—"
                         variant="quiet"
                         className={compactField}
                         containerClassName={compactContainer}
@@ -120,7 +120,7 @@ export default function Weapons() {
                     <Td>
                       <Field
                         aria-label="Damage"
-                        placeholder="Str+d6"
+                        placeholder="—"
                         variant="quiet"
                         className={compactField}
                         containerClassName={compactContainer}
@@ -131,6 +131,7 @@ export default function Weapons() {
                     <Td className="max-[379px]:hidden">
                       <Field
                         aria-label="Armor piercing"
+                        placeholder="—"
                         type="number"
                         variant="quiet"
                         className={compactField}
@@ -146,6 +147,7 @@ export default function Weapons() {
                     <Td className="hidden min-[420px]:table-cell">
                       <Field
                         aria-label="Rate of fire"
+                        placeholder="—"
                         type="number"
                         variant="quiet"
                         className={compactField}
@@ -161,6 +163,7 @@ export default function Weapons() {
                     <Td className="hidden min-[520px]:table-cell">
                       <Field
                         aria-label="Weight"
+                        placeholder="—"
                         type="number"
                         variant="quiet"
                         className={compactField}

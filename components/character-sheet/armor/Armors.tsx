@@ -110,6 +110,7 @@ export default function Armors() {
                         aria-label="Armor name"
                         placeholder="Armor name"
                         variant="quiet"
+                        flush
                         value={armor.name}
                         onChange={(event) => update(armor._id, { name: event.target.value })}
                       />
@@ -117,6 +118,7 @@ export default function Armors() {
                     <Td className="hidden sm:table-cell">
                       <Field
                         aria-label="Armor bonus"
+                        placeholder="—"
                         type="number"
                         min={0}
                         variant="quiet"
@@ -139,6 +141,7 @@ export default function Armors() {
                     <Td className="hidden sm:table-cell">
                       <Field
                         aria-label="Weight"
+                        placeholder="—"
                         type="number"
                         min={0}
                         variant="quiet"

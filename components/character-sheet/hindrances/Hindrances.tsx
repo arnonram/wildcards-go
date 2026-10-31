@@ -53,14 +53,7 @@ function HindranceRow({
       </div>
 
       {expanded && (
-        <div className="mt-2 grid gap-2 pl-1 sm:grid-cols-2">
-          <Field
-            label="Blurb"
-            variant="quiet"
-            placeholder="One-line summary"
-            value={hindrance.blurb ?? ''}
-            onChange={(event) => onChange({ blurb: event.target.value })}
-          />
+        <div className="mt-2 grid gap-2 pl-1">
           <Textarea
             label="Description"
             rows={2}

@@ -144,7 +144,7 @@ export default function Powers() {
                     <Td>
                       <Field
                         aria-label="Power points"
-                        placeholder="2"
+                        placeholder="—"
                         variant="quiet"
                         className={compactField}
                         containerClassName={compactContainer}
@@ -155,7 +155,7 @@ export default function Powers() {
                     <Td>
                       <Field
                         aria-label="Range"
-                        placeholder="Smarts"
+                        placeholder="—"
                         variant="quiet"
                         className={compactField}
                         containerClassName={compactContainer}
@@ -166,6 +166,7 @@ export default function Powers() {
                     <Td className="max-[379px]:hidden">
                       <Field
                         aria-label="Duration"
+                        placeholder="—"
                         type="number"
                         variant="quiet"
                         className={compactField}

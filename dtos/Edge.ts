@@ -2,7 +2,6 @@ import { BaseEntity } from './BaseEntity.dto';
 
 export class Edge extends BaseEntity {
   _id: string;
-  blurb?: string;
   edgeType?: string;
   requirements?: string;
   description?: string;

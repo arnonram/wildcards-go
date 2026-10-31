@@ -99,6 +99,7 @@ export default function GearList() {
                     <Td>
                       <Field
                         aria-label="Weight"
+                        placeholder="—"
                         type="number"
                         min={0}
                         variant="quiet"
@@ -114,6 +115,7 @@ export default function GearList() {
                     <Td>
                       <Field
                         aria-label="Cost"
+                        placeholder="—"
                         type="number"
                         min={0}
                         variant="quiet"
