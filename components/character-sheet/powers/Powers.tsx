@@ -10,6 +10,7 @@ import { Section } from '../../ui/Section';
 import { Stepper } from '../../ui/Stepper';
 import { SheetTable, Td, Th, Tr } from '../../ui/Table';
 import { Textarea } from '../../ui/Textarea';
+import { SortByNameButton } from '../SortByNameButton';
 
 const COLUMN_COUNT = 5;
 const compactField = 'px-1.5 sm:px-2.5';
@@ -97,6 +98,11 @@ export default function Powers() {
               onChange={(value) => update({ currentPowerPoints: value })}
             />
           </div>
+          <SortByNameButton
+            items={powers}
+            onSort={(sorted) => setWildcardData((previous) => ({ ...previous, powers: sorted }))}
+            label="powers"
+          />
           <Button size="sm" variant="outline" onClick={add}>
             <Plus size={13} />
             Add
@@ -130,8 +136,7 @@ export default function Powers() {
                         aria-label="Power name"
                         placeholder="Power name"
                         variant="quiet"
-                        className={compactField}
-                        containerClassName={compactContainer}
+                        flush
                         value={power.name}
                         onChange={(event) => updatePower(power._id, { name: event.target.value })}
                       />

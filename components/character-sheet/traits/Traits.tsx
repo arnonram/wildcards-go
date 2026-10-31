@@ -9,6 +9,7 @@ import { DeleteButton } from '../../ui/DeleteButton';
 import { Field } from '../../ui/Field';
 import { Section } from '../../ui/Section';
 import { DiePicker } from '../DiePicker';
+import { SortByNameButton } from '../SortByNameButton';
 
 type TraitKey = 'attributes' | 'skills';
 
@@ -31,6 +32,7 @@ function TraitRow({
         <Field
           aria-label="Skill name"
           variant="quiet"
+          flush
           containerClassName="min-w-0 flex-1"
           value={trait.name}
           onChange={(event) => onNameChange(event.target.value)}
@@ -75,6 +77,7 @@ function AddSkillRow({ onAdd }: { onAdd: (skill: Trait) => void }) {
         aria-label="New skill name"
         placeholder="New skill…"
         variant="quiet"
+        flush
         containerClassName="min-w-0 flex-1"
         value={name}
         onChange={(event) => setName(event.target.value)}
@@ -118,6 +121,10 @@ export default function Traits() {
     }));
   };
 
+  const sortSkills = (skills: Trait[]) => {
+    setWildcardData((previous) => ({ ...previous, skills }));
+  };
+
   const addSkill = (skill: Trait) => {
     setWildcardData((previous) => ({ ...previous, skills: [...previous.skills, skill] }));
   };
@@ -126,7 +133,7 @@ export default function Traits() {
     <Section id="traits" title="Traits">
       <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
         <div>
-          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+          <h3 className="mb-1 flex h-8 items-center text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
             Attributes
           </h3>
           {wildcardData.attributes.map((trait, index) => (
@@ -140,9 +147,12 @@ export default function Traits() {
         </div>
 
         <div>
-          <h3 className="mb-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-            Skills
-          </h3>
+          <div className="mb-1 flex h-8 items-center justify-between gap-2">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
+              Skills
+            </h3>
+            <SortByNameButton items={wildcardData.skills} onSort={sortSkills} label="skills" />
+          </div>
           {wildcardData.skills.map((trait, index) => (
             <TraitRow
               key={`skill-${index}`}

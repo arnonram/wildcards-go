@@ -7,6 +7,12 @@ export interface FieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   error?: string;
   containerClassName?: string;
   variant?: 'default' | 'quiet';
+  /**
+   * Pull the field left by its border + padding so its text lines up with
+   * plain text above it (section titles, column headers). The box bleeds into
+   * the gutter instead. Assumes the default horizontal padding.
+   */
+  flush?: boolean;
 }
 
 const inputBase =
@@ -26,6 +32,7 @@ export function Field({
   id,
   containerClassName,
   variant = 'default',
+  flush = false,
   className,
   ...props
 }: FieldProps) {
@@ -35,7 +42,7 @@ export function Field({
   const message = error ?? hint;
 
   return (
-    <div className={cn('min-w-0', containerClassName)}>
+    <div className={cn('min-w-0', flush && '-ml-[calc(0.625rem+1px)]', containerClassName)}>
       {label && (
         <label
           htmlFor={fieldId}
