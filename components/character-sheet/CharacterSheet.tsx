@@ -1,7 +1,9 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 import { WildCardProvider } from '../../helpers/context/wildcard-context';
+import type { MessageKey } from '../../helpers/i18n';
 import Armors from './armor/Armors';
 import Basics from './Basics';
 import { ConflictBanner } from './ConflictBanner';
@@ -15,15 +17,15 @@ import { StatusStrip } from './StatusStrip';
 import Traits from './traits/Traits';
 import Weapons from './weapons/Weapons';
 
-const SECTIONS: SheetNavItem[] = [
-  { id: 'basics', label: 'Basics' },
-  { id: 'traits', label: 'Traits' },
-  { id: 'hindrances', label: 'Hindrances' },
-  { id: 'edges', label: 'Edges' },
-  { id: 'weapons', label: 'Weapons' },
-  { id: 'armor', label: 'Armor' },
-  { id: 'powers', label: 'Powers' },
-  { id: 'gear', label: 'Gear' },
+const SECTIONS: Array<{ id: string; labelKey: MessageKey }> = [
+  { id: 'basics', labelKey: 'section.basics' },
+  { id: 'traits', labelKey: 'section.traits' },
+  { id: 'hindrances', labelKey: 'section.hindrances' },
+  { id: 'edges', labelKey: 'section.edges' },
+  { id: 'weapons', labelKey: 'section.weapons' },
+  { id: 'armor', labelKey: 'section.armor' },
+  { id: 'powers', labelKey: 'section.powers' },
+  { id: 'gear', labelKey: 'section.gear' },
 ];
 
 export interface CharacterSheetProps {
@@ -33,6 +35,7 @@ export interface CharacterSheetProps {
 }
 
 export default function CharacterSheet({ characterId, wildCard, onDelete }: CharacterSheetProps) {
+  const { t } = useTranslation();
   const [pinned, setPinned] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
@@ -53,6 +56,8 @@ export default function CharacterSheet({ characterId, wildCard, onDelete }: Char
     observer.observe(status);
     return () => observer.disconnect();
   }, []);
+
+  const navItems: SheetNavItem[] = SECTIONS.map(({ id, labelKey }) => ({ id, label: t(labelKey) }));
 
   return (
     <WildCardProvider characterId={characterId} initial={wildCard}>
@@ -78,7 +83,7 @@ export default function CharacterSheet({ characterId, wildCard, onDelete }: Char
         >
           <StatusStrip pinned={pinned} onPinnedChange={setPinned} />
         </div>
-        <SheetNav items={SECTIONS} pinned={pinned} />
+        <SheetNav items={navItems} pinned={pinned} />
 
         <div className="mt-8 space-y-10">
           <Basics />

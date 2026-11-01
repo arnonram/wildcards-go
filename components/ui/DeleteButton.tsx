@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 
 export interface DeleteButtonProps {
   label: string;
@@ -13,6 +14,7 @@ export interface DeleteButtonProps {
  * keeps inline editing safe without interrupting the sheet with a modal.
  */
 export function DeleteButton({ label, onDelete, className }: DeleteButtonProps) {
+  const { t } = useTranslation();
   const [armed, setArmed] = useState(false);
 
   useEffect(() => {
@@ -32,8 +34,8 @@ export function DeleteButton({ label, onDelete, className }: DeleteButtonProps) 
           setArmed(true);
         }
       }}
-      aria-label={armed ? `Confirm delete ${label}` : `Delete ${label}`}
-      title={armed ? 'Click again to delete' : `Delete ${label}`}
+      aria-label={t(armed ? 'ui.delete.confirmLabel' : 'ui.delete.label', { label })}
+      title={armed ? t('ui.delete.clickAgain') : t('ui.delete.label', { label })}
       className={cn(
         'inline-flex items-center justify-center rounded-[var(--radius)] text-faint transition-colors hover:bg-danger-soft hover:text-danger',
         armed ? 'gap-1 bg-danger-soft px-1.5 py-1 text-danger' : 'p-1',
@@ -41,7 +43,9 @@ export function DeleteButton({ label, onDelete, className }: DeleteButtonProps) 
       )}
     >
       {armed ? (
-        <span className="text-[10px] font-semibold uppercase tracking-wide">Sure?</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide">
+          {t('ui.delete.sure')}
+        </span>
       ) : (
         <Trash2 size={14} />
       )}

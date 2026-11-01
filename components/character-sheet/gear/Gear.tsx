@@ -2,6 +2,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Gear } from '../../../dtos/Gear.dto';
 import { cn } from '../../../helpers/cn';
+import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
 import { Button } from '../../ui/Button';
 import { DeleteButton } from '../../ui/DeleteButton';
@@ -15,6 +16,7 @@ const COLUMN_COUNT = 4;
 
 export default function GearList() {
   const { wildcardData, setWildcardData } = useWildcard();
+  const { t } = useTranslation();
   const gear = wildcardData.gear ?? [];
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -51,32 +53,32 @@ export default function GearList() {
   return (
     <Section
       id="gear"
-      title="Gear"
+      title={t('section.gear')}
       actions={
         <>
           <SortByNameButton
             items={gear}
             onSort={(sorted) => setWildcardData((previous) => ({ ...previous, gear: sorted }))}
-            label="gear"
+            label={t('sheet.gear.sortLabel')}
           />
           <Button size="sm" variant="outline" onClick={add}>
             <Plus size={13} />
-            Add
+            {t('common.add')}
           </Button>
         </>
       }
     >
       {gear.length === 0 ? (
-        <p className="py-3 text-sm text-faint">No gear yet.</p>
+        <p className="py-3 text-sm text-faint">{t('sheet.gear.empty')}</p>
       ) : (
         <SheetTable>
           <thead>
             <tr>
-              <Th className="min-w-32 sm:min-w-44">Name</Th>
-              <Th className="w-16">Weight</Th>
-              <Th className="w-16">Cost</Th>
+              <Th className="min-w-32 sm:min-w-44">{t('common.name')}</Th>
+              <Th className="w-16">{t('common.weight')}</Th>
+              <Th className="w-16">{t('common.cost')}</Th>
               <Th className="w-12 sm:w-16">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common.actions')}</span>
               </Th>
             </tr>
           </thead>
@@ -88,8 +90,8 @@ export default function GearList() {
                   <Tr>
                     <Td>
                       <Field
-                        aria-label="Gear name"
-                        placeholder="Item name"
+                        aria-label={t('sheet.gear.name')}
+                        placeholder={t('sheet.gear.namePlaceholder')}
                         variant="quiet"
                         flush
                         value={item.name}
@@ -98,7 +100,7 @@ export default function GearList() {
                     </Td>
                     <Td>
                       <Field
-                        aria-label="Weight"
+                        aria-label={t('common.weight')}
                         placeholder="—"
                         type="number"
                         min={0}
@@ -114,7 +116,7 @@ export default function GearList() {
                     </Td>
                     <Td>
                       <Field
-                        aria-label="Cost"
+                        aria-label={t('common.cost')}
                         placeholder="—"
                         type="number"
                         min={0}
@@ -133,7 +135,9 @@ export default function GearList() {
                         <button
                           type="button"
                           onClick={() => toggle(item._id)}
-                          aria-label={isOpen ? 'Hide gear details' : 'Show gear details'}
+                          aria-label={t(
+                            isOpen ? 'sheet.gear.hideDetails' : 'sheet.gear.showDetails',
+                          )}
                           aria-expanded={isOpen}
                           className="rounded-[var(--radius)] p-1 text-faint transition-colors hover:bg-surface-2 hover:text-ink"
                         >
@@ -143,7 +147,7 @@ export default function GearList() {
                           />
                         </button>
                         <DeleteButton
-                          label={item.name || 'gear'}
+                          label={item.name || t('sheet.gear.item')}
                           onDelete={() => remove(item._id)}
                         />
                       </div>
@@ -157,7 +161,7 @@ export default function GearList() {
                         className="border-b border-line/70 bg-surface-2/40 px-3 py-3"
                       >
                         <Textarea
-                          label="Details"
+                          label={t('sheet.gear.details')}
                           rows={2}
                           value={item.details ?? ''}
                           onChange={(event) => update(item._id, { details: event.target.value })}

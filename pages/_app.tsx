@@ -2,6 +2,7 @@ import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
 import Layout from '../components/layout/Layout';
+import { LocaleProvider } from '../helpers/context/locale-context';
 import { ThemeProvider } from '../helpers/context/theme-context';
 import { startAccounts } from '../helpers/offline/account';
 
@@ -28,9 +29,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider>
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
+      <LocaleProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </LocaleProvider>
     </ThemeProvider>
   );
 }

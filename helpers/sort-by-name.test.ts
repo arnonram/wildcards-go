@@ -43,3 +43,25 @@ describe('isSortedByName', () => {
     expect(isSortedByName(named('', 'Axe'))).toBe(false);
   });
 });
+
+describe('name lookup', () => {
+  const de: Record<string, string> = {
+    Athletics: 'Athletik',
+    Notice: 'Wahrnehmung',
+    'Common Knowledge': 'Allgemeinwissen',
+  };
+  const getName = (item: { name: string }) => de[item.name] ?? item.name;
+
+  test('sortByName orders by the looked-up name', () => {
+    expect(
+      names(sortByName(named('Notice', 'Athletics', 'Common Knowledge', 'Fighting'), getName)),
+    ).toEqual(['Common Knowledge', 'Athletics', 'Fighting', 'Notice']);
+  });
+
+  test('isSortedByName judges the looked-up name', () => {
+    expect(
+      isSortedByName(named('Common Knowledge', 'Athletics', 'Fighting', 'Notice'), getName),
+    ).toBe(true);
+    expect(isSortedByName(named('Athletics', 'Common Knowledge'), getName)).toBe(false);
+  });
+});

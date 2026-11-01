@@ -1,4 +1,5 @@
 import { Head, Html, Main, NextScript } from 'next/document';
+import { LOCALE_STORAGE_KEY, LOCALES, resolveLocale } from '../helpers/i18n';
 
 const themeScript = `
 (function () {
@@ -10,6 +11,13 @@ const themeScript = `
     if (skin === 'vtt' || skin === 'modern') root.dataset.skin = 'modern';
     if (mode === 'light' || mode === 'dark') root.dataset.mode = mode;
     root.style.colorScheme = root.dataset.mode || 'light';
+  } catch (error) {}
+  try {
+    document.documentElement.lang = (${resolveLocale.toString()})(
+      localStorage.getItem(${JSON.stringify(LOCALE_STORAGE_KEY)}),
+      navigator.languages || [],
+      ${JSON.stringify(LOCALES)}
+    );
   } catch (error) {}
 })();
 `;

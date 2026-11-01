@@ -1,9 +1,11 @@
 import { Flame } from 'lucide-react';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 
 export function ConvictionToggle() {
   const { wildcardData, update } = useWildcard();
+  const { t } = useTranslation();
   const active = wildcardData.conviction === true || Number(wildcardData.conviction) > 0;
 
   return (
@@ -25,7 +27,7 @@ export function ConvictionToggle() {
         className={cn(active ? 'text-accent-2' : 'text-faint')}
         aria-hidden="true"
       />
-      Conviction
+      {t('stat.conviction')}
     </button>
   );
 }

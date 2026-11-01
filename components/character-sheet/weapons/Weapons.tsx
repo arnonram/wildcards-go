@@ -2,6 +2,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Weapon } from '../../../dtos/Weapon.dto';
 import { cn } from '../../../helpers/cn';
+import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
 import { Button } from '../../ui/Button';
 import { DeleteButton } from '../../ui/DeleteButton';
@@ -17,6 +18,7 @@ const compactContainer = '-mx-1 sm:mx-0';
 
 export default function Weapons() {
   const { wildcardData, setWildcardData } = useWildcard();
+  const { t } = useTranslation();
   const weapons = wildcardData.weapons ?? [];
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -55,38 +57,40 @@ export default function Weapons() {
   return (
     <Section
       id="weapons"
-      title="Weapons"
+      title={t('section.weapons')}
       actions={
         <>
           <SortByNameButton
             items={weapons}
             onSort={(sorted) => setWildcardData((previous) => ({ ...previous, weapons: sorted }))}
-            label="weapons"
+            label={t('sheet.weapons.sortLabel')}
           />
           <Button size="sm" variant="outline" onClick={add}>
             <Plus size={13} />
-            Add
+            {t('common.add')}
           </Button>
         </>
       }
     >
       {weapons.length === 0 ? (
-        <p className="py-3 text-sm text-faint">No weapons yet.</p>
+        <p className="py-3 text-sm text-faint">{t('sheet.weapons.empty')}</p>
       ) : (
         <SheetTable className="table-fixed">
           <thead>
             <tr>
-              <Th>Name</Th>
-              <Th className="w-[4.75rem] sm:w-28">Range</Th>
-              <Th className="w-[5.5rem] sm:w-28">Damage</Th>
-              <Th className="w-12 max-[379px]:hidden sm:w-14">AP</Th>
-              <Th className="hidden w-10 min-[420px]:table-cell sm:w-14">ROF</Th>
+              <Th>{t('common.name')}</Th>
+              <Th className="w-[4.75rem] sm:w-28">{t('common.range')}</Th>
+              <Th className="w-[5.5rem] sm:w-28">{t('sheet.weapons.damage')}</Th>
+              <Th className="w-12 max-[379px]:hidden sm:w-14">{t('sheet.weapons.ap')}</Th>
+              <Th className="hidden w-10 min-[420px]:table-cell sm:w-14">
+                {t('sheet.weapons.rof')}
+              </Th>
               <Th className="hidden w-11 min-[520px]:table-cell sm:w-16">
-                <span className="sm:hidden">Wt</span>
-                <span className="hidden sm:inline">Weight</span>
+                <span className="sm:hidden">{t('sheet.weapons.weightShort')}</span>
+                <span className="hidden sm:inline">{t('common.weight')}</span>
               </Th>
               <Th className="w-14 sm:w-16">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common.actions')}</span>
               </Th>
             </tr>
           </thead>
@@ -98,8 +102,8 @@ export default function Weapons() {
                   <Tr>
                     <Td>
                       <Field
-                        aria-label="Weapon name"
-                        placeholder="Weapon name"
+                        aria-label={t('sheet.weapons.name')}
+                        placeholder={t('sheet.weapons.name')}
                         variant="quiet"
                         flush
                         value={weapon.name}
@@ -108,7 +112,7 @@ export default function Weapons() {
                     </Td>
                     <Td>
                       <Field
-                        aria-label="Range"
+                        aria-label={t('common.range')}
                         placeholder="—"
                         variant="quiet"
                         className={compactField}
@@ -119,7 +123,7 @@ export default function Weapons() {
                     </Td>
                     <Td>
                       <Field
-                        aria-label="Damage"
+                        aria-label={t('sheet.weapons.damage')}
                         placeholder="—"
                         variant="quiet"
                         className={compactField}
@@ -130,7 +134,7 @@ export default function Weapons() {
                     </Td>
                     <Td className="max-[379px]:hidden">
                       <Field
-                        aria-label="Armor piercing"
+                        aria-label={t('sheet.weapons.apLabel')}
                         placeholder="—"
                         type="number"
                         variant="quiet"
@@ -146,7 +150,7 @@ export default function Weapons() {
                     </Td>
                     <Td className="hidden min-[420px]:table-cell">
                       <Field
-                        aria-label="Rate of fire"
+                        aria-label={t('sheet.weapons.rofLabel')}
                         placeholder="—"
                         type="number"
                         variant="quiet"
@@ -162,7 +166,7 @@ export default function Weapons() {
                     </Td>
                     <Td className="hidden min-[520px]:table-cell">
                       <Field
-                        aria-label="Weight"
+                        aria-label={t('common.weight')}
                         placeholder="—"
                         type="number"
                         variant="quiet"
@@ -182,7 +186,9 @@ export default function Weapons() {
                         <button
                           type="button"
                           onClick={() => toggle(weapon._id)}
-                          aria-label={isOpen ? 'Hide weapon details' : 'Show weapon details'}
+                          aria-label={t(
+                            isOpen ? 'sheet.weapons.hideDetails' : 'sheet.weapons.showDetails',
+                          )}
                           aria-expanded={isOpen}
                           className="rounded-[var(--radius)] p-1 text-faint transition-colors hover:bg-surface-2 hover:text-ink"
                         >
@@ -192,7 +198,7 @@ export default function Weapons() {
                           />
                         </button>
                         <DeleteButton
-                          label={weapon.name || 'weapon'}
+                          label={weapon.name || t('sheet.weapons.weapon')}
                           onDelete={() => remove(weapon._id)}
                         />
                       </div>
@@ -207,7 +213,7 @@ export default function Weapons() {
                       >
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                           <Field
-                            label="AP"
+                            label={t('sheet.weapons.ap')}
                             type="number"
                             variant="quiet"
                             containerClassName="hidden max-[379px]:block"
@@ -222,7 +228,7 @@ export default function Weapons() {
                             }
                           />
                           <Field
-                            label="ROF"
+                            label={t('sheet.weapons.rof')}
                             type="number"
                             variant="quiet"
                             containerClassName="min-[420px]:hidden"
@@ -237,7 +243,7 @@ export default function Weapons() {
                             }
                           />
                           <Field
-                            label="Weight"
+                            label={t('common.weight')}
                             type="number"
                             variant="quiet"
                             containerClassName="min-[520px]:hidden"
@@ -252,7 +258,7 @@ export default function Weapons() {
                             }
                           />
                           <Field
-                            label="Shots"
+                            label={t('sheet.weapons.shots')}
                             type="number"
                             min={0}
                             value={weapon.shots ?? ''}
@@ -266,7 +272,7 @@ export default function Weapons() {
                             }
                           />
                           <Field
-                            label="Ammo"
+                            label={t('sheet.weapons.ammo')}
                             type="number"
                             min={0}
                             value={weapon.ammo ?? ''}
@@ -280,13 +286,13 @@ export default function Weapons() {
                             }
                           />
                           <Field
-                            label="Min Strength"
+                            label={t('sheet.weapons.minStrength')}
                             placeholder="d6"
                             value={weapon.minStr ?? ''}
                             onChange={(event) => update(weapon._id, { minStr: event.target.value })}
                           />
                           <Textarea
-                            label="Notes"
+                            label={t('common.notes')}
                             rows={2}
                             containerClassName="col-span-2 sm:col-span-4"
                             value={weapon.comments ?? ''}

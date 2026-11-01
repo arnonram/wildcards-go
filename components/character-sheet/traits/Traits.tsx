@@ -3,7 +3,9 @@ import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Trait } from '../../../dtos/Trait.dto';
 import { DiceValues } from '../../../dtos/wildcards-consts';
+import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
+import { skillNameToStore, traitLabel } from '../../../helpers/i18n';
 import { Button } from '../../ui/Button';
 import { DeleteButton } from '../../ui/DeleteButton';
 import { Field } from '../../ui/Field';
@@ -14,47 +16,52 @@ import { SortByNameButton } from '../SortByNameButton';
 type TraitKey = 'attributes' | 'skills';
 
 function TraitRow({
+  kind,
   trait,
   onDiceChange,
   onModChange,
   onNameChange,
   onDelete,
 }: {
+  kind: 'attribute' | 'skill';
   trait: Trait;
   onDiceChange: (dice: DiceValues) => void;
   onModChange: (mod: string) => void;
   onNameChange?: (name: string) => void;
   onDelete?: () => void;
 }) {
+  const { t } = useTranslation();
+  const label = traitLabel(kind, trait.name, t);
+
   return (
     <div className="flex items-center gap-2 border-b border-line/60 py-1">
       {onNameChange ? (
         <Field
-          aria-label="Skill name"
+          aria-label={t('sheet.traits.skillName')}
           variant="quiet"
           flush
           containerClassName="min-w-0 flex-1"
-          value={trait.name}
-          onChange={(event) => onNameChange(event.target.value)}
+          value={label}
+          onChange={(event) => onNameChange(skillNameToStore(event.target.value, t))}
         />
       ) : (
-        <span className="min-w-0 flex-1 truncate text-sm text-ink">{trait.name}</span>
+        <span className="min-w-0 flex-1 truncate text-sm text-ink">{label}</span>
       )}
       <DiePicker
-        name={trait.name}
+        name={label}
         value={trait.dice}
         onChange={onDiceChange}
         allowUntrained={!!onDelete}
       />
       <Field
-        aria-label={`${trait.name} modifier`}
+        aria-label={t('sheet.traits.modifier', { name: label })}
         placeholder="+0"
         variant="quiet"
         containerClassName="w-14 shrink-0"
         value={trait.mod ?? ''}
         onChange={(event) => onModChange(event.target.value)}
       />
-      {onDelete && <DeleteButton label={trait.name || 'skill'} onDelete={onDelete} />}
+      {onDelete && <DeleteButton label={label || t('sheet.traits.skill')} onDelete={onDelete} />}
     </div>
   );
 }
@@ -62,11 +69,12 @@ function TraitRow({
 function AddSkillRow({ onAdd }: { onAdd: (skill: Trait) => void }) {
   const [name, setName] = useState('');
   const [dice, setDice] = useState<DiceValues>(DiceValues.untrained);
+  const { t } = useTranslation();
 
   const submit = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    onAdd(new Trait(trimmed, dice));
+    onAdd(new Trait(skillNameToStore(trimmed, t), dice));
     setName('');
     setDice(DiceValues.untrained);
   };
@@ -74,8 +82,8 @@ function AddSkillRow({ onAdd }: { onAdd: (skill: Trait) => void }) {
   return (
     <div className="mt-3 flex items-center gap-2">
       <Field
-        aria-label="New skill name"
-        placeholder="New skill…"
+        aria-label={t('sheet.traits.newSkillName')}
+        placeholder={t('sheet.traits.newSkillPlaceholder')}
         variant="quiet"
         flush
         containerClassName="min-w-0 flex-1"
@@ -94,7 +102,7 @@ function AddSkillRow({ onAdd }: { onAdd: (skill: Trait) => void }) {
         size="sm"
         onClick={submit}
         disabled={!name.trim()}
-        aria-label="Add skill"
+        aria-label={t('sheet.traits.addSkill')}
       >
         <Plus size={14} />
       </Button>
@@ -104,6 +112,7 @@ function AddSkillRow({ onAdd }: { onAdd: (skill: Trait) => void }) {
 
 export default function Traits() {
   const { wildcardData, setWildcardData } = useWildcard();
+  const { t } = useTranslation();
 
   const updateTrait = (key: TraitKey, index: number, patch: Partial<Trait>) => {
     setWildcardData((previous) => ({
@@ -130,14 +139,15 @@ export default function Traits() {
   };
 
   return (
-    <Section id="traits" title="Traits">
+    <Section id="traits" title={t('section.traits')}>
       <div className="grid gap-x-8 gap-y-6 lg:grid-cols-2">
         <div>
           <h3 className="mb-1 flex h-8 items-center text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-            Attributes
+            {t('sheet.traits.attributes')}
           </h3>
           {wildcardData.attributes.map((trait, index) => (
             <TraitRow
+              kind="attribute"
               key={trait.name}
               trait={trait}
               onDiceChange={(dice) => updateTrait('attributes', index, { dice })}
@@ -149,12 +159,18 @@ export default function Traits() {
         <div>
           <div className="mb-1 flex h-8 items-center justify-between gap-2">
             <h3 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">
-              Skills
+              {t('sheet.traits.skills')}
             </h3>
-            <SortByNameButton items={wildcardData.skills} onSort={sortSkills} label="skills" />
+            <SortByNameButton
+              items={wildcardData.skills}
+              onSort={sortSkills}
+              label={t('sheet.traits.sortLabel')}
+              getName={(skill) => traitLabel('skill', skill.name, t)}
+            />
           </div>
           {wildcardData.skills.map((trait, index) => (
             <TraitRow
+              kind="skill"
               key={`skill-${index}`}
               trait={trait}
               onDiceChange={(dice) => updateTrait('skills', index, { dice })}

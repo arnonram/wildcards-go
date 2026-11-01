@@ -2,6 +2,7 @@ import { Dialog as BaseDialog } from '@base-ui/react/dialog';
 import { X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 
 const widths = {
   sm: 'max-w-sm',
@@ -30,6 +31,7 @@ export function Dialog({
   size = 'md',
   className,
 }: DialogProps) {
+  const { t } = useTranslation();
   return (
     <BaseDialog.Root open={open} onOpenChange={onOpenChange}>
       <BaseDialog.Portal>
@@ -55,7 +57,7 @@ export function Dialog({
                 )}
               </div>
               <BaseDialog.Close
-                aria-label="Close dialog"
+                aria-label={t('ui.dialog.close')}
                 className="-mr-1 -mt-1 rounded-[var(--radius)] p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-ink"
               >
                 <X size={16} />

@@ -3,6 +3,7 @@ import { Fragment, useState } from 'react';
 import { Armor } from '../../../dtos/Armor.dto';
 import { ArmorLocations } from '../../../dtos/wildcards-consts';
 import { cn } from '../../../helpers/cn';
+import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
 import { Button } from '../../ui/Button';
 import { Checkbox } from '../../ui/Checkbox';
@@ -18,6 +19,7 @@ const COLUMN_COUNT = 6;
 
 export default function Armors() {
   const { wildcardData, setWildcardData } = useWildcard();
+  const { t } = useTranslation();
   const armors = wildcardData.armors ?? [];
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -58,36 +60,36 @@ export default function Armors() {
   return (
     <Section
       id="armor"
-      title="Armor & Shields"
+      title={t('sheet.armor.title')}
       actions={
         <>
           <SortByNameButton
             items={armors}
             onSort={(sorted) => setWildcardData((previous) => ({ ...previous, armors: sorted }))}
-            label="armors"
+            label={t('sheet.armor.sortLabel')}
           />
           <Button size="sm" variant="outline" onClick={add}>
             <Plus size={13} />
-            Add
+            {t('common.add')}
           </Button>
         </>
       }
     >
       {armors.length === 0 ? (
-        <p className="py-3 text-sm text-faint">No armor or shields yet.</p>
+        <p className="py-3 text-sm text-faint">{t('sheet.armor.empty')}</p>
       ) : (
         <SheetTable>
           <thead>
             <tr>
               <Th className="w-12">
-                <span className="sr-only">Equipped</span>
+                <span className="sr-only">{t('sheet.armor.equipped')}</span>
               </Th>
-              <Th className="min-w-24 sm:min-w-40">Name</Th>
-              <Th className="hidden w-16 sm:table-cell">Bonus</Th>
-              <Th className="w-28 sm:w-44">Location</Th>
-              <Th className="hidden w-16 sm:table-cell">Weight</Th>
+              <Th className="min-w-24 sm:min-w-40">{t('common.name')}</Th>
+              <Th className="hidden w-16 sm:table-cell">{t('sheet.armor.bonus')}</Th>
+              <Th className="w-28 sm:w-44">{t('sheet.armor.locationHeader')}</Th>
+              <Th className="hidden w-16 sm:table-cell">{t('common.weight')}</Th>
               <Th className="w-12 sm:w-16">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common.actions')}</span>
               </Th>
             </tr>
           </thead>
@@ -102,13 +104,13 @@ export default function Armors() {
                         id={`equipped-${armor._id}`}
                         checked={armor.isEquipped}
                         onCheckedChange={(checked) => update(armor._id, { isEquipped: checked })}
-                        label={<span className="sr-only">Equipped</span>}
+                        label={<span className="sr-only">{t('sheet.armor.equipped')}</span>}
                       />
                     </Td>
                     <Td>
                       <Field
-                        aria-label="Armor name"
-                        placeholder="Armor name"
+                        aria-label={t('sheet.armor.name')}
+                        placeholder={t('sheet.armor.name')}
                         variant="quiet"
                         flush
                         value={armor.name}
@@ -117,7 +119,7 @@ export default function Armors() {
                     </Td>
                     <Td className="hidden sm:table-cell">
                       <Field
-                        aria-label="Armor bonus"
+                        aria-label={t('sheet.armor.bonusLabel')}
                         placeholder="—"
                         type="number"
                         min={0}
@@ -140,7 +142,7 @@ export default function Armors() {
                     </Td>
                     <Td className="hidden sm:table-cell">
                       <Field
-                        aria-label="Weight"
+                        aria-label={t('common.weight')}
                         placeholder="—"
                         type="number"
                         min={0}
@@ -159,7 +161,9 @@ export default function Armors() {
                         <button
                           type="button"
                           onClick={() => toggle(armor._id)}
-                          aria-label={isOpen ? 'Hide armor details' : 'Show armor details'}
+                          aria-label={t(
+                            isOpen ? 'sheet.armor.hideDetails' : 'sheet.armor.showDetails',
+                          )}
                           aria-expanded={isOpen}
                           className="rounded-[var(--radius)] p-1 text-faint transition-colors hover:bg-surface-2 hover:text-ink"
                         >
@@ -169,7 +173,7 @@ export default function Armors() {
                           />
                         </button>
                         <DeleteButton
-                          label={armor.name || 'armor'}
+                          label={armor.name || t('sheet.armor.armor')}
                           onDelete={() => remove(armor._id)}
                         />
                       </div>
@@ -184,7 +188,7 @@ export default function Armors() {
                       >
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                           <Field
-                            label="Bonus"
+                            label={t('sheet.armor.bonus')}
                             type="number"
                             min={0}
                             containerClassName="sm:hidden"
@@ -199,7 +203,7 @@ export default function Armors() {
                             }
                           />
                           <Field
-                            label="Weight"
+                            label={t('common.weight')}
                             type="number"
                             min={0}
                             containerClassName="sm:hidden"
@@ -214,7 +218,7 @@ export default function Armors() {
                             }
                           />
                           <Field
-                            label="Cost"
+                            label={t('common.cost')}
                             type="number"
                             min={0}
                             value={armor.cost ?? ''}
@@ -228,7 +232,7 @@ export default function Armors() {
                             }
                           />
                           <Textarea
-                            label="Notes"
+                            label={t('common.notes')}
                             rows={2}
                             containerClassName="col-span-2 sm:col-span-3"
                             value={armor.comments ?? ''}

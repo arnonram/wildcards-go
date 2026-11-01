@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 
 export interface SheetNavItem {
   id: string;
@@ -12,6 +13,7 @@ export interface SheetNavProps {
 }
 
 export function SheetNav({ items, pinned = false }: SheetNavProps) {
+  const { t } = useTranslation();
   const [active, setActive] = useState(items[0]?.id ?? '');
   const navRef = useRef<HTMLElement>(null);
 
@@ -67,7 +69,7 @@ export function SheetNav({ items, pinned = false }: SheetNavProps) {
   return (
     <nav
       ref={navRef}
-      aria-label="Character sheet sections"
+      aria-label={t('sheet.nav.label')}
       className={cn(
         '-mx-4 mt-4 border-y border-line bg-bg/90 px-4 backdrop-blur',
         'sticky z-20',

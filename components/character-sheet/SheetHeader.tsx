@@ -1,23 +1,26 @@
 import { Camera, Download, Pencil, Trash2 } from 'lucide-react';
 import { Ranks } from '../../dtos/wildcards-consts';
+import { useTranslation } from '../../helpers/context/locale-context';
 import { type SaveState, useWildcard } from '../../helpers/context/wildcard-context';
+import { type MessageKey, rankLabel } from '../../helpers/i18n';
 import { fileToPortraitBlob } from '../../helpers/image-helpers';
 import { setPortrait } from '../../helpers/offline/characters';
 import { usePortraitUrl } from '../../helpers/offline/hooks';
 import { downloadExport } from '../../helpers/offline/transfer';
 import { Button } from '../ui/Button';
 
-const saveLabels: Record<SaveState, { text: string; className: string }> = {
-  idle: { text: 'Autosave on', className: 'text-faint' },
-  saving: { text: 'Saving…', className: 'text-warn' },
-  saved: { text: 'Saved', className: 'text-ok' },
-  pending: { text: 'Saved locally', className: 'text-warn' },
-  offline: { text: 'Offline — saved locally', className: 'text-warn' },
-  error: { text: 'Sync failed — saved locally', className: 'text-danger' },
-  conflict: { text: 'Conflict', className: 'text-danger' },
+const saveLabels: Record<SaveState, { key: MessageKey; className: string }> = {
+  idle: { key: 'sheet.save.idle', className: 'text-faint' },
+  saving: { key: 'sheet.save.saving', className: 'text-warn' },
+  saved: { key: 'sheet.save.saved', className: 'text-ok' },
+  pending: { key: 'sheet.save.pending', className: 'text-warn' },
+  offline: { key: 'sheet.save.offline', className: 'text-warn' },
+  error: { key: 'sheet.save.error', className: 'text-danger' },
+  conflict: { key: 'sheet.save.conflict', className: 'text-danger' },
 };
 
 function SaveIndicator({ state }: { state: SaveState }) {
+  const { t } = useTranslation();
   const label = saveLabels[state];
   return (
     <span
@@ -25,7 +28,7 @@ function SaveIndicator({ state }: { state: SaveState }) {
       aria-live="polite"
     >
       <span className="size-1.5 rounded-full bg-current" />
-      {label.text}
+      {t(label.key)}
     </span>
   );
 }
@@ -33,6 +36,7 @@ function SaveIndicator({ state }: { state: SaveState }) {
 export function SheetHeader({ onDelete }: { onDelete: () => void }) {
   const { characterId, wildcardData, update, saveState } = useWildcard();
   const portraitUrl = usePortraitUrl(characterId);
+  const { t } = useTranslation();
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -57,7 +61,7 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
           accept="image/*"
           onChange={handleImageUpload}
           className="sr-only"
-          aria-label="Upload character portrait"
+          aria-label={t('sheet.header.uploadPortrait')}
         />
         {portraitUrl ? (
           <>
@@ -65,7 +69,9 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
             {/* biome-ignore lint/performance/noImgElement: portraits are local blob URLs */}
             <img
               src={portraitUrl}
-              alt={`${wildcardData.name || 'Character'} portrait`}
+              alt={t('sheet.header.portraitAlt', {
+                name: wildcardData.name || t('sheet.header.character'),
+              })}
               className="size-full object-cover"
             />
             <span className="absolute inset-0 flex items-center justify-center bg-black/55 opacity-0 transition-opacity group-hover:opacity-100">
@@ -75,7 +81,7 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
         ) : (
           <span className="flex size-full flex-col items-center justify-center gap-1 text-faint transition-colors group-hover:text-accent">
             <Camera size={22} />
-            <span className="text-[10px] uppercase tracking-wider">Upload</span>
+            <span className="text-[10px] uppercase tracking-wider">{t('sheet.header.upload')}</span>
           </span>
         )}
       </label>
@@ -85,9 +91,9 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
           <input
             value={wildcardData.name ?? ''}
             onChange={(event) => update({ name: event.target.value })}
-            placeholder="Unnamed Wildcard"
-            aria-label="Character name"
-            title="Edit character name"
+            placeholder={t('sheet.header.namePlaceholder')}
+            aria-label={t('sheet.header.nameLabel')}
+            title={t('sheet.header.nameTitle')}
             className="w-[calc(100%+0.5rem)] -ml-2 rounded-[var(--radius)] border border-transparent bg-transparent py-0.5 pr-7 pl-2 font-display text-xl font-bold tracking-[0.02em] text-heading placeholder:text-faint transition-colors hover:border-line focus:border-accent focus:bg-surface focus:outline-none focus:ring-2 focus:ring-accent/15 sm:text-3xl"
           />
           <Pencil
@@ -97,11 +103,11 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
           />
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
-          <span>{wildcardData.rank ?? Ranks.Novice}</span>
+          <span>{rankLabel(wildcardData.rank ?? Ranks.Novice, t)}</span>
           <span className="text-faint" aria-hidden="true">
             ·
           </span>
-          <span>{wildcardData.race || 'No ancestry'}</span>
+          <span>{wildcardData.race || t('sheet.header.noAncestry')}</span>
         </div>
       </div>
 
@@ -114,11 +120,11 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
             onClick={() => void downloadExport({ id: characterId, name: wildcardData.name })}
           >
             <Download size={13} />
-            Export
+            {t('sheet.header.export')}
           </Button>
           <Button variant="outline" size="sm" onClick={onDelete}>
             <Trash2 size={13} />
-            Delete
+            {t('common.delete')}
           </Button>
         </div>
       </div>

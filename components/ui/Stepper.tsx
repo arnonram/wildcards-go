@@ -1,5 +1,6 @@
 import { Minus, Plus } from 'lucide-react';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 
 export interface StepperProps {
   label: string;
@@ -20,13 +21,14 @@ export function Stepper({
   step = 1,
   className,
 }: StepperProps) {
+  const { t } = useTranslation();
   const clamp = (next: number) => Math.min(max, Math.max(min, next));
 
   return (
     <div className={cn('flex items-center gap-1', className)}>
       <button
         type="button"
-        aria-label={`Decrease ${label}`}
+        aria-label={t('ui.stepper.decrease', { label })}
         disabled={value <= min}
         onClick={() => onChange(clamp(value - step))}
         className="flex size-7 items-center justify-center rounded-[var(--radius)] text-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-35"
@@ -47,7 +49,7 @@ export function Stepper({
       />
       <button
         type="button"
-        aria-label={`Increase ${label}`}
+        aria-label={t('ui.stepper.increase', { label })}
         disabled={value >= max}
         onClick={() => onChange(clamp(value + step))}
         className="flex size-7 items-center justify-center rounded-[var(--radius)] text-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-35"
