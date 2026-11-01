@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { AccountDeletedNotice } from './AccountDeletedNotice';
 import { AccountMenu } from './AccountMenu';
 import { AdoptDialog } from './AdoptDialog';
+import { LanguageMenu } from './LanguageMenu';
 import { SyncStatus } from './SyncStatus';
 import { ModeToggle, SkinMenu } from './ThemeControls';
 
@@ -24,6 +25,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="ml-auto flex items-center gap-1">
             <SyncStatus />
             <AccountMenu />
+            <LanguageMenu />
             <SkinMenu />
             <ModeToggle />
           </div>
@@ -77,6 +79,9 @@ export default function Layout({ children }: { children: ReactNode }) {
             // The Fan License requires the logo "unaltered in size or dimension".
             width={300}
             height={200}
+            // Short pages (e.g. home) show the footer on first paint, making
+            // this the largest contentful paint; don't lazy-load it.
+            loading="eager"
             className="shrink-0"
           />
         </div>

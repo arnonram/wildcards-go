@@ -2,6 +2,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Power } from '../../../dtos/Power.dto';
 import { cn } from '../../../helpers/cn';
+import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
 import { Button } from '../../ui/Button';
 import { DeleteButton } from '../../ui/DeleteButton';
@@ -23,6 +24,7 @@ const toNumber = (value: unknown) => {
 
 export default function Powers() {
   const { wildcardData, setWildcardData, update } = useWildcard();
+  const { t } = useTranslation();
   const powers = wildcardData.powers ?? [];
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -64,16 +66,16 @@ export default function Powers() {
   return (
     <Section
       id="powers"
-      title="Powers"
+      title={t('section.powers')}
       actions={
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-              <span className="sm:hidden">Max</span>
-              <span className="hidden sm:inline">Max PP</span>
+              <span className="sm:hidden">{t('sheet.powers.maxShort')}</span>
+              <span className="hidden sm:inline">{t('sheet.powers.max')}</span>
             </span>
             <Stepper
-              label="Max power points"
+              label={t('sheet.powers.maxLabel')}
               value={maxPowerPoints}
               min={0}
               max={99}
@@ -87,11 +89,11 @@ export default function Powers() {
           </div>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-              <span className="sm:hidden">Cur</span>
-              <span className="hidden sm:inline">Current</span>
+              <span className="sm:hidden">{t('sheet.powers.currentShort')}</span>
+              <span className="hidden sm:inline">{t('sheet.powers.current')}</span>
             </span>
             <Stepper
-              label="Current power points"
+              label={t('sheet.powers.currentLabel')}
               value={currentPowerPoints}
               min={0}
               max={maxPowerPoints}
@@ -101,27 +103,29 @@ export default function Powers() {
           <SortByNameButton
             items={powers}
             onSort={(sorted) => setWildcardData((previous) => ({ ...previous, powers: sorted }))}
-            label="powers"
+            label={t('sheet.powers.sortLabel')}
           />
           <Button size="sm" variant="outline" onClick={add}>
             <Plus size={13} />
-            Add
+            {t('common.add')}
           </Button>
         </div>
       }
     >
       {powers.length === 0 ? (
-        <p className="py-3 text-sm text-faint">No powers yet.</p>
+        <p className="py-3 text-sm text-faint">{t('sheet.powers.empty')}</p>
       ) : (
         <SheetTable className="table-fixed">
           <thead>
             <tr>
-              <Th>Name</Th>
-              <Th className="w-11 sm:w-16">PP</Th>
-              <Th className="w-20 sm:w-32">Range</Th>
-              <Th className="w-[4.25rem] max-[379px]:hidden sm:w-24">Duration</Th>
+              <Th>{t('common.name')}</Th>
+              <Th className="w-11 sm:w-16">{t('sheet.powers.pp')}</Th>
+              <Th className="w-20 sm:w-32">{t('common.range')}</Th>
+              <Th className="w-[4.25rem] max-[379px]:hidden sm:w-24">
+                {t('sheet.powers.duration')}
+              </Th>
               <Th className="w-14 sm:w-16">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common.actions')}</span>
               </Th>
             </tr>
           </thead>
@@ -133,8 +137,8 @@ export default function Powers() {
                   <Tr>
                     <Td>
                       <Field
-                        aria-label="Power name"
-                        placeholder="Power name"
+                        aria-label={t('sheet.powers.name')}
+                        placeholder={t('sheet.powers.name')}
                         variant="quiet"
                         flush
                         value={power.name}
@@ -143,7 +147,7 @@ export default function Powers() {
                     </Td>
                     <Td>
                       <Field
-                        aria-label="Power points"
+                        aria-label={t('sheet.powers.ppLabel')}
                         placeholder="—"
                         variant="quiet"
                         className={compactField}
@@ -154,7 +158,7 @@ export default function Powers() {
                     </Td>
                     <Td>
                       <Field
-                        aria-label="Range"
+                        aria-label={t('common.range')}
                         placeholder="—"
                         variant="quiet"
                         className={compactField}
@@ -165,7 +169,7 @@ export default function Powers() {
                     </Td>
                     <Td className="max-[379px]:hidden">
                       <Field
-                        aria-label="Duration"
+                        aria-label={t('sheet.powers.duration')}
                         placeholder="—"
                         type="number"
                         variant="quiet"
@@ -185,7 +189,9 @@ export default function Powers() {
                         <button
                           type="button"
                           onClick={() => toggle(power._id)}
-                          aria-label={isOpen ? 'Hide power details' : 'Show power details'}
+                          aria-label={t(
+                            isOpen ? 'sheet.powers.hideDetails' : 'sheet.powers.showDetails',
+                          )}
                           aria-expanded={isOpen}
                           className="rounded-[var(--radius)] p-1 text-faint transition-colors hover:bg-surface-2 hover:text-ink"
                         >
@@ -195,7 +201,7 @@ export default function Powers() {
                           />
                         </button>
                         <DeleteButton
-                          label={power.name || 'power'}
+                          label={power.name || t('sheet.powers.power')}
                           onDelete={() => remove(power._id)}
                         />
                       </div>
@@ -210,7 +216,7 @@ export default function Powers() {
                       >
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
                           <Field
-                            label="Duration"
+                            label={t('sheet.powers.duration')}
                             type="number"
                             containerClassName="col-span-2 hidden max-[379px]:block"
                             value={power.duration ?? ''}
@@ -224,7 +230,7 @@ export default function Powers() {
                             }
                           />
                           <Textarea
-                            label="Effect"
+                            label={t('sheet.powers.effect')}
                             rows={2}
                             containerClassName="col-span-2"
                             value={power.effect ?? ''}
@@ -233,7 +239,7 @@ export default function Powers() {
                             }
                           />
                           <Textarea
-                            label="Notes"
+                            label={t('common.notes')}
                             rows={2}
                             containerClassName="col-span-2"
                             value={power.comments ?? ''}

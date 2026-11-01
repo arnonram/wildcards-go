@@ -1,6 +1,7 @@
 // biome-ignore-all lint/suspicious/noArrayIndexKey: pips are positional and never reordered
 import { Plus } from 'lucide-react';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 
 export type PipTone = 'accent' | 'danger' | 'warn';
 
@@ -31,6 +32,7 @@ export function Pips({
   formatValue,
   className,
 }: PipsProps) {
+  const { t } = useTranslation();
   const count = Math.max(max, value);
 
   return (
@@ -62,7 +64,7 @@ export function Pips({
         {allowAdd && (
           <button
             type="button"
-            aria-label={`Add ${label}`}
+            aria-label={t('ui.pips.add', { label })}
             onClick={() => onChange(value + 1)}
             className="flex size-6 items-center justify-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-ink"
           >

@@ -1,6 +1,7 @@
 import { Pin } from 'lucide-react';
 import { computeToughness } from '../../helpers/armor-helpers';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { Pips } from '../ui/Pips';
 import { Stat } from '../ui/Stat';
@@ -21,6 +22,8 @@ export interface StatusStripProps {
 
 export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
   const { wildcardData, update } = useWildcard();
+  const { t } = useTranslation();
+  const pinLabel = t(pinned ? 'sheet.status.unpin' : 'sheet.status.pin');
 
   const pace = toNumber(wildcardData.pace) + toNumber(wildcardData.paceMod);
   const parry = toNumber(wildcardData.parry) + toNumber(wildcardData.parryMod);
@@ -31,9 +34,9 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
     <div className="relative rounded-[var(--radius)] border border-line bg-surface/70 px-3 py-3">
       <button
         type="button"
-        aria-label={pinned ? 'Unpin status bar' : 'Pin status bar'}
+        aria-label={pinLabel}
         aria-pressed={pinned}
-        title={pinned ? 'Unpin status bar' : 'Pin status bar'}
+        title={pinLabel}
         onClick={() => onPinnedChange(!pinned)}
         className={cn(
           'absolute right-2 top-2 flex size-7 items-center justify-center rounded-full transition-colors',
@@ -45,7 +48,7 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pr-8">
         <Pips
-          label="Bennies"
+          label={t('stat.bennies')}
           value={toNumber(wildcardData.bennies)}
           max={5}
           allowAdd
@@ -53,7 +56,7 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
         />
         <ConvictionToggle />
         <Pips
-          label="Wounds"
+          label={t('stat.wounds')}
           value={toNumber(wildcardData.wounds)}
           max={3}
           tone="danger"
@@ -61,7 +64,7 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
           onChange={(value) => update({ wounds: value })}
         />
         <Pips
-          label="Fatigue"
+          label={t('stat.fatigue')}
           value={toNumber(wildcardData.fatigue)}
           max={2}
           tone="warn"
@@ -72,25 +75,31 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
 
       <div className="mt-3 flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-line/70 pt-3">
         <Stat
-          label="Pace"
+          label={t('stat.pace')}
           value={pace}
-          hint={`Base ${toNumber(wildcardData.pace)} ${signed(toNumber(wildcardData.paceMod))}`}
+          hint={t('sheet.status.baseHint', {
+            base: toNumber(wildcardData.pace),
+            mod: signed(toNumber(wildcardData.paceMod)),
+          })}
         />
         <Stat
-          label="Parry"
+          label={t('stat.parry')}
           value={parry}
-          hint={`Base ${toNumber(wildcardData.parry)} ${signed(toNumber(wildcardData.parryMod))}`}
+          hint={t('sheet.status.baseHint', {
+            base: toNumber(wildcardData.parry),
+            mod: signed(toNumber(wildcardData.parryMod)),
+          })}
         />
         <Stat
-          label="Toughness"
+          label={t('stat.toughness')}
           value={toughness.armor > 0 ? `${toughness.total} (${toughness.armor})` : toughness.total}
-          hint={`${toughness.base} base + ${toughness.armor} armor`}
+          hint={t('sheet.status.toughnessHint', { base: toughness.base, armor: toughness.armor })}
         />
         {woundFatiguePenalty > 0 && (
           <Stat
-            label="Wound/Fatigue"
+            label={t('stat.woundFatigue')}
             value={negative(woundFatiguePenalty)}
-            hint="Cumulative −1 per wound or fatigue level"
+            hint={t('sheet.status.penaltyHint')}
           />
         )}
       </div>

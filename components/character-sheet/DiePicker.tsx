@@ -1,5 +1,6 @@
 import { DiceValues } from '../../dtos/wildcards-consts';
 import { cn } from '../../helpers/cn';
+import { useTranslation } from '../../helpers/context/locale-context';
 import { Select } from '../ui/Select';
 
 const STEPPED_DICE = [DiceValues.d4, DiceValues.d6, DiceValues.d8, DiceValues.d10, DiceValues.d12];
@@ -12,11 +13,15 @@ export interface DiePickerProps {
 }
 
 export function DiePicker({ name, value, onChange, allowUntrained = false }: DiePickerProps) {
+  const { t } = useTranslation();
   const options = allowUntrained ? [DiceValues.untrained, ...STEPPED_DICE] : STEPPED_DICE;
 
   return (
     <>
-      <fieldset className="hidden items-center gap-0.5 sm:flex" aria-label={`${name} die`}>
+      <fieldset
+        className="hidden items-center gap-0.5 sm:flex"
+        aria-label={t('sheet.die.label', { name })}
+      >
         {options.map((option) => (
           <label
             key={option}
@@ -41,7 +46,7 @@ export function DiePicker({ name, value, onChange, allowUntrained = false }: Die
       </fieldset>
 
       <Select
-        aria-label={`${name} die`}
+        aria-label={t('sheet.die.label', { name })}
         size="sm"
         className="w-24 shrink-0 sm:hidden"
         value={value}
