@@ -1,0 +1,11 @@
+.git
+.next
+node_modules
+data
+coverage
+screenshots
+.env*
+.claude
+.superpowers
+.playwright-mcp
+public/sw.js*

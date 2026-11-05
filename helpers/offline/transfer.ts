@@ -1,5 +1,6 @@
 import { isCharacterData } from '../../dtos/sync';
 import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
+import { newId } from '../new-id';
 import { getActiveDb } from './active';
 import { changed } from './characters';
 import type { LocalCharacter, LocalPortrait, WcgDb } from './db';
@@ -81,12 +82,12 @@ export async function importCharacters(
   for (const entry of file.characters as unknown[]) {
     const { data, portrait } = (entry ?? {}) as { data?: unknown; portrait?: unknown };
     if (!isCharacterData(data)) throw new Error(DAMAGED);
-    const id = crypto.randomUUID();
+    const id = newId();
     const blob = portrait === undefined ? undefined : fromDataUrl(portrait);
     if (blob === null) throw new Error(DAMAGED);
     let portraitRev: string | undefined;
     if (blob) {
-      portraitRev = crypto.randomUUID();
+      portraitRev = newId();
       portraits.push({ id, rev: portraitRev, blob, dirty: 1 });
     }
     characters.push({

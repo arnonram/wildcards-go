@@ -1,3 +1,4 @@
+import { newId } from '../helpers/new-id';
 import { BaseEntity } from './BaseEntity.dto';
 
 export class Weapon extends BaseEntity {
@@ -25,7 +26,7 @@ export class Weapon extends BaseEntity {
     comments?: string,
   ) {
     super(name);
-    this._id = crypto.randomUUID().replaceAll('-', '');
+    this._id = newId().replaceAll('-', '');
     this.range = range;
     this.damage = damage;
     this.ap = ap;

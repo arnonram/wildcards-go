@@ -5,7 +5,7 @@ import type { WildCardCharacter } from './WildCardCharacter.dto';
 /** Names the account whose local store a sync request comes from. */
 export const STORE_OWNER_HEADER = 'X-WCG-Store-Owner';
 
-/** Character ids are `crypto.randomUUID()` strings. */
+/** Character ids are random version 4 UUIDs, from `newId()`. */
 export const CHARACTER_ID = /^[0-9a-f-]{36}$/;
 
 interface ServerCharacterBase {

@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CHARACTER_ID } from '../../../../dtos/sync';
 import { respondWithApiError } from '../../../../helpers/api-error';
-import { connectToDb } from '../../../../helpers/db-util';
-import { putCharacter } from '../../../../server/character-store';
+import { getBackend } from '../../../../server/backend';
 import { parsePutBody } from '../../../../server/parse-put-body';
 import { authorize } from '../../../../server/session';
 
@@ -30,8 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const ownerId = await authorize(req, res);
     if (!ownerId) return;
-    const { db } = await connectToDb();
-    const result = await putCharacter(db, ownerId, id, body, Date.now());
+    const { store } = await getBackend();
+    const result = await store.putCharacter(ownerId, id, body, Date.now());
     if ('ok' in result) {
       res.status(200).json(result.ok);
     } else if ('notFound' in result) {

@@ -175,22 +175,83 @@ test('wiping a deleted account that is not the remembered one keeps the current 
   expect(await Dexie.exists(`wcg-u-${gone}`)).toBe(false);
 });
 
+/** Deletion requests that record what was called. */
+function deletionRequests(confirmResult: { error?: { code?: string; message?: string } | null }) {
+  const calls: string[] = [];
+  return {
+    calls,
+    requests: {
+      emailLink: async () => {
+        calls.push('email-link');
+        return { error: null };
+      },
+      confirm: async (password?: string) => {
+        calls.push(`confirm:${password ?? ''}`);
+        return confirmResult;
+      },
+    },
+  };
+}
+
 test('requesting deletion offline sends nothing', async () => {
   setOnline(false);
-  let sent = false;
-  expect(
-    await requestAccountDeletion(async () => {
-      sent = true;
-      return { error: null };
-    }),
-  ).toBe('offline');
-  expect(sent).toBe(false);
+  const { calls, requests } = deletionRequests({ error: null });
+  expect(await requestAccountDeletion({ method: 'email' }, requests)).toBe('offline');
+  expect(await requestAccountDeletion({ method: 'password', password: 'p' }, requests)).toBe(
+    'offline',
+  );
+  expect(calls).toEqual([]);
+});
+
+test('an email-confirmed account is sent a link', async () => {
+  const { calls, requests } = deletionRequests({ error: null });
+  expect(await requestAccountDeletion({ method: 'email' }, requests)).toBe('sent');
+  expect(calls).toEqual(['email-link']);
 });
 
 test('a refused deletion request throws', async () => {
   await expect(
-    requestAccountDeletion(async () => ({ error: { message: 'Too many requests' } })),
+    requestAccountDeletion(
+      { method: 'email' },
+      {
+        emailLink: async () => ({ error: { message: 'Too many requests' } }),
+        confirm: async () => ({ error: null }),
+      },
+    ),
   ).rejects.toThrow('Too many requests');
+});
+
+test('a password deletion that succeeds wipes this device at once', async () => {
+  const user = `u-${crypto.randomUUID()}`;
+  rememberAccount(account(user));
+  await createCharacter();
+  const { calls, requests } = deletionRequests({ error: null });
+  expect(await requestAccountDeletion({ method: 'password', password: 'pw' }, requests)).toBe(
+    'deleted',
+  );
+  expect(calls).toEqual(['confirm:pw']);
+  expect(getActiveOwner()).toBeNull();
+  expect(await Dexie.exists(`wcg-u-${user}`)).toBe(false);
+  expect(getDeletedNotice()).toBe(true);
+  dismissDeletedNotice();
+});
+
+test('a wrong password keeps everything', async () => {
+  rememberAccount(account('u-a'));
+  const { requests } = deletionRequests({ error: { code: 'INVALID_PASSWORD' } });
+  expect(await requestAccountDeletion({ method: 'password', password: 'x' }, requests)).toBe(
+    'wrong-password',
+  );
+  expect(getActiveOwner()).toBe('u-a');
+});
+
+test('a stale session is asked to sign in again', async () => {
+  rememberAccount(account('u-a'));
+  const { requests } = deletionRequests({ error: { code: 'SIGN_IN_AGAIN' } });
+  expect(await requestAccountDeletion({ method: 'recent-sign-in' }, requests)).toBe(
+    'sign-in-again',
+  );
+  expect(getActiveOwner()).toBe('u-a');
 });
 
 test('confirming deletion wipes this device at once', async () => {

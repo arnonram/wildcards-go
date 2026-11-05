@@ -36,23 +36,36 @@ Sign-in uses [Better Auth](https://www.better-auth.com/) with Google, Discord an
 
 Each account has its own local store (`wcg-u-<userId>`); signed-out characters live in `wcg`. Signing out hides the account's characters on that device until it signs in again.
 
-| Variable                                     | Purpose                                                |
-| -------------------------------------------- | ------------------------------------------------------ |
-| `BETTER_AUTH_SECRET`                         | Session signing (`openssl rand -base64 32`)            |
-| `BETTER_AUTH_URL`                            | Public base URL, e.g. `http://localhost:3000`          |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | Optional; Google sign-in shows only when both are set  |
-| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Optional; Discord sign-in shows only when both are set |
-| `SMTP_URL`, `EMAIL_FROM`                     | Email links over SMTP; required in production          |
+| Variable                                     | Purpose                                                                   |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`                         | Session signing (`openssl rand -base64 32`)                               |
+| `BETTER_AUTH_URL`                            | Public base URL, e.g. `http://localhost:3000`                             |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | Optional; Google sign-in shows only when both are set                     |
+| `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | Optional; Discord sign-in shows only when both are set                    |
+| `SMTP_URL`, `EMAIL_FROM`                     | Email links over SMTP; off in production without them                     |
+| `AUTH_PASSWORD=1`                            | Username and password accounts (no email needed)                          |
+| `AUTH_PASSWORD_MIN_LENGTH`                   | Shortest password for new accounts; default 8                             |
+| `SIGNUP_INVITE_CODE`                         | New accounts need this code, by any sign-in method                        |
+| `SIGNUP_OPEN=1`                              | Self-hosted only: anyone may create an account                            |
+| `DATABASE_PATH`                              | SQLite file, used when `MONGODB_URI` is unset; one of the two is required |
 
-Sign-in and account-deletion emails are HTML with a plain-text part, sent over SMTP, so any provider works: `SMTP_URL=smtp://<login>:<key>@<host>:587` (URL-encode `@` in the login as `%40`). `EMAIL_FROM` must use a domain verified with that provider. In development without `SMTP_URL`, sign-in links print to the server console; production refuses to start without both.
+Each sign-in method is on when its settings are, and the server refuses to start in production when none is. Sign-up stays open on MongoDB; with SQLite it needs `SIGNUP_INVITE_CODE` or `SIGNUP_OPEN=1`.
+
+Sign-in and account-deletion emails are HTML with a plain-text part, sent over SMTP, so any provider works: `SMTP_URL=smtp://<login>:<key>@<host>:587` (URL-encode `@` in the login as `%40`). `EMAIL_FROM` must use a domain verified with that provider. In development without `SMTP_URL`, sign-in links print to the server console; in production, email sign-in is off without both.
+
+Password accounts store a placeholder address (`<username>@users.invalid`) because Better Auth needs one; it is never shown or mailed. They confirm deleting their account with their password. Accounts without a password confirm by emailed link, or, with email off, by a sign-in from the last 5 minutes.
 
 To enable a social provider, register an OAuth app ([Google](https://console.cloud.google.com/apis/credentials), [Discord](https://discord.com/developers/applications)) with the redirect URL `<BETTER_AUTH_URL>/api/auth/callback/google` or `.../callback/discord`.
 
-Better Auth rate-limits its endpoints with counters stored in MongoDB, so limits hold across server instances.
+Better Auth rate-limits its endpoints with counters stored in the database, so limits hold across server instances.
 
 Characters written before accounts existed have no owner and are never returned. Drop the dev `characters` and `portraits` collections once.
 
 See [docs/deployment.md](docs/deployment.md) for the hosting plan.
+
+## Self-hosting
+
+Anyone can run their own copy from the Docker image, with a SQLite file instead of MongoDB and no outside services: see [docs/self-hosting.md](docs/self-hosting.md). Storage is MongoDB when `MONGODB_URI` is set and SQLite when `DATABASE_PATH` is (the server refuses to start with neither); both pass the same store tests.
 
 ## Export and import
 
@@ -85,4 +98,6 @@ bun run build   # production build plus service worker
 bun run check   # Biome lint + format
 ```
 
-The server tests connect to `MONGODB_URI` (default `mongodb://localhost:27017`) and use, then drop, a `wcg_test` database.
+The server tests connect to `MONGODB_URI` (default `mongodb://localhost:27017`) and use, then drop, a `wcg_test` database. The store tests run against both MongoDB and an in-memory SQLite.
+
+To run locally on SQLite instead: `MONGODB_URI= DATABASE_PATH=./data/wcg.db bun run dev`.

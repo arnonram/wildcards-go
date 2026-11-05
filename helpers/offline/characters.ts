@@ -1,4 +1,5 @@
 import { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
+import { newId } from '../new-id';
 import { getActiveDb } from './active';
 import type { WcgDb } from './db';
 
@@ -28,7 +29,7 @@ export function changed() {
 }
 
 export async function createCharacter(database: WcgDb = getActiveDb()): Promise<string> {
-  const id = crypto.randomUUID();
+  const id = newId();
   const data: WildCardCharacter = { ...new WildCardCharacter(), _id: id };
   await database.characters.add({
     id,
@@ -90,7 +91,7 @@ export async function setPortrait(
   blob: Blob,
   database: WcgDb = getActiveDb(),
 ): Promise<string> {
-  const rev = crypto.randomUUID();
+  const rev = newId();
   await database.transaction('rw', database.characters, database.portraits, async () => {
     const row = await database.characters.get(id);
     if (!row) throw new Error(`Character ${id} is not stored locally`);

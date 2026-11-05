@@ -28,7 +28,7 @@ The plan for the first public deployment of Wild Cards Go, as agreed on 2026-10-
 **Vercel Hobby limits to keep in mind:**
 
 - Non-commercial use only. Charging or showing ads means Vercel Pro (about $20/month).
-- Preview deployments get their own URLs, where Google and Discord sign-in won't work unless each URL is registered. Sign in on production only.
+- Preview deployments get their own URLs. Email and password sign-in work there: on a preview, Better Auth accepts exactly that deployment's own addresses (`VERCEL_URL`, `VERCEL_BRANCH_URL`), with `BETTER_AUTH_URL` as the fallback. Google and Discord sign-in won't work unless each URL is registered.
 
 ## Before the first deploy
 
@@ -102,7 +102,7 @@ The app creates its own indexes on first connect, and needs no other setup or mi
 | `SMTP_URL`, `EMAIL_FROM`                     | from Brevo, as above                                       |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | optional; the Google button shows only when both are set   |
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | optional; the Discord button shows only when both are set  |
-- [x] **Preview deployments** also run in production mode, and the server **refuses to start** without `SMTP_URL` and `EMAIL_FROM`. Either set those (and the rest) for Preview too, or accept that previews fail.
+- [x] **Preview deployments** also run in production mode, so they need `BETTER_AUTH_URL` and at least one sign-in method, or the server **refuses to start**. Set the variables for Preview too. Vercel's system variables (`VERCEL_ENV`, `VERCEL_URL`) must stay exposed (the default) for sign-in on previews.
 
 ## Address: DNS on Cloudflare
 
