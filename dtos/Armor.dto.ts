@@ -1,3 +1,4 @@
+import { newId } from '../helpers/new-id';
 import { BaseEntity } from './BaseEntity.dto';
 
 export class Armor extends BaseEntity {
@@ -15,6 +16,6 @@ export class Armor extends BaseEntity {
 
   constructor(name: string) {
     super(name);
-    this._id = crypto.randomUUID().replaceAll('-', '');
+    this._id = newId().replaceAll('-', '');
   }
 }

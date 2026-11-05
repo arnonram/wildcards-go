@@ -6,6 +6,6 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     const { refuseToStartIfMisconfigured } = await import('./server/startup-check');
-    refuseToStartIfMisconfigured();
+    await refuseToStartIfMisconfigured();
   }
 }

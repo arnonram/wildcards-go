@@ -2,8 +2,33 @@ import { expect, spyOn, test } from 'bun:test';
 import nodemailer from 'nodemailer';
 import { createEmailSender, deleteAccountEmail, signInEmail } from './email';
 
-test('email sender refuses console fallback in production', () => {
-  expect(() => createEmailSender({ NODE_ENV: 'production' })).toThrow('SMTP_URL');
+test('email sender without SMTP in production refuses to send, never logs', async () => {
+  const info = spyOn(console, 'info').mockImplementation(() => {});
+  try {
+    const send = createEmailSender({ NODE_ENV: 'production' });
+    await expect(send(signInEmail('a@b.c', 'http://x/link'))).rejects.toThrow(
+      'Email is not configured',
+    );
+    expect(info).not.toHaveBeenCalled();
+  } finally {
+    info.mockRestore();
+  }
+});
+
+test('placeholder addresses are never mailed', async () => {
+  let calls = 0;
+  const send = createEmailSender(
+    { SMTP_URL: 'smtp://user:key@smtp.example.com:587', EMAIL_FROM: 'from@x.y' },
+    () => ({
+      sendMail: async () => {
+        calls++;
+      },
+    }),
+  );
+  await expect(send(signInEmail('bob@users.INVALID', 'http://x/l'))).rejects.toThrow(
+    'Refusing to email a placeholder address',
+  );
+  expect(calls).toBe(0);
 });
 
 test('email sender refuses an SMTP server without a from address', () => {

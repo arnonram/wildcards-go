@@ -1,3 +1,4 @@
+import { newId } from '../helpers/new-id';
 import { BaseEntity } from './BaseEntity.dto';
 
 export class Hindrance extends BaseEntity {
@@ -7,7 +8,7 @@ export class Hindrance extends BaseEntity {
 
   constructor(name: string, isMajor: boolean = false, description?: string) {
     super(name);
-    this._id = crypto.randomUUID().replaceAll('-', '');
+    this._id = newId().replaceAll('-', '');
     this.isMajor = isMajor;
     this.description = description;
   }

@@ -1,14 +1,36 @@
 import { Download } from 'lucide-react';
-import { useState } from 'react';
-import { requestAccountDeletion } from '../../helpers/offline/account';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import {
+  type DeletionMethod,
+  getDeletionMethod,
+  requestAccountDeletion,
+} from '../../helpers/offline/account';
 import { useCharacterList } from '../../helpers/offline/hooks';
 import { downloadExport } from '../../helpers/offline/transfer';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
+import { Field } from '../ui/Field';
 
-type Step = 'confirm' | 'sending' | 'sent' | 'offline' | 'failed';
+type Step =
+  | 'confirm'
+  | 'sending'
+  | 'sent'
+  | 'offline'
+  | 'failed'
+  | 'wrong-password'
+  | 'sign-in-again';
 
-/** Explains what deleting removes, then emails a confirmation link. */
+const ACTION: Record<DeletionMethod, string> = {
+  email: 'Email me a confirmation link',
+  password: 'Delete account',
+  'recent-sign-in': 'Delete account',
+};
+
+/**
+ * Explains what deleting removes, then confirms the way this account can:
+ * an emailed link, its password, or a sign-in from the last few minutes.
+ */
 export function DeleteAccountDialog({
   open,
   onOpenChange,
@@ -16,20 +38,46 @@ export function DeleteAccountDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const [step, setStep] = useState<Step>('confirm');
+  const [method, setMethod] = useState<DeletionMethod | null>(null);
+  const [password, setPassword] = useState('');
   const characters = useCharacterList();
 
+  useEffect(() => {
+    if (!open) return;
+    getDeletionMethod()
+      .then(setMethod)
+      .catch((error) => {
+        console.error('Could not check how to delete the account:', error);
+        setStep(navigator.onLine ? 'failed' : 'offline');
+      });
+  }, [open]);
+
   const change = (next: boolean) => {
-    if (!next) setStep('confirm');
+    if (!next) {
+      setStep('confirm');
+      setPassword('');
+    }
     onOpenChange(next);
   };
 
-  const send = async () => {
+  const confirm = async () => {
+    if (!method) return;
     setStep('sending');
     try {
-      setStep(await requestAccountDeletion());
+      const result = await requestAccountDeletion({
+        method,
+        password: method === 'password' ? password : undefined,
+      });
+      if (result === 'deleted') {
+        change(false);
+        await router.replace('/');
+        return;
+      }
+      setStep(result);
     } catch (error) {
-      console.error('Could not request account deletion:', error);
+      console.error('Could not delete the account:', error);
       setStep('failed');
     }
   };
@@ -47,6 +95,11 @@ export function DeleteAccountDialog({
     );
   }
 
+  const signInAgain = () => {
+    change(false);
+    void router.push(`/sign-in?next=${encodeURIComponent(router.asPath)}`);
+  };
+
   return (
     <Dialog
       open={open}
@@ -58,9 +111,19 @@ export function DeleteAccountDialog({
           <Button variant="ghost" onClick={() => change(false)}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={() => void send()} disabled={step === 'sending'}>
-            Email me a confirmation link
-          </Button>
+          {step === 'sign-in-again' ? (
+            <Button onClick={signInAgain}>Sign in again</Button>
+          ) : (
+            <Button
+              variant="danger"
+              onClick={() => void confirm()}
+              disabled={
+                !method || step === 'sending' || (method === 'password' && password.length === 0)
+              }
+            >
+              {method ? ACTION[method] : 'Delete account'}
+            </Button>
+          )}
         </>
       }
     >
@@ -80,15 +143,45 @@ export function DeleteAccountDialog({
             Export characters
           </Button>
         </div>
-        <p>We&apos;ll email you a link to confirm. Open it in this browser.</p>
+        {method === 'email' && (
+          <p>We&apos;ll email you a link to confirm. Open it in this browser.</p>
+        )}
+        {method === 'password' && (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void confirm();
+            }}
+          >
+            <Field
+              label="Your password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
+          </form>
+        )}
         {step === 'offline' && (
           <p className="text-danger" role="alert">
             Deleting your account needs a connection.
           </p>
         )}
+        {step === 'wrong-password' && (
+          <p className="text-danger" role="alert">
+            That password is not right.
+          </p>
+        )}
+        {step === 'sign-in-again' && (
+          <p className="text-danger" role="alert">
+            For safety, sign in again, then delete within 5 minutes.
+          </p>
+        )}
         {step === 'failed' && (
           <p className="text-danger" role="alert">
-            Could not send the email. Try again in a moment.
+            {method === 'email'
+              ? 'Could not send the email. Try again in a moment.'
+              : 'Could not delete the account. Try again in a moment.'}
           </p>
         )}
       </div>

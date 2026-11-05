@@ -2,7 +2,7 @@ import Head from 'next/head';
 import type { ReactNode } from 'react';
 
 const CONTACT = 'privacy@orderofthenuts.club';
-const UPDATED = '29 October 2026';
+const UPDATED = '3 November 2026';
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -34,6 +34,11 @@ export default function Privacy() {
           Wild Cards Go is a free, non-commercial fan project run by Arnon Ram. It keeps only what
           it needs to sign you in and sync your characters. There are no ads, no analytics and no
           tracking. Last updated {UPDATED}.
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          This policy covers the official site, wildcards.orderofthenuts.club. Anyone can run their
+          own copy of the app; a copy on any other address is run by whoever hosts it, and they
+          decide how its data is handled.
         </p>
 
         <Section title="Without an account">

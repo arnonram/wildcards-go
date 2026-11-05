@@ -1,5 +1,9 @@
 import Dexie from 'dexie';
 import { STORE_OWNER_HEADER } from '../../dtos/sync';
+import type { DeletionMethod } from '../../server/account-deletion';
+
+export type { DeletionMethod };
+
 import {
   activateStore,
   deleteStore,
@@ -184,22 +188,61 @@ async function serverSignOut(): Promise<unknown> {
   return authClient.signOut();
 }
 
-async function serverDeleteRequest(): Promise<unknown> {
+export type DeletionResult = 'offline' | 'sent' | 'deleted' | 'wrong-password' | 'sign-in-again';
+
+type DeletionRequests = {
+  /** Better Auth emails a confirmation link (the hosted flow). */
+  emailLink: () => Promise<AuthResult>;
+  /** Delete now, confirmed by password or by a recent sign-in. */
+  confirm: (password?: string) => Promise<AuthResult>;
+};
+
+const serverDeletionRequests: DeletionRequests = {
+  async emailLink() {
+    const { authClient } = await import('../auth-client');
+    return authClient.deleteUser({ callbackURL: '/' }) as Promise<AuthResult>;
+  },
+  async confirm(password) {
+    const { authClient } = await import('../auth-client');
+    return authClient.$fetch('/account/delete', {
+      method: 'POST',
+      body: password === undefined ? {} : { password },
+    }) as Promise<AuthResult>;
+  },
+};
+
+/** How this account confirms its deletion; the server decides. */
+export async function getDeletionMethod(): Promise<DeletionMethod> {
   const { authClient } = await import('../auth-client');
-  return authClient.deleteUser({ callbackURL: '/' });
+  const { data, error } = (await authClient.$fetch('/account/deletion-method')) as AuthResult & {
+    data?: { method: DeletionMethod } | null;
+  };
+  if (error || !data) throw new Error(error?.message || 'Could not check how to delete');
+  return data.method;
 }
 
 /**
- * Ask the server to email a confirmation link. Deletion happens when the link
- * is opened in a browser signed in to this account.
+ * Delete this account. With email it sends a link, and deletion happens when
+ * the link is opened in a browser signed in to this account. Otherwise it
+ * deletes at once and wipes this device, as `confirmAccountDeletion` does.
  */
 export async function requestAccountDeletion(
-  request: () => Promise<unknown> = serverDeleteRequest,
-): Promise<'offline' | 'sent'> {
+  { method, password }: { method: DeletionMethod; password?: string },
+  requests: DeletionRequests = serverDeletionRequests,
+): Promise<DeletionResult> {
   if (!navigator.onLine) return 'offline';
-  const result = (await request()) as { error?: { message?: string } | null } | undefined;
-  if (result?.error) throw new Error(result.error.message || 'Could not send the email');
-  return 'sent';
+  if (method === 'email') {
+    const { error } = await requests.emailLink();
+    if (error) throw new Error(error.message || 'Could not send the email');
+    return 'sent';
+  }
+  const owner = getActiveOwner();
+  const { error } = await requests.confirm(password);
+  if (error?.code === 'INVALID_PASSWORD') return 'wrong-password';
+  if (error?.code === 'SIGN_IN_AGAIN') return 'sign-in-again';
+  if (error) throw new Error(error.message || 'Could not delete the account');
+  if (owner) await forgetDeletedAccount(owner);
+  return 'deleted';
 }
 
 /**

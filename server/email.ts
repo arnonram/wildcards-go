@@ -120,20 +120,38 @@ function emailHtml(content: {
 </html>`;
 }
 
+/** Password accounts carry `<username>@users.invalid`, a reserved domain no mail reaches. */
+function isPlaceholderAddress(to: string): boolean {
+  return to.toLowerCase().endsWith('.invalid');
+}
+
 /**
  * Sends sign-in links over SMTP, so the provider is a configuration choice:
  * `SMTP_URL` is e.g. `smtp://login:key@smtp-relay.brevo.com:587`. Without it,
- * development prints the link to the console instead; production refuses to
- * start, so links never end up in server logs.
+ * development prints the link to the console instead; production sends
+ * nothing, so links never end up in server logs (email sign-in is then off).
+ * Placeholder addresses are refused before anything is sent or logged.
  */
 export function createEmailSender(
   env: EmailEnv,
   createTransport: CreateTransport = (smtpUrl) => nodemailer.createTransport(smtpUrl),
 ): SendEmail {
+  const deliver = createDelivery(env, createTransport);
+  return async (message) => {
+    if (isPlaceholderAddress(message.to)) {
+      throw new Error('Refusing to email a placeholder address');
+    }
+    await deliver(message);
+  };
+}
+
+function createDelivery(env: EmailEnv, createTransport: CreateTransport): SendEmail {
   const { SMTP_URL, EMAIL_FROM } = env;
   if (!SMTP_URL) {
     if (env.NODE_ENV === 'production') {
-      throw new Error('SMTP_URL is required in production');
+      return async () => {
+        throw new Error('Email is not configured on this server');
+      };
     }
     return async ({ to, subject, text }) => {
       console.info(`[email] To ${to}: ${subject}\n${text}`);

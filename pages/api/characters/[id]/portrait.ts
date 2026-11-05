@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { CHARACTER_ID } from '../../../../dtos/sync';
 import { respondWithApiError } from '../../../../helpers/api-error';
-import { connectToDb } from '../../../../helpers/db-util';
-import { getPortrait, isPortraitType, putPortrait } from '../../../../server/character-store';
+import { getBackend } from '../../../../server/backend';
 import { authorize } from '../../../../server/session';
+import { isPortraitType } from '../../../../server/store/types';
 
 const MAX_PORTRAIT_BYTES = 2 * 1024 * 1024;
 
@@ -39,8 +39,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     switch (req.method) {
       case 'GET': {
-        const { db } = await connectToDb();
-        const portrait = await getPortrait(db, ownerId, id);
+        const { store } = await getBackend();
+        const portrait = await store.getPortrait(ownerId, id);
         if (!portrait) {
           res.status(404).json({ message: 'No portrait' });
           return;
@@ -70,8 +70,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           res.status(413).json({ message: 'Portrait is larger than 2 MiB' });
           return;
         }
-        const { db } = await connectToDb();
-        if (!(await putPortrait(db, ownerId, id, rev, contentType, bytes))) {
+        const { store } = await getBackend();
+        if (!(await store.putPortrait(ownerId, id, rev, contentType, bytes))) {
           res.status(404).json({ message: 'No such character' });
           return;
         }

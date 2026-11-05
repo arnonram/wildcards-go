@@ -5,12 +5,8 @@ export type SessionLookup = (req: NextApiRequest) => Promise<string | null>;
 export type DeletedLookup = (userId: string) => Promise<boolean>;
 
 const userDeleted: DeletedLookup = async (userId) => {
-  const [{ connectToDb }, { isUserDeleted }] = await Promise.all([
-    import('../helpers/db-util'),
-    import('./character-store'),
-  ]);
-  const { db } = await connectToDb();
-  return isUserDeleted(db, userId);
+  const { getBackend } = await import('./backend');
+  return (await getBackend()).store.isUserDeleted(userId);
 };
 
 const sessionUserId: SessionLookup = async (req) => {
