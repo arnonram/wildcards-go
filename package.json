@@ -2,6 +2,7 @@
   "name": "wild-cards-go",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "bun start:mongo && next dev",
     "build": "next build && serwist build serwist.config.mjs",
@@ -25,8 +26,8 @@
     "lodash-es": "4.18.1",
     "lucide-react": "^1.61.0",
     "mongodb": "^7.7.0",
-    "next": "16.3.6",
-    "nodemailer": "10.1.0",
+    "next": "16.4.1",
+    "nodemailer": "10.1.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -46,5 +47,8 @@
     "serwist": "9.5.13",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "zod": "^4.6.6"
   }
 }
