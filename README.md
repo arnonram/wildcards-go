@@ -101,3 +101,7 @@ bun run check   # Biome lint + format
 The server tests connect to `MONGODB_URI` (default `mongodb://localhost:27017`) and use, then drop, a `wcg_test` database. The store tests run against both MongoDB and an in-memory SQLite.
 
 To run locally on SQLite instead: `MONGODB_URI= DATABASE_PATH=./data/wcg.db bun run dev`.
+
+## License
+
+The code is licensed under the [GNU AGPL v3.0 or later](LICENSE). The Savage Worlds material and the Fan License logo are not covered by it; they are used under Pinnacle's Fan License. See [NOTICE.md](NOTICE.md) for details and what forks must keep.

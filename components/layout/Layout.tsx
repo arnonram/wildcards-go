@@ -57,6 +57,14 @@ export default function Layout({ children }: { children: ReactNode }) {
             >
               Feedback
             </a>
+            <a
+              href="https://gitlab.com/arnonram/wildcards-go"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent underline-offset-2 hover:underline"
+            >
+              Source code
+            </a>
           </nav>
           <p className="max-w-md text-xs leading-normal text-muted sm:ml-auto sm:text-right">
             This game references the Savage Worlds game system, available from Pinnacle
