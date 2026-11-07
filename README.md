@@ -61,7 +61,7 @@ Better Auth rate-limits its endpoints with counters stored in the database, so l
 
 Characters written before accounts existed have no owner and are never returned. Drop the dev `characters` and `portraits` collections once.
 
-See [docs/deployment.md](docs/deployment.md) for the hosting plan.
+See [docs/deployment.md](docs/deployment.md) for deploying it the way the official instance runs (Vercel, MongoDB Atlas, SMTP).
 
 ## Self-hosting
 

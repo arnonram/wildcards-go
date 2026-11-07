@@ -42,3 +42,6 @@ yarn-error.log*
 
 # Self-hosted SQLite database and generated secret
 /data/
+
+# local AI working docs (plans, specs in progress); finished designs go in docs/design
+/docs/superpowers/
