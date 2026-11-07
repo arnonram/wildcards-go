@@ -1,0 +1,22 @@
+# Pull requests that change how the image is built prove it still builds,
+# without pushing anything.
+name: Docker build test
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - next.config.js
+      - package.json
+      - bun.lock
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    uses: ./.github/workflows/docker-builder.yml
+    with:
+      push: false

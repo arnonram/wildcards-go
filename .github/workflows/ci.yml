@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bunx biome ci --reporter=github
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit -p .
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+  test:
+    # MongoDB 8.0+ refuses to start on Linux 6.19 to 7.0.13 (SERVER-121912),
+    # which ubuntu-24.04 runners had in Nov 2026. 22.04's older kernel isn't
+    # affected. Back to ubuntu-latest once its kernel is 7.0.14 or newer.
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: write
+    services:
+      mongo:
+        # Production (Atlas) runs 8.0; 8.0.34 is the newest public 8.0 image.
+        image: mongo:8.0.34
+        ports: ["27017:27017"]
+        options: --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1})'" --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      MONGODB_URI: mongodb://localhost:27017
+      MONGODB_DB: wcg_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: |
+          bun test --coverage --coverage-reporter=text --coverage-reporter=lcov \
+            --reporter=junit --reporter-outfile=junit.xml \
+            ./ ./.github/bin/test-summary.test.ts
+      - name: Summarize
+        if: ${{ !cancelled() && hashFiles('junit.xml') != '' }}
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          bun .github/bin/test-summary.ts junit.xml coverage/lcov.info > summary.md
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+          bun .github/bin/test-summary.ts junit.xml coverage/lcov.info --brief "$RUN_URL" > comment.md
+      - name: Comment on the pull request
+        if: |
+          !cancelled() && hashFiles('comment.md') != '' &&
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          existing=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- wcg-test-summary -->"))) | .id' | head -n 1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -F body=@comment.md > /dev/null
+          else
+            gh pr comment "$PR" --repo "$REPO" --body-file comment.md
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+
+  docker-image:
+    needs: [lint, typecheck, build, test]
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/docker-builder.yml
+    with:
+      push: true
+    permissions:
+      contents: read
+      packages: write

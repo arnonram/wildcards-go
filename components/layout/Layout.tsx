@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { GitHubIcon } from '../ui/GitHubIcon';
 import { AccountDeletedNotice } from './AccountDeletedNotice';
 import { AccountMenu } from './AccountMenu';
 import { AdoptDialog } from './AdoptDialog';
@@ -58,11 +59,12 @@ export default function Layout({ children }: { children: ReactNode }) {
               Feedback
             </a>
             <a
-              href="https://gitlab.com/arnonram/wildcards-go"
+              href="https://github.com/arnonram/wildcards-go"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-accent underline-offset-2 hover:underline"
+              className="inline-flex items-center gap-1.5 font-medium text-accent underline-offset-2 hover:underline"
             >
+              <GitHubIcon className="size-3.5 shrink-0" />
               Source code
             </a>
           </nav>

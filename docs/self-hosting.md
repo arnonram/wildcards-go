@@ -14,7 +14,7 @@ docker run -d --name wildcards \
   -e AUTH_PASSWORD=1 \
   -e SIGNUP_INVITE_CODE=pick-something \
   --restart unless-stopped \
-  registry.gitlab.com/arnonram/wildcards-go:<version>
+  ghcr.io/arnonram/wildcards-go:<version>
 ```
 
 - `BETTER_AUTH_URL` is the address players type, exactly: `https://…`, or `http://<LAN IP>:3000` on a home network (next section).
@@ -55,7 +55,7 @@ The easiest way is [Caddy](https://caddyserver.com/), which gets and renews cert
 ```yaml
 services:
   app:
-    image: registry.gitlab.com/arnonram/wildcards-go:<version>
+    image: ghcr.io/arnonram/wildcards-go:<version>
     restart: unless-stopped
     environment:
       BETTER_AUTH_URL: https://wildcards.example.com
@@ -104,7 +104,7 @@ If your domain's DNS is on Cloudflare, a tunnel gives the app an address like `h
 ```yaml
 services:
   app:
-    image: registry.gitlab.com/arnonram/wildcards-go:<version>
+    image: ghcr.io/arnonram/wildcards-go:<version>
     restart: unless-stopped
     environment:
       BETTER_AUTH_URL: https://wildcards.example.com
@@ -196,7 +196,7 @@ Run the backup on a schedule (cron, a systemd timer) and keep copies off the mac
 ## Updating
 
 ```bash
-docker pull registry.gitlab.com/arnonram/wildcards-go:<new version>
+docker pull ghcr.io/arnonram/wildcards-go:<new version>
 docker compose up -d   # or: docker rm -f wildcards, then the docker run above with the new tag
 ```
 
@@ -207,7 +207,7 @@ The database is updated at start, so there is nothing to migrate by hand. Back u
 Without Docker, with [Bun](https://bun.sh) and Node 24:
 
 ```bash
-git clone https://gitlab.com/arnonram/wildcards-go.git
+git clone https://github.com/arnonram/wildcards-go.git
 cd wildcards-go
 bun install
 bun run build
