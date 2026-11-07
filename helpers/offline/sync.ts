@@ -217,8 +217,11 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
     return rejected;
   }
 
-  async function pushPortraits() {
-    const dirty = await database.portraits.where('dirty').equals(1).toArray();
+  async function pushPortraits(force: boolean): Promise<string | null> {
+    let rejected: string | null = null;
+    const dirty = (await database.portraits.where('dirty').equals(1).toArray()).filter(
+      (portrait) => force || !portrait.syncError,
+    );
     for (const portrait of dirty) {
       const character = await database.characters.get(portrait.id);
       if (!character || character.version === 0) continue;
@@ -229,16 +232,24 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
           return true;
         },
         async (error) => {
+          rejected = error.message;
           console.error(`The server rejected the portrait of ${portrait.id}:`, error);
+          // Not re-sent on every sync: a quota refusal would just repeat.
+          await database.transaction('rw', database.portraits, async () => {
+            const current = await database.portraits.get(portrait.id);
+            if (current?.rev === portrait.rev)
+              await database.portraits.update(portrait.id, { syncError: error.message });
+          });
         },
       );
       if (!done) continue;
       await database.transaction('rw', database.portraits, async () => {
         const current = await database.portraits.get(portrait.id);
         if (current?.rev === portrait.rev)
-          await database.portraits.update(portrait.id, { dirty: 0 });
+          await database.portraits.update(portrait.id, { dirty: 0, syncError: undefined });
       });
     }
+    return rejected;
   }
 
   async function applyPulled(server: ServerCharacter) {
@@ -339,7 +350,7 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
     let lastError: string | null = null;
     try {
       lastError = await pushCharacters(force);
-      await pushPortraits();
+      lastError = (await pushPortraits(force)) ?? lastError;
       await pull();
       await pullPortraits();
       resetRetry();
@@ -363,11 +374,17 @@ export function createSyncEngine(database: WcgDb, owner: string): SyncEngine {
       // its status no longer matters and its database may be gone.
       if (!disposed) {
         // Rows rejected earlier keep the badge in its error state until edited.
-        const stillRejected = await database.characters
-          .where('dirty')
-          .equals(1)
-          .filter((row) => Boolean(row.syncError))
-          .first();
+        const stillRejected =
+          (await database.characters
+            .where('dirty')
+            .equals(1)
+            .filter((row) => Boolean(row.syncError))
+            .first()) ??
+          (await database.portraits
+            .where('dirty')
+            .equals(1)
+            .filter((row) => Boolean(row.syncError))
+            .first());
         setStatus({ syncing: false, lastError: lastError ?? stillRejected?.syncError ?? null });
         await refreshCounts();
       }

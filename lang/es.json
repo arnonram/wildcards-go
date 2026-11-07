@@ -26,6 +26,8 @@
   "page.character.deleteDescription": "Esta acción no se puede deshacer.",
   "page.character.deleteConfirm": "¿Seguro que quieres eliminar a {name}?",
   "page.character.thisCharacter": "este personaje",
+  "page.character.damagedTitle": "No se puede mostrar este personaje",
+  "page.character.damagedDescription": "Sus datos están dañados, así que la hoja no puede abrirlo. Expórtalo para guardar una copia o elimínalo.",
   "section.basics": "Básicos",
   "section.traits": "Rasgos",
   "section.hindrances": "Desventajas",

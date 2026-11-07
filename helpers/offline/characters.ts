@@ -127,7 +127,7 @@ export async function resolveConflict(
         conflict: undefined,
         localUpdatedAt: nextStamp(row.localUpdatedAt),
       });
-      if (goneOnServer) await database.portraits.update(id, { dirty: 1 });
+      if (goneOnServer) await database.portraits.update(id, { dirty: 1, syncError: undefined });
     } else if (goneOnServer) {
       await database.characters.delete(id);
       await database.portraits.delete(id);

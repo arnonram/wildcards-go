@@ -35,6 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.status(200).json(result.ok);
     } else if ('notFound' in result) {
       res.status(404).json({ message: 'No such character' });
+    } else if ('overQuota' in result) {
+      // Clients treat any other 4xx as a rejection of this one character.
+      res.status(413).json({ message: 'Character limit reached for this account' });
     } else {
       res.status(409).json({ server: result.conflict });
     }

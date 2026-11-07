@@ -33,7 +33,7 @@ export async function adoptSignedOutCharacters(source: WcgDb, target: WcgDb): Pr
             deleted: 0,
             localUpdatedAt: nextStamp(row.localUpdatedAt),
           });
-          if (portrait) await target.portraits.put({ ...portrait, dirty: 1 });
+          if (portrait) await target.portraits.put({ ...portrait, dirty: 1, syncError: undefined });
           return true;
         },
       );

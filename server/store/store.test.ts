@@ -7,7 +7,7 @@ import { type Db, MongoClient } from 'mongodb';
 import { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import { createMongoStore, ensureMongoIndexes } from './mongo';
 import { createSqliteStore, openSqlite } from './sqlite';
-import { type CharacterStore, CURSOR_LAG_MS, isPortraitType } from './types';
+import { type CharacterStore, CURSOR_LAG_MS, isPortraitType, type StoreLimits } from './types';
 
 const client = new MongoClient(process.env.MONGODB_URI ?? 'mongodb://localhost:27017');
 let db: Db;
@@ -33,17 +33,17 @@ function character(name: string, id = crypto.randomUUID()) {
 /** One backend under test: a fresh, empty store per test, and raw row counts. */
 type Harness = {
   name: string;
-  fresh(): Promise<CharacterStore>;
+  fresh(limits?: StoreLimits): Promise<CharacterStore>;
   count(table: 'portraits' | 'deletedUsers'): Promise<number>;
 };
 
 const mongoHarness: Harness = {
   name: 'mongo',
-  async fresh() {
+  async fresh(limits) {
     db = client.db('wcg_test');
     await db.dropDatabase();
     await ensureMongoIndexes(db);
-    return createMongoStore(db);
+    return createMongoStore(db, { limits });
   },
   count: (table) => db.collection(table).countDocuments(),
 };
@@ -52,10 +52,10 @@ let sqlite: DatabaseSync | undefined;
 
 const sqliteHarness: Harness = {
   name: 'sqlite',
-  async fresh() {
+  async fresh(limits) {
     sqlite?.close();
     sqlite = openSqlite(':memory:');
-    return createSqliteStore(sqlite);
+    return createSqliteStore(sqlite, { limits });
   },
   async count(table) {
     const name = table === 'portraits' ? 'portraits' : 'deleted_users';
@@ -262,13 +262,139 @@ for (const h of harnesses) {
       test('putPortrait refuses a deleted character', async () => {
         const { id, data } = await live();
         await store.putCharacter(A, id, { baseVersion: 1, deleted: true, data }, 2000);
-        expect(await store.putPortrait(A, id, 'r1', 'image/webp', new Uint8Array([1]))).toBe(false);
+        expect(await store.putPortrait(A, id, 'r1', 'image/webp', new Uint8Array([1]))).toBe(
+          'notFound',
+        );
         expect(await store.getPortrait(A, id)).toBeNull();
       });
 
       test('putPortrait refuses an unknown character', async () => {
         const id = crypto.randomUUID();
-        expect(await store.putPortrait(A, id, 'r1', 'image/webp', new Uint8Array([1]))).toBe(false);
+        expect(await store.putPortrait(A, id, 'r1', 'image/webp', new Uint8Array([1]))).toBe(
+          'notFound',
+        );
+      });
+    });
+
+    describe('quota', () => {
+      const limits: StoreLimits = { characters: 2, portraitBytes: 10 };
+
+      async function create(owner: string, name: string, now = 1000) {
+        const { id, data } = character(name);
+        const result = await store.putCharacter(
+          owner,
+          id,
+          { baseVersion: 0, deleted: false, data },
+          now,
+        );
+        return { id, data, result };
+      }
+
+      beforeEach(async () => {
+        store = await h.fresh(limits);
+      });
+
+      test('creating past the character limit is over quota', async () => {
+        await create(A, 'Ana');
+        await create(A, 'Bea');
+        const { result } = await create(A, 'Cid');
+        expect(result).toEqual({ overQuota: true });
+        const { characters } = await store.listChangedSince(A, 0, FAR_FUTURE);
+        expect(characters).toHaveLength(2);
+      });
+
+      test('edits and deletes still work at the limit', async () => {
+        const { id, data } = await create(A, 'Ana');
+        await create(A, 'Bea');
+        const edit = { baseVersion: 1, deleted: false, data: { ...data, name: 'Ana 2' } };
+        expect(await store.putCharacter(A, id, edit, 2000)).toEqual({
+          ok: { version: 2, modifiedAt: 2000 },
+        });
+        expect(
+          await store.putCharacter(A, id, { baseVersion: 2, deleted: true, data }, 3000),
+        ).toEqual({ ok: { version: 3, modifiedAt: 3000 } });
+      });
+
+      test('a deleted character frees its slot; tombstones do not count', async () => {
+        const { id, data } = await create(A, 'Ana');
+        await create(A, 'Bea');
+        await store.putCharacter(A, id, { baseVersion: 1, deleted: true, data }, 2000);
+        expect((await create(A, 'Cid')).result).toEqual({ ok: { version: 1, modifiedAt: 1000 } });
+      });
+
+      test('restoring a tombstone past the limit is over quota', async () => {
+        const { id, data } = await create(A, 'Ana');
+        await store.putCharacter(A, id, { baseVersion: 1, deleted: true, data }, 2000);
+        await create(A, 'Bea');
+        await create(A, 'Cid');
+        expect(
+          await store.putCharacter(A, id, { baseVersion: 2, deleted: false, data }, 3000),
+        ).toEqual({ overQuota: true });
+      });
+
+      test('at the limit, conflicts still answer as conflicts', async () => {
+        const ana = await create(A, 'Ana');
+        await store.putCharacter(
+          A,
+          ana.id,
+          { baseVersion: 1, deleted: true, data: ana.data },
+          2000,
+        );
+        const bea = await create(A, 'Bea');
+        await create(A, 'Cid');
+        // Re-sending a create for a character the server has: conflict.
+        expect(
+          await store.putCharacter(
+            A,
+            bea.id,
+            { baseVersion: 0, deleted: false, data: bea.data },
+            3000,
+          ),
+        ).toEqual({
+          conflict: { id: bea.id, version: 1, modifiedAt: 1000, deleted: false, data: bea.data },
+        });
+        // A stale edit of a tombstone: conflict with the tombstone.
+        expect(
+          await store.putCharacter(
+            A,
+            ana.id,
+            { baseVersion: 1, deleted: false, data: ana.data },
+            3000,
+          ),
+        ).toEqual({ conflict: { id: ana.id, version: 2, modifiedAt: 2000, deleted: true } });
+      });
+
+      test('another owner has their own limit', async () => {
+        await create(A, 'Ana');
+        await create(A, 'Bea');
+        expect((await create(B, 'Cid')).result).toEqual({ ok: { version: 1, modifiedAt: 1000 } });
+      });
+
+      test('portraits past the byte limit are over quota', async () => {
+        const one = await create(A, 'Ana');
+        const two = await create(A, 'Bea');
+        expect(await store.putPortrait(A, one.id, 'r1', 'image/webp', new Uint8Array(6))).toBe(
+          'ok',
+        );
+        expect(await store.putPortrait(A, two.id, 'r1', 'image/webp', new Uint8Array(5))).toBe(
+          'overQuota',
+        );
+        expect(await store.getPortrait(A, two.id)).toBeNull();
+      });
+
+      test('replacing a portrait counts only the new bytes, not the old', async () => {
+        const { id } = await create(A, 'Ana');
+        await store.putPortrait(A, id, 'r1', 'image/webp', new Uint8Array(8));
+        expect(await store.putPortrait(A, id, 'r2', 'image/webp', new Uint8Array(10))).toBe('ok');
+      });
+
+      test("another owner's portraits do not count", async () => {
+        const mine = await create(A, 'Ana');
+        const theirs = await create(B, 'Bea');
+        await store.putPortrait(B, theirs.id, 'r1', 'image/webp', new Uint8Array(10));
+        expect(await store.putPortrait(A, mine.id, 'r1', 'image/webp', new Uint8Array(10))).toBe(
+          'ok',
+        );
       });
     });
 
@@ -313,7 +439,9 @@ for (const h of harnesses) {
         await store.putCharacter(B, id, { baseVersion: 0, deleted: false, data }, 1000);
         await store.putPortrait(B, id, 'r1', 'image/webp', new Uint8Array([1]));
         expect(await store.getPortrait(A, id)).toBeNull();
-        expect(await store.putPortrait(A, id, 'r2', 'image/webp', new Uint8Array([2]))).toBe(false);
+        expect(await store.putPortrait(A, id, 'r2', 'image/webp', new Uint8Array([2]))).toBe(
+          'notFound',
+        );
         expect((await store.getPortrait(B, id))?.rev).toBe('r1');
       });
     });

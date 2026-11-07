@@ -71,8 +71,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return;
         }
         const { store } = await getBackend();
-        if (!(await store.putPortrait(ownerId, id, rev, contentType, bytes))) {
+        const result = await store.putPortrait(ownerId, id, rev, contentType, bytes);
+        if (result === 'notFound') {
           res.status(404).json({ message: 'No such character' });
+          return;
+        }
+        if (result === 'overQuota') {
+          res.status(413).json({ message: 'Portrait storage limit reached for this account' });
           return;
         }
         res.status(204).end();

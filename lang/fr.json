@@ -26,6 +26,8 @@
   "page.character.deleteDescription": "Cette action est irréversible.",
   "page.character.deleteConfirm": "Voulez-vous vraiment supprimer {name} ?",
   "page.character.thisCharacter": "ce personnage",
+  "page.character.damagedTitle": "Impossible d'afficher ce personnage",
+  "page.character.damagedDescription": "Ses données sont endommagées, la fiche ne peut donc pas l'ouvrir. Exportez-le pour en garder une copie, ou supprimez-le.",
   "section.basics": "Base",
   "section.traits": "Traits",
   "section.hindrances": "Handicaps",

@@ -148,6 +148,35 @@ test('a magic link to an unknown email is gated by the invite', async () => {
   expect(await errorCode(send('old@example.com'))).toBeNull();
 });
 
+test('sign-in emails to one address are limited, keyed by a hash only', async () => {
+  const { db, auth } = await sqliteAuth({ ...ENV, SIGNUP_OPEN: '1' });
+  // A fresh IP per call, so only the per-address limit can refuse.
+  let ip = 0;
+  const send = (email: string) =>
+    auth.api.signInMagicLink({
+      body: { email },
+      headers: new Headers({ 'x-forwarded-for': `203.0.113.${++ip}` }),
+    });
+  for (let i = 0; i < 3; i++) expect(await errorCode(send('Ann@Example.com'))).toBeNull();
+  expect(await errorCode(send('ann@example.com'))).toBe('TOO_MANY_SIGN_IN_EMAILS');
+  expect(await errorCode(send('bob@example.com'))).toBeNull();
+  const keys = (db.prepare('SELECT key FROM rateLimit').all() as { key: string }[]).map(
+    (row) => row.key,
+  );
+  expect(keys.join()).not.toContain('example.com');
+});
+
+test('the per-address limit is off in development', async () => {
+  const { auth } = await sqliteAuth({ ...ENV, NODE_ENV: 'development', SIGNUP_OPEN: '1' });
+  for (let i = 0; i < 4; i++) {
+    expect(
+      await errorCode(
+        auth.api.signInMagicLink({ body: { email: 'a@example.com' }, headers: new Headers() }),
+      ),
+    ).toBeNull();
+  }
+});
+
 test('hosted options are unchanged', async () => {
   const backend = await openBackend({ kind: 'sqlite', path: ':memory:' });
   const options = buildAuthOptions(backend, {

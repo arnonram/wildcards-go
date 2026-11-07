@@ -26,6 +26,8 @@
   "page.character.deleteDescription": "Dies kann nicht rückgängig gemacht werden.",
   "page.character.deleteConfirm": "Möchtest du {name} wirklich löschen?",
   "page.character.thisCharacter": "diesen Charakter",
+  "page.character.damagedTitle": "Dieser Charakter kann nicht angezeigt werden",
+  "page.character.damagedDescription": "Seine Daten sind beschädigt, daher kann der Bogen ihn nicht öffnen. Exportiere ihn, um eine Kopie zu behalten, oder lösche ihn.",
   "section.basics": "Grundlagen",
   "section.traits": "Eigenschaften",
   "section.hindrances": "Handicaps",

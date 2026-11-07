@@ -26,6 +26,8 @@ export interface LocalPortrait {
   rev: string;
   blob: Blob;
   dirty: 0 | 1;
+  /** Why the server rejected this rev; a new portrait replaces the row and clears it. */
+  syncError?: string;
 }
 
 export interface MetaRow {

@@ -1,7 +1,13 @@
 import { Binary, type Db, MongoServerError } from 'mongodb';
 import type { PutCharacterBody, ServerCharacter } from '../../dtos/sync';
 import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
-import { type CharacterStore, nextCursor, type PutResult } from './types';
+import {
+  type CharacterStore,
+  nextCursor,
+  type PutResult,
+  STORE_LIMITS,
+  type StoreLimits,
+} from './types';
 
 interface CharacterDoc {
   _id: string;
@@ -40,7 +46,10 @@ function toServerCharacter(doc: CharacterDoc): ServerCharacter {
 }
 
 /** The hosted store. Document shapes are what production already holds. */
-export function createMongoStore(db: Db): CharacterStore {
+export function createMongoStore(
+  db: Db,
+  { limits = STORE_LIMITS }: { limits?: StoreLimits } = {},
+): CharacterStore {
   const characters = db.collection<CharacterDoc>('characters');
   const portraits = db.collection<PortraitDoc>('portraits');
   const deletedUsers = db.collection<DeletedUserDoc>('deletedUsers');
@@ -61,6 +70,25 @@ export function createMongoStore(db: Db): CharacterStore {
     return doc !== null;
   }
 
+  /** Does the owner already have as many live characters as allowed? */
+  async function atCharacterLimit(ownerId: string) {
+    return (await characters.countDocuments({ ownerId, deleted: false })) >= limits.characters;
+  }
+
+  /** Bytes of the owner's portraits, leaving out the one about to be replaced. */
+  async function portraitBytes(ownerId: string, exceptId: string) {
+    const owned = await characters
+      .find({ ownerId, deleted: false, _id: { $ne: exceptId } }, { projection: { _id: 1 } })
+      .toArray();
+    const [total] = await portraits
+      .aggregate<{ bytes: number }>([
+        { $match: { _id: { $in: owned.map((doc) => doc._id) } } },
+        { $group: { _id: null, bytes: { $sum: { $binarySize: '$data' } } } },
+      ])
+      .toArray();
+    return total?.bytes ?? 0;
+  }
+
   async function writeCharacter(
     ownerId: string,
     id: string,
@@ -69,6 +97,13 @@ export function createMongoStore(db: Db): CharacterStore {
     now: number,
   ): Promise<PutResult> {
     if (body.baseVersion === 0) {
+      // At the limit, only a create that would otherwise succeed is refused.
+      if (data && (await atCharacterLimit(ownerId))) {
+        if (await characters.findOne({ _id: id }, { projection: { _id: 1 } })) {
+          return rejection(ownerId, id);
+        }
+        return { overQuota: true };
+      }
       try {
         await characters.insertOne({
           _id: id,
@@ -87,14 +122,29 @@ export function createMongoStore(db: Db): CharacterStore {
       }
     }
 
-    const result = await characters.updateOne(
-      { _id: id, ownerId, version: body.baseVersion },
-      data
-        ? { $set: { data, deleted: false, modifiedAt: now }, $inc: { version: 1 } }
-        : { $set: { deleted: true, modifiedAt: now }, $unset: { data: '' }, $inc: { version: 1 } },
-    );
-    if (result.matchedCount === 0) return rejection(ownerId, id);
-    return { ok: { version: body.baseVersion + 1, modifiedAt: now } };
+    const filter = { _id: id, ownerId, version: body.baseVersion };
+    const ok = { ok: { version: body.baseVersion + 1, modifiedAt: now } };
+    if (!data) {
+      const result = await characters.updateOne(filter, {
+        $set: { deleted: true, modifiedAt: now },
+        $unset: { data: '' },
+        $inc: { version: 1 },
+      });
+      return result.matchedCount === 0 ? rejection(ownerId, id) : ok;
+    }
+
+    const write = { $set: { data, deleted: false, modifiedAt: now }, $inc: { version: 1 } };
+    // An edit of a live character, the usual case: one round trip.
+    if ((await characters.updateOne({ ...filter, deleted: false }, write)).matchedCount > 0) {
+      return ok;
+    }
+    // Otherwise it restores a tombstone, which adds a live character.
+    if (!(await characters.findOne(filter, { projection: { _id: 1 } }))) {
+      return rejection(ownerId, id);
+    }
+    if (await atCharacterLimit(ownerId)) return { overQuota: true };
+    const restored = await characters.updateOne(filter, write);
+    return restored.matchedCount === 0 ? rejection(ownerId, id) : ok;
   }
 
   return {
@@ -122,13 +172,16 @@ export function createMongoStore(db: Db): CharacterStore {
     // A delete landing between the ownership check and the write can still
     // leave an orphan; that race is rare and harmless.
     async putPortrait(ownerId, id, rev, contentType, bytes) {
-      if (!(await ownsLive(ownerId, id))) return false;
+      if (!(await ownsLive(ownerId, id))) return 'notFound';
+      if ((await portraitBytes(ownerId, id)) + bytes.length > limits.portraitBytes) {
+        return 'overQuota';
+      }
       await portraits.replaceOne(
         { _id: id },
         { rev, contentType, data: new Binary(bytes) },
         { upsert: true },
       );
-      return true;
+      return 'ok';
     },
 
     async getPortrait(ownerId, id) {
