@@ -1,0 +1,54 @@
+name: Bug report
+description: Something in Wild Cards Go doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a character
+        2. Tap ...
+        3. See ...
+    validations:
+      required: false
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where do you use the app?
+      options:
+        - The official hosted app
+        - My own self-hosted copy
+    validations:
+      required: true
+  - type: dropdown
+    id: signed-in
+    attributes:
+      label: Were you signed in?
+      options:
+        - "Yes"
+        - "No"
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: e.g. iPhone 15, Safari / Windows 11, Chrome / installed as app
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else
+      description: Please don't paste personal data or character sheets you don't want public. Issues are public.
+    validations:
+      required: false
