@@ -51,16 +51,12 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
-      # For the results comment; fork PRs get a read-only token regardless.
       pull-requests: write
     services:
       mongo:
         # Production (Atlas) runs 8.0; 8.0.34 is the newest public 8.0 image.
         image: mongo:8.0.34
         ports: ["27017:27017"]
-        # GitHub starts the steps once every service is healthy; without a
-        # health check that's as soon as the container exists, before Mongo
-        # accepts connections.
         options: --health-cmd "mongosh --quiet --eval 'db.runCommand({ping:1})'" --health-interval 2s --health-timeout 5s --health-retries 30
     env:
       MONGODB_URI: mongodb://localhost:27017
@@ -75,8 +71,6 @@ jobs:
           bun test --coverage --coverage-reporter=text --coverage-reporter=lcov \
             --reporter=junit --reporter-outfile=junit.xml \
             ./ ./.github/bin/test-summary.test.ts
-      # The full report (every failure, coverage by file) on the run's summary
-      # page, and a brief one for the PR comment that links to it.
       - name: Summarize
         if: ${{ !cancelled() && hashFiles('junit.xml') != '' }}
         env:
