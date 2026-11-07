@@ -11,6 +11,7 @@ import { type Backend, getBackend } from './backend';
 import { deleteAccountEmail, sendEmail, signInEmail } from './email';
 import type { Env } from './env';
 import { placeholderEmail, signUpRefusal } from './invite';
+import { takeSignInEmailSlot } from './sign-in-email-limit';
 import { signInOptions } from './sign-in-options';
 import { vercelPreviewBaseURL } from './vercel-preview';
 
@@ -36,6 +37,8 @@ export function buildAuthOptions(backend: Backend, env: Env) {
   const enabled = signInOptions(env);
   const refusal = (cookieHeader: string | null | undefined) =>
     signUpRefusal(enabled.signUp, env.SIGNUP_INVITE_CODE, cookieHeader);
+  // Off in development, where sign-in links print to the console.
+  const limitSignInEmails = env.NODE_ENV !== 'development';
   return {
     baseURL: vercelPreviewBaseURL(env) ?? env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
@@ -125,11 +128,28 @@ export function buildAuthOptions(backend: Backend, env: Env) {
         // An email link to a new address would create an account on opening,
         // so the invite is checked here, in the browser asking for it.
         if (ctx.path === '/sign-in/magic-link') {
-          const code = refusal(ctx.headers?.get('cookie'));
-          if (!code) return;
           const email = String(ctx.body?.email ?? '').toLowerCase();
-          if (await ctx.context.internalAdapter.findUserByEmail(email)) return;
-          throw new APIError('FORBIDDEN', { code, message: SIGN_UP_REFUSALS[code] });
+          const code = refusal(ctx.headers?.get('cookie'));
+          if (code && !(await ctx.context.internalAdapter.findUserByEmail(email))) {
+            throw new APIError('FORBIDDEN', { code, message: SIGN_UP_REFUSALS[code] });
+          }
+          if (!limitSignInEmails) return;
+          const wait = await takeSignInEmailSlot(
+            ctx.context.adapter,
+            ctx.context.secret,
+            email,
+            Date.now(),
+          );
+          if (wait !== null) {
+            throw new APIError(
+              'TOO_MANY_REQUESTS',
+              {
+                code: 'TOO_MANY_SIGN_IN_EMAILS',
+                message: 'Too many sign-in emails to this address. Try again in a few minutes.',
+              },
+              { 'Retry-After': String(wait) },
+            );
+          }
         }
       }),
     },

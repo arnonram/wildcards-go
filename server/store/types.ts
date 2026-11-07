@@ -8,7 +8,21 @@ import type {
 export type PutResult =
   | { ok: PutCharacterOk }
   | { conflict: ServerCharacter | null }
-  | { notFound: true };
+  | { notFound: true }
+  | { overQuota: true };
+
+export type PutPortraitResult = 'ok' | 'notFound' | 'overQuota';
+
+/**
+ * What one account may keep on the server, so a single account can't fill the
+ * database for everyone. Far above what a player at a table needs.
+ */
+export type StoreLimits = { characters: number; portraitBytes: number };
+
+export const STORE_LIMITS: StoreLimits = {
+  characters: 200,
+  portraitBytes: 50 * 1024 * 1024,
+};
 
 export type Portrait = { rev: string; contentType: string; bytes: Uint8Array };
 
@@ -23,7 +37,9 @@ export interface CharacterStore {
    * is a conflict, answered with the server's copy so the client can resolve
    * it. Another owner's character answers notFound and never their copy, so
    * ids reveal nothing about other users' data. Tombstones drop the data and
-   * the portrait.
+   * the portrait. A write that would take the owner past
+   * `StoreLimits.characters` live characters (a create, or restoring a
+   * tombstone) is overQuota and writes nothing.
    */
   putCharacter(
     ownerId: string,
@@ -39,8 +55,10 @@ export interface CharacterStore {
   listChangedSince(ownerId: string, since: number, now: number): Promise<PullResponse>;
   /**
    * Portraits live apart from the character so edits never re-send image
-   * bytes. Returns false, writing nothing, when the character is missing,
-   * deleted or owned by someone else, so a late upload cannot leave an orphan.
+   * bytes. Answers notFound, writing nothing, when the character is missing,
+   * deleted or owned by someone else, so a late upload cannot leave an orphan,
+   * and overQuota when the owner's portraits would pass
+   * `StoreLimits.portraitBytes` (the one being replaced doesn't count).
    */
   putPortrait(
     ownerId: string,
@@ -48,7 +66,7 @@ export interface CharacterStore {
     rev: string,
     contentType: string,
     bytes: Uint8Array,
-  ): Promise<boolean>;
+  ): Promise<PutPortraitResult>;
   getPortrait(ownerId: string, id: string): Promise<Portrait | null>;
   /** Everything an account owns in this app; Better Auth removes its own records. */
   deleteOwnerData(ownerId: string): Promise<void>;

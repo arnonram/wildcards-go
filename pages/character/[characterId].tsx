@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import CharacterSheet from '../../components/character-sheet/CharacterSheet';
+import { SheetErrorBoundary } from '../../components/character-sheet/SheetErrorBoundary';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { useTranslation } from '../../helpers/context/locale-context';
@@ -50,12 +51,14 @@ export default function Character() {
   }
 
   const character = row.data;
+  // Damaged data may hold anything here; render only a string.
+  const name = typeof character.name === 'string' ? character.name : '';
   const [confirmBefore, confirmAfter] = t('page.character.deleteConfirm').split('{name}');
 
   return (
     <>
       <Head>
-        <title>{`${character.name || t('page.character.unnamed')} — Wild Cards Go`}</title>
+        <title>{`${name || t('page.character.unnamed')} — Wild Cards Go`}</title>
       </Head>
 
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -70,12 +73,19 @@ export default function Character() {
         </span>
       </div>
 
-      <CharacterSheet
+      <SheetErrorBoundary
         key={characterId}
         characterId={characterId}
-        wildCard={character}
+        name={name}
+        data={character}
         onDelete={() => setDeleteDialogOpen(true)}
-      />
+      >
+        <CharacterSheet
+          characterId={characterId}
+          wildCard={character}
+          onDelete={() => setDeleteDialogOpen(true)}
+        />
+      </SheetErrorBoundary>
 
       <Dialog
         open={deleteDialogOpen}
@@ -95,7 +105,7 @@ export default function Character() {
         <p className="text-sm text-muted">
           {confirmBefore}
           <strong className="font-semibold text-ink">
-            {character.name || t('page.character.thisCharacter')}
+            {name || t('page.character.thisCharacter')}
           </strong>
           {confirmAfter}
         </p>

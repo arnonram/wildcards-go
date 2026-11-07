@@ -26,6 +26,8 @@
   "page.character.deleteDescription": "Esta ação não pode ser desfeita.",
   "page.character.deleteConfirm": "Tem certeza de que deseja excluir {name}?",
   "page.character.thisCharacter": "este personagem",
+  "page.character.damagedTitle": "Não é possível mostrar este personagem",
+  "page.character.damagedDescription": "Os dados dele estão danificados, então a ficha não consegue abri-lo. Exporte-o para guardar uma cópia ou exclua-o.",
   "section.basics": "Básico",
   "section.traits": "Características",
   "section.hindrances": "Complicações",

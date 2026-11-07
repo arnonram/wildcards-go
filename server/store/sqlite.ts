@@ -2,7 +2,13 @@ import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import type { ServerCharacter } from '../../dtos/sync';
-import { type CharacterStore, nextCursor, type PutResult } from './types';
+import {
+  type CharacterStore,
+  nextCursor,
+  type PutResult,
+  STORE_LIMITS,
+  type StoreLimits,
+} from './types';
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS characters (
@@ -68,7 +74,10 @@ const TRANSACTION_WAIT_MS = 5_000;
 
 export function createSqliteStore(
   db: DatabaseSync,
-  { transactionWaitMs = TRANSACTION_WAIT_MS }: { transactionWaitMs?: number } = {},
+  {
+    transactionWaitMs = TRANSACTION_WAIT_MS,
+    limits = STORE_LIMITS,
+  }: { transactionWaitMs?: number; limits?: StoreLimits } = {},
 ): CharacterStore {
   const byId = db.prepare('SELECT * FROM characters WHERE id = ?');
   const ownsLiveRow = db.prepare(
@@ -84,6 +93,14 @@ export function createSqliteStore(
   );
   const changedSince = db.prepare(
     'SELECT * FROM characters WHERE owner_id = ? AND modified_at >= ?',
+  );
+  const liveCount = db.prepare(
+    'SELECT COUNT(*) AS n FROM characters WHERE owner_id = ? AND deleted = 0',
+  );
+  const portraitBytesExcept = db.prepare(
+    `SELECT COALESCE(SUM(LENGTH(p.data)), 0) AS n FROM portraits p
+     JOIN characters c ON c.id = p.id
+     WHERE c.owner_id = ? AND c.deleted = 0 AND p.id <> ?`,
   );
   const deletePortrait = db.prepare('DELETE FROM portraits WHERE id = ?');
   const upsertPortrait = db.prepare(
@@ -111,6 +128,9 @@ export function createSqliteStore(
 
   const ownsLive = (ownerId: string, id: string) => ownsLiveRow.get(id, ownerId) !== undefined;
 
+  const count = (statement: ReturnType<DatabaseSync['prepare']>, ...params: string[]) =>
+    (statement.get(...params) as { n: number }).n;
+
   /**
    * Better Auth shares this connection and keeps transactions open across
    * awaits (sign-up hashes the password mid-transaction). A statement run then
@@ -137,6 +157,16 @@ export function createSqliteStore(
       const { _id, ...rest } = body.data;
       const data = body.deleted ? null : JSON.stringify(rest);
       const deleted = body.deleted ? 1 : 0;
+      // A write adding a live character (a create, or restoring a tombstone)
+      // is refused at the limit, but only if it would otherwise succeed.
+      if (!body.deleted && count(liveCount, ownerId) >= limits.characters) {
+        const row = byId.get(id) as CharacterRow | undefined;
+        const succeeds =
+          body.baseVersion === 0
+            ? !row
+            : row?.owner_id === ownerId && row.version === body.baseVersion && row.deleted === 1;
+        if (succeeds) return { overQuota: true };
+      }
 
       if (body.baseVersion === 0) {
         if (insert.run(id, ownerId, now, deleted, data).changes === 0) {
@@ -167,9 +197,12 @@ export function createSqliteStore(
 
     async putPortrait(ownerId, id, rev, contentType, bytes) {
       await outsideTransaction();
-      if (!ownsLive(ownerId, id)) return false;
+      if (!ownsLive(ownerId, id)) return 'notFound';
+      if (count(portraitBytesExcept, ownerId, id) + bytes.length > limits.portraitBytes) {
+        return 'overQuota';
+      }
       upsertPortrait.run(id, rev, contentType, bytes);
-      return true;
+      return 'ok';
     },
 
     async getPortrait(ownerId, id) {

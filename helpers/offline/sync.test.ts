@@ -249,6 +249,37 @@ test('pushes dirty portraits once the character exists on the server', async () 
   expect((await db.portraits.get(id))?.dirty).toBe(0);
 });
 
+test('a rejected portrait is marked, shown, and not re-sent until forced or replaced', async () => {
+  const id = await createCharacter(db);
+  await setPortrait(id, new Blob([new Uint8Array([1])], { type: 'image/webp' }), db);
+  const portraitPuts = () =>
+    requests.filter((r) => r.method === 'PUT' && r.path.endsWith('/portrait'));
+  handler = (url, init) =>
+    init.method === 'PUT' && url.pathname.endsWith('/portrait')
+      ? json(413, { message: 'Portrait storage limit reached for this account' })
+      : acceptAll(url, init);
+
+  await engine.syncNow();
+  expect(portraitPuts()).toHaveLength(1);
+  expect((await db.portraits.get(id))?.syncError).toBeString();
+  expect(engine.getStatus().lastError).toContain('Portrait storage limit reached');
+
+  await engine.syncNow();
+  expect(portraitPuts()).toHaveLength(1);
+  expect(engine.getStatus().lastError).not.toBeNull();
+
+  await engine.syncNow({ force: true });
+  expect(portraitPuts()).toHaveLength(2);
+
+  handler = acceptAll;
+  await setPortrait(id, new Blob([new Uint8Array([2])], { type: 'image/webp' }), db);
+  await engine.syncNow();
+  expect(portraitPuts()).toHaveLength(3);
+  expect(await db.portraits.get(id)).toMatchObject({ dirty: 0 });
+  expect((await db.portraits.get(id))?.syncError).toBeUndefined();
+  expect(engine.getStatus().lastError).toBeNull();
+});
+
 test('deleted row is removed locally after the server confirms', async () => {
   const id = await createCharacter(db);
   await db.characters.update(id, { version: 1, dirty: 1, deleted: 1 });

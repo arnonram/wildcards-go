@@ -26,6 +26,8 @@
   "page.character.deleteDescription": "This action cannot be undone.",
   "page.character.deleteConfirm": "Are you sure you want to delete {name}?",
   "page.character.thisCharacter": "this character",
+  "page.character.damagedTitle": "This character can't be shown",
+  "page.character.damagedDescription": "Its data is damaged, so the sheet can't open it. Export it to keep a copy, or delete it.",
   "section.basics": "Basics",
   "section.traits": "Traits",
   "section.hindrances": "Hindrances",

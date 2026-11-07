@@ -221,4 +221,6 @@ DATABASE_PATH=./data/wcg.db BETTER_AUTH_URL=https://wildcards.example.com \
 
 - One server process per database file. Don't run two containers on one volume.
 - No password reset, and no admin page: account management beyond what players do themselves is by hand, as above.
+- Each account can keep up to 200 characters and 50 MiB of portraits on the server. Past that, the sync badge shows an error and that character or portrait stays on the device only, untouched. Once there's room (delete a character or a portrait), press the badge's sync button, or edit the character, to send it again.
+- Sign-in attempts are rate-limited per client address. The server reads it from the connection and, when that comes from a private network (a proxy on the same machine or Docker network, like Caddy, cloudflared or Tailscale serve), from the proxy's `X-Forwarded-For`. Expose the app either directly or through such a proxy; a proxy on a public address isn't recognized, and every player would then share one limit.
 - The app's privacy page describes the official site. On your server, you're the one who decides how players' data is handled.
