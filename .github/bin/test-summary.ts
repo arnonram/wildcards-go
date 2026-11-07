@@ -1,8 +1,10 @@
 /**
- * Turns `bun test`'s JUnit and lcov output into a Markdown summary for CI:
- * the job summary on every run, and a comment on same-repo pull requests.
+ * Turns `bun test`'s JUnit and lcov output into Markdown for CI: a full
+ * report for the job summary, and a brief one for the pull request comment
+ * that links to it.
  *
  *   bun .github/bin/test-summary.ts junit.xml coverage/lcov.info > summary.md
+ *   bun .github/bin/test-summary.ts junit.xml coverage/lcov.info --brief <run url> > comment.md
  *
  * Bun writes both files in a fixed shape, so this reads them with regexes
  * rather than pulling in an XML parser.
@@ -97,10 +99,10 @@ function plain(text: string): string {
   );
 }
 
-export function summarize(junit: string, lcov: string | null): string {
-  const { totals, failed } = readJunit(junit);
+/** The heading and the counts table both reports start with. */
+function header(totals: TestTotals): string[] {
   const passed = totals.tests - totals.failures - totals.skipped;
-  const out = [
+  return [
     MARKER,
     `## ${totals.failures ? '❌' : '✅'} Tests`,
     '',
@@ -108,6 +110,16 @@ export function summarize(junit: string, lcov: string | null): string {
     '| -----: | -----: | ------: | ---: |',
     `| ${passed} | ${totals.failures} | ${totals.skipped} | ${totals.seconds.toFixed(1)}s |`,
   ];
+}
+
+function coverageLine(coverage: Coverage): string {
+  return `Lines **${percent(coverage.lines)}** · Functions **${percent(coverage.functions)}**`;
+}
+
+/** The job summary: every failure with its message, and coverage by file. */
+export function summarize(junit: string, lcov: string | null): string {
+  const { totals, failed } = readJunit(junit);
+  const out = header(totals);
 
   for (const failure of failed) {
     out.push(
@@ -127,7 +139,7 @@ export function summarize(junit: string, lcov: string | null): string {
       '',
       '## Coverage',
       '',
-      `Lines **${percent(coverage.lines)}** · Functions **${percent(coverage.functions)}**`,
+      coverageLine(coverage),
       '',
       '<sub>Counts only files the tests load.</sub>',
       '',
@@ -143,13 +155,30 @@ export function summarize(junit: string, lcov: string | null): string {
   return `${out.join('\n')}\n`;
 }
 
+/** The PR comment: counts and coverage totals, with the details a link away. */
+export function brief(junit: string, lcov: string | null, detailsUrl: string): string {
+  const { totals } = readJunit(junit);
+  const out = header(totals);
+  if (lcov) out.push('', `Coverage: ${coverageLine(readLcov(lcov))}`);
+  out.push(
+    '',
+    totals.failures
+      ? `**${totals.failures} failed.** [See which, with their errors](${detailsUrl})`
+      : `[Full report](${detailsUrl})`,
+  );
+  return `${out.join('\n')}\n`;
+}
+
 if (import.meta.main) {
-  const [junitPath, lcovPath] = process.argv.slice(2);
-  if (!junitPath) {
-    console.error('Usage: bun .github/bin/test-summary.ts <junit.xml> [lcov.info]');
+  const [junitPath, lcovPath, flag, detailsUrl] = process.argv.slice(2);
+  if (!junitPath || (flag !== undefined && (flag !== '--brief' || !detailsUrl))) {
+    console.error(
+      'Usage: bun .github/bin/test-summary.ts <junit.xml> [lcov.info] [--brief <run url>]',
+    );
     process.exit(1);
   }
+  const junit = await Bun.file(junitPath).text();
   const lcov =
     lcovPath && (await Bun.file(lcovPath).exists()) ? await Bun.file(lcovPath).text() : null;
-  process.stdout.write(summarize(await Bun.file(junitPath).text(), lcov));
+  process.stdout.write(flag ? brief(junit, lcov, detailsUrl) : summarize(junit, lcov));
 }

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { MARKER, readJunit, readLcov, summarize } from './test-summary';
+import { brief, MARKER, readJunit, readLcov, summarize } from './test-summary';
 
 /** What `bun test --reporter=junit` writes for one failing, one skipped and one passing test. */
 const JUNIT = `<?xml version="1.0" encoding="UTF-8"?>
@@ -81,4 +81,23 @@ test('a passing run without coverage', () => {
 test('a message cannot break out of its code block', () => {
   const sneaky = JUNIT.replace('Received: 1', 'Received: ```\n# injected');
   expect(summarize(sneaky, null)).not.toContain('```\n# injected');
+});
+
+test('the brief report counts failures and links to the details instead of listing them', () => {
+  const comment = brief(JUNIT, LCOV, 'https://example.test/run/1');
+  expect(comment.startsWith(MARKER)).toBe(true);
+  expect(comment).toContain('| 1 | 1 | 1 | 0.3s |');
+  expect(comment).toContain('Coverage: Lines **75.0%** · Functions **75.0%**');
+  expect(comment).toContain(
+    '**1 failed.** [See which, with their errors](https://example.test/run/1)',
+  );
+  expect(comment).not.toContain('fails &lt;here&gt;');
+  expect(comment).not.toContain('<details>');
+});
+
+test('a passing brief report links to the full report', () => {
+  const passing = JUNIT.replace('failures="1"', 'failures="0"');
+  expect(brief(passing, null, 'https://example.test/run/1')).toContain(
+    '[Full report](https://example.test/run/1)',
+  );
 });

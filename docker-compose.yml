@@ -1,14 +1,14 @@
-version: "3.8"
-
 services:
   mongo:
-    image: mongo:9.0.2
+    # Matches production (Atlas 8.0) and CI.
+    image: mongo:8.0.34
     container_name: wildcards-mongo
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      # A new volume: Mongo 8 can't open the old one's Mongo 9 data files.
+      - mongo8-data:/data/db
     restart: unless-stopped
 
 volumes:
-  mongo-data:
+  mongo8-data:
