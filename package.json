@@ -15,7 +15,7 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "ci": "biome ci .",
-    "test": "bun test"
+    "test": "bun test ./ ./.github/bin/test-summary.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",

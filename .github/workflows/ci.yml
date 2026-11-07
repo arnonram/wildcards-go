@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bunx biome ci --reporter=github
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit -p .
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # For the results comment; fork PRs get a read-only token regardless.
+      pull-requests: write
+    services:
+      mongo:
+        image: mongo:9.0.2
+        ports: ["27017:27017"]
+    env:
+      MONGODB_URI: mongodb://localhost:27017
+      MONGODB_DB: wcg_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: |
+          bun test --coverage --coverage-reporter=text --coverage-reporter=lcov \
+            --reporter=junit --reporter-outfile=junit.xml \
+            ./ ./.github/bin/test-summary.test.ts
+      - name: Summarize
+        if: ${{ !cancelled() && hashFiles('junit.xml') != '' }}
+        run: |
+          bun .github/bin/test-summary.ts junit.xml coverage/lcov.info > summary.md
+          cat summary.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment on the pull request
+        if: |
+          !cancelled() && hashFiles('summary.md') != '' &&
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          existing=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | startswith("<!-- wcg-test-summary -->"))) | .id' | head -n 1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -F body=@summary.md > /dev/null
+          else
+            gh pr comment "$PR" --repo "$REPO" --body-file summary.md
+          fi
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+
+  docker-image:
+    needs: [lint, typecheck, build, test]
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/docker-builder.yml
+    with:
+      push: true
+    permissions:
+      contents: read
+      packages: write

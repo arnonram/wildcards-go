@@ -16,6 +16,6 @@
     "incremental": true,
     "types": ["node", "bun"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".github/**/*.ts"],
   "exclude": ["node_modules", "sw"]
 }
