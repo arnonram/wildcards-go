@@ -44,7 +44,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-4 py-6 text-center sm:flex-row sm:text-left">
           <nav
             aria-label="Site"
-            className="flex shrink-0 gap-4 text-xs sm:flex-col sm:gap-1.5 sm:self-stretch sm:border-r sm:border-line sm:pr-6"
+            className="flex shrink-0 flex-wrap justify-center gap-x-4 gap-y-1.5 text-xs sm:flex-col sm:flex-nowrap sm:justify-start sm:gap-1.5 sm:self-stretch sm:border-r sm:border-line sm:pr-6"
           >
             <Link
               href="/privacy"
@@ -59,13 +59,29 @@ export default function Layout({ children }: { children: ReactNode }) {
               Feedback
             </a>
             <a
+              href="https://github.com/arnonram/wildcards-go/issues/new/choose"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent underline-offset-2 hover:underline"
+            >
+              Report a bug
+            </a>
+            <a
+              href="https://github.com/arnonram/wildcards-go/blob/main/docs/self-hosting.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent underline-offset-2 hover:underline"
+            >
+              Self-host
+            </a>
+            <a
               href="https://github.com/arnonram/wildcards-go"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 font-medium text-accent underline-offset-2 hover:underline"
             >
+              Open source (AGPL)
               <GitHubIcon className="size-3.5 shrink-0" />
-              Source code
             </a>
           </nav>
           <p className="max-w-md text-xs leading-normal text-muted sm:ml-auto sm:text-right">
