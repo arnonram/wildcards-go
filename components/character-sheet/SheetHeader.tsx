@@ -8,6 +8,7 @@ import { setPortrait } from '../../helpers/offline/characters';
 import { usePortraitUrl } from '../../helpers/offline/hooks';
 import { downloadExport } from '../../helpers/offline/transfer';
 import { Button } from '../ui/Button';
+import { SheetOptionsMenu } from './SheetOptionsMenu';
 
 const saveLabels: Record<SaveState, { key: MessageKey; className: string }> = {
   idle: { key: 'sheet.save.idle', className: 'text-faint' },
@@ -114,6 +115,7 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
       <div className="col-span-2 flex items-center gap-3 sm:col-span-1 sm:flex-col sm:items-end">
         <SaveIndicator state={saveState} />
         <div className="flex gap-2">
+          <SheetOptionsMenu />
           <Button
             variant="outline"
             size="sm"

@@ -3,6 +3,7 @@ import { computeToughness } from '../../helpers/armor-helpers';
 import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
+import { sheetOptionState } from '../../helpers/sheet-options';
 import { Pips } from '../ui/Pips';
 import { Stat } from '../ui/Stat';
 import { ConvictionToggle } from './ConvictionToggle';
@@ -54,7 +55,7 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
           allowAdd
           onChange={(value) => update({ bennies: value })}
         />
-        <ConvictionToggle />
+        {sheetOptionState(wildcardData, 'conviction').shown && <ConvictionToggle />}
         <Pips
           label={t('stat.wounds')}
           value={toNumber(wildcardData.wounds)}

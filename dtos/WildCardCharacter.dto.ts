@@ -8,6 +8,11 @@ import { Trait } from './Trait.dto';
 import type { Weapon } from './Weapon.dto';
 import { Attributes, CoreSkills, DiceValues, Ranks } from './wildcards-consts';
 
+export interface SheetOptions {
+  conviction?: boolean;
+  customAttributes?: boolean;
+}
+
 export class WildCardCharacter extends BaseEntity {
   _id?: string;
   race?: string;
@@ -27,10 +32,12 @@ export class WildCardCharacter extends BaseEntity {
   toughness?: number;
   toughnessMod?: number = 0;
   wounds: number = 0;
+  options?: SheetOptions = { conviction: false, customAttributes: false };
   fatigue: number = 0;
   attributes: Trait[] = Object.values(Attributes).map(
     (attribute) => new Trait(attribute, DiceValues.d4),
   );
+  customAttributes?: Trait[];
   skills: Trait[] = Object.values(CoreSkills).map((skill) => new Trait(skill, DiceValues.d4));
   gear?: Gear[];
   hindrances?: Hindrance[];
