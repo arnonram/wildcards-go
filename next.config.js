@@ -20,6 +20,20 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  env: {
+    // Canonical and share-preview links go in the static HTML, so they take the
+    // address at build time; robots.txt and the sitemap read it at runtime.
+    SITE_URL:
+      process.env.SITE_INDEXABLE === '1'
+        ? (process.env.BETTER_AUTH_URL ?? '').replace(/\/+$/, '')
+        : '',
+  },
+  async rewrites() {
+    return [
+      { source: '/robots.txt', destination: '/api/robots' },
+      { source: '/sitemap.xml', destination: '/api/sitemap' },
+    ];
+  },
   async headers() {
     // Not on Next's own assets: they need none of this, and `nosniff` makes the
     // browser refuse a script Next serves with a JSON type in development.

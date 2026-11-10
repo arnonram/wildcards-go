@@ -62,6 +62,8 @@ Environment variables, for **Production** and **Preview** (previews run in produ
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`   | optional; the Google button shows only when both are set   |
 | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | optional; the Discord button shows only when both are set  |
 
+Set `SITE_INDEXABLE=1` for **Production only**. It opens `robots.txt`, serves `/sitemap.xml`, and puts canonical and share-preview links on the public pages. It's read at build time too, so redeploy after changing it. Without it the site asks search engines to stay out.
+
 Keep Vercel's system variables exposed (the default): sign-in on previews needs `VERCEL_ENV` and `VERCEL_URL`, and the rate limiter relies on `VERCEL` to know Vercel's edge sets the client IP.
 
 ## Address
