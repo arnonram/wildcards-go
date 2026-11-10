@@ -21,10 +21,7 @@ const FEATURES: [string, string][] = [
   ],
   ['Track play as it happens', 'Bennies, wounds, fatigue and conviction, a tap away.'],
   ['Works offline', 'Install it like an app. No connection needed at the table.'],
-  [
-    'Sync across devices',
-    'Sign in with Google, Discord or an email link to keep every device up to date.',
-  ],
+  ['Sync across devices', 'Sign in to keep your characters up to date on every device.'],
   ['Export and import', 'Save a character to a file as a backup, or load it on another device.'],
   ['Your language', 'English, Deutsch, Español, Français and Português (Brasil).'],
 ];
