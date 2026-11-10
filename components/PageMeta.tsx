@@ -16,12 +16,12 @@ export function PageMeta({ title, description, path }: PageMetaProps) {
       <meta property="og:site_name" content="Wild Cards Go" />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:card" content="summary_large_image" />
       {siteUrl && (
         <>
           <link rel="canonical" href={`${siteUrl}${path}`} />
           <meta property="og:url" content={`${siteUrl}${path}`} />
-          <meta property="og:image" content={`${siteUrl}/icons/icon-512.png`} />
+          <meta property="og:image" content={`${siteUrl}/images/og-cover.jpg`} />
         </>
       )}
     </Head>
