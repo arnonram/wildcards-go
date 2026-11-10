@@ -126,6 +126,7 @@ export default function SignIn() {
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex" />
         <title>Sign in — Wild Cards Go</title>
       </Head>
 

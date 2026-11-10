@@ -106,6 +106,7 @@ export default function DeleteAccount() {
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex" />
         <title>Delete account — Wild Cards Go</title>
       </Head>
       <div className="mx-auto max-w-md rounded-[var(--radius)] border border-line-strong bg-surface px-6 py-8 text-center">

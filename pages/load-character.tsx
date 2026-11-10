@@ -32,6 +32,7 @@ export default function LoadCharacter() {
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex" />
         <title>Load a Character — Wild Cards Go</title>
       </Head>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-1.5">

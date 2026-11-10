@@ -1,5 +1,5 @@
-import Head from 'next/head';
 import type { ReactNode } from 'react';
+import { PageMeta } from '../components/PageMeta';
 
 const CONTACT = 'privacy@orderofthenuts.club';
 const UPDATED = '3 November 2026';
@@ -22,9 +22,11 @@ const linkClass = 'font-medium text-accent underline-offset-2 hover:underline';
 export default function Privacy() {
   return (
     <>
-      <Head>
-        <title>Privacy — Wild Cards Go</title>
-      </Head>
+      <PageMeta
+        title="Privacy — Wild Cards Go"
+        description="What Wild Cards Go stores to sign you in and sync your Savage Worlds characters. No ads, no analytics, no tracking."
+        path="/privacy"
+      />
 
       <article className="mx-auto max-w-2xl">
         <h1 className="font-display text-xl font-semibold uppercase tracking-[0.08em] text-heading">

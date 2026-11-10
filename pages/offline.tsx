@@ -7,6 +7,7 @@ export default function Offline() {
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex" />
         <title>Offline — Wild Cards Go</title>
       </Head>
 

@@ -150,6 +150,7 @@ If you want a real certificate but no access from outside, point a name like `wi
 | `SIGNUP_OPEN=1`                              | no                 | Anyone who reaches the server may create an account                                                            |
 | `BETTER_AUTH_SECRET`                         | no                 | Session-signing secret. If unset, one is generated on first start and kept in `/data/auth-secret`              |
 | `DATABASE_PATH`                              | set in the image   | The SQLite file; `/data/wcg.db` in the image. Required when running from the source                            |
+| `SITE_INDEXABLE=1`                           | no                 | Let search engines index the instance. Off by default: `robots.txt` asks them to stay out                      |
 - **At least one sign-in method** must be on, or the server refuses to start and says so.
 - **Without an invite code or `SIGNUP_OPEN=1`, no one can create an account.** That keeps a server you just started from being open to anyone who finds it.
 - If the container exits with `Cannot open SQLite database at …`, the volume isn't writable. The app runs as the `node` user (uid 1000); for a host folder instead of a named volume, `chown 1000:1000` it.

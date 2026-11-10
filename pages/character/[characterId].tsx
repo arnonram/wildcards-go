@@ -58,6 +58,7 @@ export default function Character() {
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex" />
         <title>{`${name || t('page.character.unnamed')} — Wild Cards Go`}</title>
       </Head>
 

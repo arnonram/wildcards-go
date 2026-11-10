@@ -5,10 +5,48 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { CharacterCard } from '../components/home/CharacterCard';
+import { PageMeta } from '../components/PageMeta';
 import { AppLogo } from '../components/ui/AppLogo';
 import { Button } from '../components/ui/Button';
 import { createCharacter } from '../helpers/offline/characters';
 import { useCharacterList } from '../helpers/offline/hooks';
+
+const DESCRIPTION =
+  'Free Savage Worlds character sheet for phone and desktop. Track bennies, wounds, edges, hindrances and gear. Works offline and syncs across devices.';
+
+const FEATURES: [string, string][] = [
+  [
+    'The whole sheet',
+    'Attributes, skills, edges, hindrances, powers, weapons, armor and gear in one place.',
+  ],
+  ['Track play as it happens', 'Bennies, wounds, fatigue and conviction, a tap away.'],
+  ['Works offline', 'Install it like an app. No connection needed at the table.'],
+  ['Sync across devices', 'Sign in to keep your characters up to date on every device.'],
+  ['Export and import', 'Save a character to a file as a backup, or load it on another device.'],
+  ['Your language', 'English, Deutsch, Español, Français and Português (Brasil).'],
+];
+
+const FAQ: [string, string][] = [
+  ['Is it free?', 'Yes. No ads, no tracking, and the code is open source.'],
+  [
+    'Do I need an account?',
+    'No. Characters are saved on your device. Sign in only if you want them synced to your other devices.',
+  ],
+  [
+    'Can I run my own copy?',
+    'Yes. It runs from one Docker container, for your group or just for you.',
+  ],
+];
+
+const STRUCTURED_DATA = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Wild Cards Go',
+  description: DESCRIPTION,
+  applicationCategory: 'GameApplication',
+  operatingSystem: 'Any',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+};
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -31,16 +69,24 @@ const Home: NextPage = () => {
 
   return (
     <>
+      <PageMeta
+        title="Wild Cards Go — Free Savage Worlds Character Sheet"
+        description={DESCRIPTION}
+        path="/"
+      />
       <Head>
-        <title>Wild Cards Go</title>
-        <meta name="description" content="Have your Savage Worlds characters with you anywhere" />
         <link rel="icon" href="/favicon.ico" />
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: static JSON-LD, no user input
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
+        />
       </Head>
 
       <section className="border-b border-line pb-8 pt-4 sm:pt-8">
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-faint">
-            Savage Worlds
+            Savage Worlds character sheet
           </span>
           <h1 className="mt-2 font-display text-4xl font-bold tracking-[0.04em] text-heading sm:text-5xl">
             Wild Cards on-the-go
@@ -115,6 +161,40 @@ const Home: NextPage = () => {
           >
             Manage characters
           </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl pt-12 pb-4" aria-labelledby="about-title">
+        <h2
+          id="about-title"
+          className="border-b border-line pb-1.5 font-display text-lg font-semibold uppercase tracking-[0.08em] text-heading"
+        >
+          About Wild Cards Go
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
+          A free, open-source character sheet for Savage Worlds Adventure Edition (SWADE). Build
+          your Wildcard once and keep it with you at the table, on your phone or on your laptop.
+        </p>
+        <ul className="mt-4 grid gap-x-6 gap-y-3 text-sm leading-relaxed text-muted sm:grid-cols-2">
+          {FEATURES.map(([title, text]) => (
+            <li key={title}>
+              <span className="font-semibold text-ink">{title}.</span> {text}
+            </li>
+          ))}
+        </ul>
+
+        <h3 className="mt-8 font-display text-base font-semibold uppercase tracking-[0.08em] text-heading">
+          Questions
+        </h3>
+        <div className="mt-2 divide-y divide-line border-y border-line">
+          {FAQ.map(([question, answer]) => (
+            <details key={question} className="py-2.5">
+              <summary className="cursor-pointer text-sm font-medium text-ink marker:text-faint">
+                {question}
+              </summary>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">{answer}</p>
+            </details>
+          ))}
         </div>
       </section>
     </>
