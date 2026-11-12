@@ -1,4 +1,4 @@
-import { Camera, Download, Pencil, Trash2 } from 'lucide-react';
+import { Camera, Download, Pencil, Printer, Trash2 } from 'lucide-react';
 import { Ranks } from '../../dtos/wildcards-consts';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { type SaveState, useWildcard } from '../../helpers/context/wildcard-context';
@@ -123,6 +123,10 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
           >
             <Download size={13} />
             {t('sheet.header.export')}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Printer size={13} />
+            {t('sheet.header.print')}
           </Button>
           <Button variant="outline" size="sm" onClick={onDelete}>
             <Trash2 size={13} />

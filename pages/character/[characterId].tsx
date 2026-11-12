@@ -62,7 +62,7 @@ export default function Character() {
         <title>{`${name || t('page.character.unnamed')} — Wild Cards Go`}</title>
       </Head>
 
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex items-center justify-between gap-3 print:hidden">
         <Link
           href="/"
           className="text-xs text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"

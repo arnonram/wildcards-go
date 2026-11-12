@@ -12,7 +12,7 @@ import { ModeToggle, SkinMenu } from './ThemeControls';
 export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur">
+      <header className="print:hidden sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-[var(--appbar-h)] w-full max-w-7xl items-center gap-3 px-4">
           <Link
             href="/"
@@ -37,10 +37,12 @@ export default function Layout({ children }: { children: ReactNode }) {
       <AccountDeletedNotice />
 
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-7xl px-4 py-6">{children}</div>
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 print:max-w-none print:p-0">
+          {children}
+        </div>
       </main>
 
-      <footer className="border-t border-line bg-bg-deep/60">
+      <footer className="print:hidden border-t border-line bg-bg-deep/60">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-4 py-6 text-center sm:flex-row sm:text-left">
           <nav
             aria-label="Site"

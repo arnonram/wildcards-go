@@ -321,3 +321,18 @@
   opacity: 0;
   transform: translateY(4px) scale(0.98);
 }
+
+/* Paper: skins and dark mode stay on screen; the printed sheet is black on white. */
+@page {
+  margin: 12mm;
+}
+
+@media print {
+  /* Outranks the skin selectors that paint body backgrounds. */
+  html:root,
+  html:root body,
+  html:root[data-skin][data-mode] body {
+    background: #fff;
+    color: #000;
+  }
+}
