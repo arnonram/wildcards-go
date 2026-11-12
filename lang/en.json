@@ -20,7 +20,6 @@
   "page.character.loading": "Loading character…",
   "page.character.notFound": "Character not found",
   "page.character.back": "← All characters",
-  "page.character.label": "Character sheet",
   "page.character.unnamed": "Unnamed Character",
   "page.character.deleteTitle": "Delete Character",
   "page.character.deleteDescription": "This action cannot be undone.",

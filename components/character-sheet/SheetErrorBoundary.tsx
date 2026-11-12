@@ -2,6 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { downloadExport } from '../../helpers/offline/transfer';
 import { Button } from '../ui/Button';
+import { BackLink } from './BackLink';
 
 type Props = {
   characterId: string;
@@ -47,19 +48,22 @@ export class SheetErrorBoundary extends Component<Props, { failed: boolean }> {
 function DamagedCharacter({ onExport, onDelete }: { onExport: () => void; onDelete: () => void }) {
   const { t } = useTranslation();
   return (
-    <div role="alert" className="py-12 text-center">
-      <p className="font-display text-lg font-semibold text-ink">
-        {t('page.character.damagedTitle')}
-      </p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-        {t('page.character.damagedDescription')}
-      </p>
-      <div className="mt-4 flex justify-center gap-2">
-        <Button onClick={onExport}>{t('sheet.header.export')}</Button>
-        <Button variant="danger" onClick={onDelete}>
-          {t('common.delete')}
-        </Button>
+    <>
+      <BackLink />
+      <div role="alert" className="py-12 text-center">
+        <p className="font-display text-lg font-semibold text-ink">
+          {t('page.character.damagedTitle')}
+        </p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-muted">
+          {t('page.character.damagedDescription')}
+        </p>
+        <div className="mt-4 flex justify-center gap-2">
+          <Button onClick={onExport}>{t('sheet.header.export')}</Button>
+          <Button variant="danger" onClick={onDelete}>
+            {t('common.delete')}
+          </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

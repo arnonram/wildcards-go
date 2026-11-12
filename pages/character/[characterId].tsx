@@ -62,18 +62,6 @@ export default function Character() {
         <title>{`${name || t('page.character.unnamed')} — Wild Cards Go`}</title>
       </Head>
 
-      <div className="mb-4 flex items-center justify-between gap-3 print:hidden">
-        <Link
-          href="/"
-          className="text-xs text-muted underline-offset-4 transition-colors hover:text-accent hover:underline"
-        >
-          {t('page.character.back')}
-        </Link>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-faint">
-          {t('page.character.label')}
-        </span>
-      </div>
-
       <SheetErrorBoundary
         key={characterId}
         characterId={characterId}
