@@ -341,14 +341,6 @@ export function PrintSheet() {
           </section>
         </div>
       </div>
-
-      <p className="mt-4 text-[6pt] leading-snug text-neutral-600">
-        This game references the Savage Worlds game system, available from Pinnacle Entertainment
-        Group at www.peginc.com. Savage Worlds and all associated logos and trademarks are
-        copyrights of Pinnacle Entertainment Group. Used with permission. Pinnacle makes no
-        representation or warranty as to the quality, viability, or suitability for purpose of this
-        product.
-      </p>
     </div>
   );
 }
