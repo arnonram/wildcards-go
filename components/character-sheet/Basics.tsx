@@ -35,10 +35,8 @@ function StatPair({ label, modLabel, base, mod, hint, onBaseChange, onModChange 
   const hintId = hint ? `${id}-hint` : undefined;
 
   return (
-    <div role="group" aria-labelledby={`${id}-label`}>
-      <span id={`${id}-label`} className={labelClass}>
-        {label}
-      </span>
+    <fieldset className="min-w-0">
+      <legend className={labelClass}>{label}</legend>
       <div className="flex items-center gap-1.5">
         <NumberField
           aria-label={label}
@@ -66,7 +64,7 @@ function StatPair({ label, modLabel, base, mod, hint, onBaseChange, onModChange 
           {hint}
         </p>
       )}
-    </div>
+    </fieldset>
   );
 }
 
