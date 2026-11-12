@@ -3,6 +3,7 @@ import { computeToughness } from '../../helpers/armor-helpers';
 import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
+import { runDie } from '../../helpers/run-die';
 import { sheetOptionState } from '../../helpers/sheet-options';
 import { Pips } from '../ui/Pips';
 import { Stat } from '../ui/Stat';
@@ -78,9 +79,10 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
         <Stat
           label={t('stat.pace')}
           value={pace}
-          hint={t('sheet.status.baseHint', {
+          hint={t('sheet.status.paceHint', {
             base: toNumber(wildcardData.pace),
             mod: signed(toNumber(wildcardData.paceMod)),
+            run: runDie(wildcardData),
           })}
         />
         <Stat

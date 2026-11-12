@@ -27,6 +27,7 @@ export class WildCardCharacter extends BaseEntity {
   portraitRev?: string;
   pace?: number;
   paceMod?: number = 0;
+  runDie?: DiceValues = DiceValues.d6;
   parry?: number;
   parryMod?: number = 0;
   toughness?: number;

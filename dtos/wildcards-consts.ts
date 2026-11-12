@@ -38,6 +38,14 @@ export enum DiceValues {
   d12 = 'd12',
 }
 
+export const STEPPED_DICE = [
+  DiceValues.d4,
+  DiceValues.d6,
+  DiceValues.d8,
+  DiceValues.d10,
+  DiceValues.d12,
+];
+
 export enum Ranks {
   Novice = 'Novice',
   Seasoned = 'Seasoned',
