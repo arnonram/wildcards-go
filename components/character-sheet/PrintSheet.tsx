@@ -5,7 +5,7 @@ import { computeToughness, parseArmorBonus } from '../../helpers/armor-helpers';
 import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
-import { rankLabel } from '../../helpers/i18n';
+import { armorLocationLabel, rankLabel, traitLabel } from '../../helpers/i18n';
 import { runDie } from '../../helpers/run-die';
 import { sheetOptionState } from '../../helpers/sheet-options';
 
@@ -120,9 +120,9 @@ const Blank = ({ className }: { className?: string }) => (
 const Detail = ({ children }: { children: ReactNode }) =>
   children ? <div className="text-[8pt] text-neutral-700">{children}</div> : null;
 
-const traitRows = (traits: Trait[] | undefined) =>
+const traitRows = (traits: Trait[] | undefined, label: (name: string) => string = text) =>
   (traits ?? []).map((trait) => [
-    text(trait.name),
+    label(text(trait.name)),
     <b key="die">{text(trait.dice)}</b>,
     text(trait.mod),
   ]);
@@ -136,9 +136,9 @@ export function PrintSheet() {
   const parry = toNumber(c.parry) + toNumber(c.parryMod);
   const maxPowerPoints = toNumber(c.maxPowerPoints);
   const hasPowers = (c.powers?.length ?? 0) > 0 || maxPowerPoints > 0;
-  const attributes = [
-    ...(c.attributes ?? []),
-    ...(sheetOptionState(c, 'customAttributes').shown ? (c.customAttributes ?? []) : []),
+  const attributeRows = [
+    ...traitRows(c.attributes, (name) => traitLabel('attribute', name, t)),
+    ...(sheetOptionState(c, 'customAttributes').shown ? traitRows(c.customAttributes) : []),
   ];
 
   return (
@@ -206,13 +206,13 @@ export function PrintSheet() {
         <div className="space-y-2.5">
           <section className="break-inside-avoid">
             <Heading>{t('sheet.traits.attributes')}</Heading>
-            <Table rows={traitRows(attributes)} blankRows={0} centered={[1, 2]} />
+            <Table rows={attributeRows} blankRows={0} centered={[1, 2]} />
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('sheet.traits.skills')}</Heading>
             <Table
               headers={[t('common.name'), t('print.die'), t('print.mod')]}
-              rows={traitRows(c.skills)}
+              rows={traitRows(c.skills, (name) => traitLabel('skill', name, t))}
               blankRows={3}
               centered={[1, 2]}
             />
@@ -290,7 +290,7 @@ export function PrintSheet() {
               rows={(c.armors ?? []).map((armor) => [
                 text(armor.name),
                 `+${parseArmorBonus(armor.armorBonus)}`,
-                text(armor.locations),
+                armorLocationLabel(text(armor.locations), t),
                 armor.isEquipped ? '✓' : '',
               ])}
               blankRows={1}
