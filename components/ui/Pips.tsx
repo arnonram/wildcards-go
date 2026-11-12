@@ -40,6 +40,16 @@ export function Pips({
       <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
         {label}
       </span>
+      {allowAdd && (
+        <button
+          type="button"
+          aria-label={t('ui.pips.add', { label })}
+          onClick={() => onChange(value + 1)}
+          className="flex size-6 items-center justify-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-ink"
+        >
+          <Plus size={12} />
+        </button>
+      )}
       <fieldset aria-label={label} className="m-0 flex min-w-0 items-center gap-0.5 border-0 p-0">
         {Array.from({ length: count }, (_, index) => {
           const filled = index < value;
@@ -61,16 +71,6 @@ export function Pips({
             </button>
           );
         })}
-        {allowAdd && (
-          <button
-            type="button"
-            aria-label={t('ui.pips.add', { label })}
-            onClick={() => onChange(value + 1)}
-            className="flex size-6 items-center justify-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-ink"
-          >
-            <Plus size={12} />
-          </button>
-        )}
       </fieldset>
       <span className="min-w-6 text-xs tabular-nums text-muted">
         {formatValue ? formatValue(value) : value}
