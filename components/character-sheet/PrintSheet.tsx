@@ -226,7 +226,7 @@ export function PrintSheet() {
               rows={(c.hindrances ?? []).map((hindrance) => [
                 <div key="h">
                   {text(hindrance.name)}
-                  {hindrance.isMajor && <span>({t('sheet.hindrances.major')})</span>}
+                  {hindrance.isMajor && <span> ({t('sheet.hindrances.major')})</span>}
                   <Detail>{text(hindrance.description)}</Detail>
                 </div>,
               ])}

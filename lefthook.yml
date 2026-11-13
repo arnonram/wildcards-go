@@ -1,3 +1,10 @@
+# Command output only when a command fails.
+output:
+  - meta
+  - summary
+  - failure
+  - execution_info
+
 pre-commit:
   commands:
     biome:
