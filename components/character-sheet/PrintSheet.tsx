@@ -51,8 +51,8 @@ function Table({
                 key={header}
                 className={cn(
                   label,
-                  'border-b-[0.75pt] border-black px-[3px] py-0.5 text-left',
-                  centered.includes(index) && center,
+                  'border-b-[0.75pt] border-black px-[3px] py-0.5',
+                  centered.includes(index) ? center : 'text-left',
                 )}
               >
                 {header}
@@ -140,6 +140,7 @@ export function PrintSheet() {
     ...traitRows(c.attributes, (name) => traitLabel('attribute', name, t)),
     ...(sheetOptionState(c, 'customAttributes').shown ? traitRows(c.customAttributes) : []),
   ];
+  const size = toNumber(c.size);
 
   return (
     <div className="hidden bg-white font-sans text-[9.5pt] leading-[1.3] text-black print:block">
@@ -156,14 +157,15 @@ export function PrintSheet() {
             <div className={label}>{t('sheet.basics.rank')}</div>
             {rankLabel(c.rank ?? Ranks.Novice, t)}
           </div>
-          <div>
+          {size !== 0 &&
+          <div className={center}>
             <div className={label}>{t('sheet.basics.size')}</div>
-            {toNumber(c.size)}
-          </div>
-          <div>
+             {`${size > 0 ? '+' : '−'}${Math.abs(size)}`}
+          </div>}
+          {/* <div>
             <div className={label}>{t('print.advances')}</div>
             <Blank className="h-[14px] w-[34px]" />
-          </div>
+          </div> */}
         </div>
       </header>
 
@@ -224,8 +226,8 @@ export function PrintSheet() {
                 <div key="h">
                   {text(hindrance.name)}
                   {hindrance.isMajor && (
-                    <span className="ml-1 rounded-[2px] border-[0.75pt] border-black px-[3px] text-[7pt]">
-                      {t('sheet.hindrances.major')}
+                    <span>
+                      ({t('sheet.hindrances.major')})
                     </span>
                   )}
                   <Detail>{text(hindrance.description)}</Detail>
