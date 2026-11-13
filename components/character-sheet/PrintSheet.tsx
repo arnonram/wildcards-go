@@ -263,7 +263,14 @@ export function PrintSheet() {
                 t('sheet.weapons.shots'),
               ]}
               rows={(c.weapons ?? []).map((weapon) => [
-                text(weapon.name),
+                <div key="w">
+                  {text(weapon.name)}
+                  {toNumber(weapon.ammo) > 0 && (
+                    <Detail>
+                      {t('sheet.weapons.ammo')}: {toNumber(weapon.ammo)}
+                    </Detail>
+                  )}
+                </div>,
                 text(weapon.range),
                 text(weapon.damage),
                 text(weapon.ap),
