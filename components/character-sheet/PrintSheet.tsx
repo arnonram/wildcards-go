@@ -157,11 +157,12 @@ export function PrintSheet() {
             <div className={label}>{t('sheet.basics.rank')}</div>
             {rankLabel(c.rank ?? Ranks.Novice, t)}
           </div>
-          {size !== 0 &&
-          <div className={center}>
-            <div className={label}>{t('sheet.basics.size')}</div>
-             {`${size > 0 ? '+' : '−'}${Math.abs(size)}`}
-          </div>}
+          {size !== 0 && (
+            <div className={center}>
+              <div className={label}>{t('sheet.basics.size')}</div>
+              {`${size > 0 ? '+' : '−'}${Math.abs(size)}`}
+            </div>
+          )}
           {/* <div>
             <div className={label}>{t('print.advances')}</div>
             <Blank className="h-[14px] w-[34px]" />
@@ -225,11 +226,7 @@ export function PrintSheet() {
               rows={(c.hindrances ?? []).map((hindrance) => [
                 <div key="h">
                   {text(hindrance.name)}
-                  {hindrance.isMajor && (
-                    <span>
-                      ({t('sheet.hindrances.major')})
-                    </span>
-                  )}
+                  {hindrance.isMajor && <span>({t('sheet.hindrances.major')})</span>}
                   <Detail>{text(hindrance.description)}</Detail>
                 </div>,
               ])}
