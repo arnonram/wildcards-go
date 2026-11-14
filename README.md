@@ -76,6 +76,18 @@ Characters can be saved to a `.json` file and loaded back, to keep a backup or m
 - Portraits are embedded as data URLs, so one file holds everything.
 - **Import** adds every character in the file as a new one with a fresh id, so it never overwrites or conflicts with an existing character. It is all or nothing: a damaged file imports nothing. Imported characters sync like any other edit.
 
+## Printing
+
+**Print** on a character sheet opens the browser's print dialog with a one-page paper copy meant to be written on at the table. Print-only markup (`components/character-sheet/PrintSheet.tsx`) replaces the app on paper; the app chrome is hidden with `print:hidden`.
+
+- Values that rarely change are printed: attributes, skills, hindrances, edges, weapons, armor, powers, gear, Pace (with run die), Parry and Toughness.
+- Values that change in play get space for a pencil: current power points beside the printed maximum, current shots beside each weapon's capacity, circles to cross out for wounds and fatigue, and blank rows to add skills, edges, gear and notes.
+- Bennies are left off, since tables usually track them with tokens. Power points and Powers appear only when the character has powers or a power point maximum.
+- It is always black on white, whatever skin or mode is on screen, and fits A4 or Letter in portrait or landscape.
+- Stock attribute, skill and armor location names print in the app's language.
+
+<img src="docs/images/print-sample.png" alt="Printed character sheet for a sample Seasoned human with powers, weapons, armor and gear" width="480">
+
 ## Privacy and feedback
 
 `/privacy` explains what the app stores and why; questions go to `privacy@orderofthenuts.club`. The footer's _Feedback_ link opens an email to `feedback@orderofthenuts.club` for bug reports and feature requests.

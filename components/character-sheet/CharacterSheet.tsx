@@ -10,6 +10,7 @@ import { ConflictBanner } from './ConflictBanner';
 import Edges from './edges/Edges';
 import GearList from './gear/Gear';
 import Hindrances from './hindrances/Hindrances';
+import { PrintSheet } from './PrintSheet';
 import Powers from './powers/Powers';
 import { SheetHeader } from './SheetHeader';
 import { SheetNav, type SheetNavItem } from './SheetNav';
@@ -62,9 +63,10 @@ export default function CharacterSheet({ characterId, wildCard, onDelete }: Char
   return (
     <WildCardProvider characterId={characterId} initial={wildCard}>
       <ConflictBanner />
+      <PrintSheet />
       <div
         ref={sheetRef}
-        className="pb-16"
+        className="pb-16 print:hidden"
         style={
           pinned
             ? ({

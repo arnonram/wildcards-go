@@ -1,9 +1,7 @@
-import { DiceValues } from '../../dtos/wildcards-consts';
+import { DiceValues, STEPPED_DICE } from '../../dtos/wildcards-consts';
 import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { Select } from '../ui/Select';
-
-const STEPPED_DICE = [DiceValues.d4, DiceValues.d6, DiceValues.d8, DiceValues.d10, DiceValues.d12];
 
 export interface DiePickerProps {
   name: string;

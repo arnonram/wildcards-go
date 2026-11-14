@@ -19,7 +19,7 @@ export function ConflictBanner() {
   return (
     <div
       role="alert"
-      className="mb-4 flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-danger/40 bg-danger-soft px-4 py-3 text-sm text-ink"
+      className="mb-4 flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-danger/40 print:hidden bg-danger-soft px-4 py-3 text-sm text-ink"
     >
       <TriangleAlert size={16} className="shrink-0 text-danger" />
       <p className="min-w-0 flex-1">

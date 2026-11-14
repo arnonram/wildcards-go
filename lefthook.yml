@@ -1,0 +1,27 @@
+# Command output only when a command fails.
+output:
+  - meta
+  - summary
+  - failure
+  - execution_info
+
+pre-commit:
+  commands:
+    biome:
+      glob: "*.{js,jsx,ts,tsx,json,jsonc,css}"
+      run: bunx biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
+pre-push:
+  parallel: true
+  commands:
+    types:
+      run: bunx tsc --noEmit -p .
+    tests:
+      run: bun test
+
+post-merge:
+  commands:
+    deps:
+      glob: "bun.lock"
+      run: bun install
