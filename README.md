@@ -86,7 +86,7 @@ Characters can be saved to a `.json` file and loaded back, to keep a backup or m
 - It is always black on white, whatever skin or mode is on screen, and fits A4 or Letter in portrait or landscape.
 - Stock attribute, skill and armor location names print in the app's language.
 
-<img src="docs/images/print-sheet.png" alt="Printed character sheet for a sample Seasoned human with powers, weapons, armor and gear" width="480">
+<img src="docs/images/print-sample.png" alt="Printed character sheet for a sample Seasoned human with powers, weapons, armor and gear" width="480">
 
 ## Privacy and feedback
 

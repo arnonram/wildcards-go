@@ -52,7 +52,7 @@ function Table({
                 className={cn(
                   label,
                   'border-b-[0.75pt] border-black px-[3px] py-0.5',
-                  centered.includes(index) ? center : 'text-left',
+                  centered.includes(index) ? cn(center, 'w-12') : 'text-left',
                 )}
               >
                 {header}
@@ -209,7 +209,12 @@ export function PrintSheet() {
         <div className="space-y-2.5">
           <section className="break-inside-avoid">
             <Heading>{t('sheet.traits.attributes')}</Heading>
-            <Table rows={attributeRows} blankRows={0} centered={[1, 2]} />
+            <Table
+              headers={[t('common.name'), t('print.die'), t('print.mod')]}
+              rows={attributeRows}
+              blankRows={0}
+              centered={[1, 2]}
+            />
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('sheet.traits.skills')}</Heading>
