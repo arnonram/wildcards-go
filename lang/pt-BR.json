@@ -166,6 +166,7 @@
   "armor.location.Torso": "Tronco",
   "armor.location.Arms": "Braços",
   "armor.location.Legs": "Pernas",
+  "armor.location.Shield": "Escudo",
   "sheet.armor.location": "Local da armadura",
   "sheet.armor.other": "Outro…",
   "sheet.armor.customLocation": "Local de armadura personalizado",

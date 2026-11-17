@@ -12,7 +12,7 @@ export function parseArmorBonus(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-/** True when the value is one of the four core locations, not custom text. */
+/** True when the value is one of the stock locations, not custom text. */
 export function isArmorLocationKnown(location?: string): location is ArmorLocations {
   return Object.values(ArmorLocations).includes(location as ArmorLocations);
 }
@@ -73,4 +73,22 @@ export function computeToughness(character: WildCardCharacter): ToughnessBreakdo
   const base = baseToughness(character);
   const armor = armorToughnessBonus(character);
   return { total: base + armor, base, armor };
+}
+
+export interface ParryBreakdown {
+  total: number;
+  base: number;
+  shield: number;
+}
+
+/** A hero uses one shield, so equipped shields don't stack: the best one counts. */
+export function computeParry(character: WildCardCharacter): ParryBreakdown {
+  const base = toNumber(character.parry) + toNumber(character.parryMod);
+  const shield = Math.max(
+    0,
+    ...(character.armors ?? [])
+      .filter((armor) => armor.isEquipped && armor.locations === ArmorLocations.Shield)
+      .map((armor) => parseArmorBonus(armor.parry)),
+  );
+  return { total: base + shield, base, shield };
 }

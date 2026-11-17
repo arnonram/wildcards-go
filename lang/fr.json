@@ -166,6 +166,7 @@
   "armor.location.Torso": "Torse",
   "armor.location.Arms": "Bras",
   "armor.location.Legs": "Jambes",
+  "armor.location.Shield": "Bouclier",
   "sheet.armor.location": "Zone de l’armure",
   "sheet.armor.other": "Autre…",
   "sheet.armor.customLocation": "Zone d’armure personnalisée",

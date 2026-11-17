@@ -166,6 +166,7 @@
   "armor.location.Torso": "Torso",
   "armor.location.Arms": "Brazos",
   "armor.location.Legs": "Piernas",
+  "armor.location.Shield": "Escudo",
   "sheet.armor.location": "Zona de la armadura",
   "sheet.armor.other": "Otra…",
   "sheet.armor.customLocation": "Zona de armadura personalizada",

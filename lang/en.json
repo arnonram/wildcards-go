@@ -166,6 +166,7 @@
   "armor.location.Torso": "Torso",
   "armor.location.Arms": "Arms",
   "armor.location.Legs": "Legs",
+  "armor.location.Shield": "Shield",
   "sheet.armor.location": "Armor location",
   "sheet.armor.other": "Other…",
   "sheet.armor.customLocation": "Custom armor location",

@@ -166,6 +166,7 @@
   "armor.location.Torso": "Torso",
   "armor.location.Arms": "Arme",
   "armor.location.Legs": "Beine",
+  "armor.location.Shield": "Schild",
   "sheet.armor.location": "Rüstungsbereich",
   "sheet.armor.other": "Anderer…",
   "sheet.armor.customLocation": "Eigener Rüstungsbereich",
