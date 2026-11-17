@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { Armor } from '../dtos/Armor.dto';
 import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
 import { ArmorLocations } from '../dtos/wildcards-consts';
-import { computeParry, computeToughness } from './armor-helpers';
+import { armorBonusText, computeParry, computeToughness } from './armor-helpers';
 
 function shield(parry: unknown, isEquipped = true): Armor {
   const armor = new Armor('Shield');
@@ -57,4 +57,40 @@ test('shield armor bonus never adds to Toughness', () => {
   const armor = shield(2);
   armor.armorBonus = 2;
   expect(computeToughness(character([armor])).armor).toBe(0);
+});
+
+describe('armorBonusText', () => {
+  const t = (key: string) => ({ 'stat.parry': 'Parry', 'sheet.armor.cover': 'Cover' })[key] ?? key;
+
+  test('armor row', () => {
+    const armor = new Armor('Jacket');
+    armor.armorBonus = 2;
+    expect(armorBonusText(armor, t)).toBe('+2');
+  });
+
+  test('shield with parry and cover', () => {
+    const armor = shield(2);
+    armor.cover = -2;
+    expect(armorBonusText(armor, t)).toBe('Parry +2 · Cover −2');
+  });
+
+  test('positive cover keeps its sign', () => {
+    const armor = shield(1);
+    armor.cover = 2;
+    expect(armorBonusText(armor, t)).toBe('Parry +1 · Cover +2');
+  });
+
+  test('shield without parry prints no parry', () => {
+    expect(armorBonusText(shield(undefined), t)).toBe('');
+  });
+
+  test('negative parry prints one sign', () => {
+    expect(armorBonusText(shield(-1), t)).toBe('Parry −1');
+  });
+
+  test('shield armor bonus appended', () => {
+    const armor = shield(2);
+    armor.armorBonus = 1;
+    expect(armorBonusText(armor, t)).toBe('Parry +2 · +1');
+  });
 });

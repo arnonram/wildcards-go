@@ -92,3 +92,23 @@ export function computeParry(character: WildCardCharacter): ParryBreakdown {
   );
   return { total: base + shield, base, shield };
 }
+
+const signed = (value: number) => `${value >= 0 ? '+' : '−'}${Math.abs(value)}`;
+
+/** The printed Bonus cell: armor bonus, or a shield's Parry and Cover. */
+export function armorBonusText(
+  armor: Armor,
+  t: (key: 'stat.parry' | 'sheet.armor.cover') => string,
+): string {
+  const bonus = parseArmorBonus(armor.armorBonus);
+  if (armor.locations !== ArmorLocations.Shield) return `+${bonus}`;
+  return [
+    armor.parry != null ? `${t('stat.parry')} ${signed(parseArmorBonus(armor.parry))}` : null,
+    armor.cover != null
+      ? `${t('sheet.armor.cover')} ${signed(parseArmorBonus(armor.cover))}`
+      : null,
+    bonus > 0 ? `+${bonus}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
