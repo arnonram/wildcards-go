@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { readdirSync } from 'node:fs';
 import { foundryToCharacter } from './actor';
+import { localSamples, testHero } from './fixtures.test-helper';
 import { foundryDamage, foundryText } from './text';
 
 describe('foundryText', () => {
@@ -33,9 +33,7 @@ describe('foundryText', () => {
   });
 
   test('samples leave no entities behind', async () => {
-    const dir = `${import.meta.dir}/../../docs/import-samples-foundry`;
-    for (const file of readdirSync(dir)) {
-      const actor = JSON.parse(await Bun.file(`${dir}/${file}`).text());
+    for (const actor of [testHero(), ...(await localSamples())]) {
       expect(JSON.stringify(foundryToCharacter(actor))).not.toMatch(/&[#\w]+;/);
     }
   });

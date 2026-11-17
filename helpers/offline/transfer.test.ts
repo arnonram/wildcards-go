@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
-import { sample } from '../foundry/samples.test-helper';
+import { testHero } from '../foundry/fixtures.test-helper';
 import { createCharacter, deleteCharacter, saveCharacter, setPortrait } from './characters';
 import { openTestDb, type WcgDb } from './db';
 import { exportCharacters, importCharacters, importFiles } from './transfer';
@@ -96,36 +96,36 @@ test('import rejects a portrait that is not an image', async () => {
 });
 
 describe('foundry import', () => {
-  const uther = async () => ({
-    name: 'uther.json',
-    text: JSON.stringify(await sample('uther')),
+  const hero = async () => ({
+    name: 'hero.json',
+    text: JSON.stringify(testHero()),
   });
 
   test('foundry actor becomes a new character', async () => {
-    expect(await importFiles([await uther()], db)).toBe(1);
+    expect(await importFiles([await hero()], db)).toBe(1);
     const [row] = await db.characters.toArray();
-    expect(row.data.name).toBe('Uther');
+    expect(row.data.name).toBe('Test Hero');
     expect(row.data._id).toBe(row.id);
     expect(row.dirty).toBe(1);
-    expect(row.data.foundrySource?.uuid).toBe('Actor.gXSQDfi8fjmw48Jm');
+    expect(row.data.foundrySource?.uuid).toBe('Actor.testHero00000001');
   });
 
   test('foundry and wild cards go files together', async () => {
     await named(db, 'Red');
     await named(db, 'Blue');
     const own = { name: 'own.json', text: await (await exportCharacters(undefined, db)).text() };
-    expect(await importFiles([await uther(), own], other)).toBe(3);
+    expect(await importFiles([await hero(), own], other)).toBe(3);
   });
 
   test('same foundry file twice gives two characters', async () => {
-    const file = await uther();
+    const file = await hero();
     expect(await importFiles([file, file], db)).toBe(2);
     const ids = (await db.characters.toArray()).map((row) => row.id);
     expect(new Set(ids).size).toBe(2);
   });
 
   test('one bad file adds nothing and names the file', async () => {
-    const result = importFiles([await uther(), { name: 'x.json', text: '{}' }], db);
+    const result = importFiles([await hero(), { name: 'x.json', text: '{}' }], db);
     await expect(result).rejects.toThrow('x.json: Not a Wild Cards Go or Foundry SWADE export.');
     expect(await db.characters.count()).toBe(0);
   });

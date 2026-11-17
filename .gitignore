@@ -45,3 +45,6 @@ yarn-error.log*
 
 # local AI working docs (plans, specs in progress); finished designs go in docs/design
 /docs/superpowers/
+
+# Real Foundry exports (player data), kept local
+docs/import-samples-foundry/

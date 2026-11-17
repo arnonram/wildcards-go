@@ -6,13 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "**",
-      "!**/dist",
-      "!**/node_modules",
-      "!**/next-env.d.ts",
-      "!**/docs/import-samples-foundry"
-    ]
+    "includes": ["**", "!**/dist", "!**/node_modules", "!**/next-env.d.ts"]
   },
   "formatter": {
     "enabled": true,

@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import { computeParry, computeToughness } from '../armor-helpers';
 import { foundryToCharacter } from './actor';
+import { testHero } from './fixtures.test-helper';
 import { mapItems } from './items';
-import { sample } from './samples.test-helper';
 
 const byName = <T extends { name: string }>(list: T[] | undefined, name: string) =>
   list?.find((item) => item.name === name);
 
-describe('uther items', async () => {
-  const c = foundryToCharacter(await sample('uther'));
+describe('items', () => {
+  const c = foundryToCharacter(testHero());
 
   test('edges with requirements and plain description', () => {
     const ironJaw = byName(c.edges, 'Iron Jaw');
@@ -22,7 +22,7 @@ describe('uther items', async () => {
   });
 
   test('abilities become edges of type Ability', () => {
-    expect(c.edges?.filter((e) => e.edgeType === 'Ability')).toHaveLength(6);
+    expect(c.edges?.filter((e) => e.edgeType === 'Ability')).toHaveLength(1);
     expect(byName(c.edges, 'Infravision')?.edgeType).toBe('Ability');
   });
 
@@ -32,15 +32,15 @@ describe('uther items', async () => {
   });
 
   test('armor', () => {
-    expect(byName(c.armors, 'Cap (Thick Leather/Tough Hides)')).toMatchObject({
+    expect(byName(c.armors, 'Cap')).toMatchObject({
       locations: 'Head',
       armorBonus: 2,
       isEquipped: true,
     });
-    const jacket = byName(c.armors, 'Jacket (Thick Leather/Tough Hides)');
+    const jacket = byName(c.armors, 'Jacket');
     expect(jacket).toMatchObject({ locations: 'Torso', isEquipped: true });
     expect(jacket?.comments).toContain('Arms');
-    expect(byName(c.armors, 'Shirt (Chain Mail)')).toMatchObject({
+    expect(byName(c.armors, 'Chain Shirt')).toMatchObject({
       isEquipped: false,
       armorBonus: 3,
     });
@@ -63,8 +63,8 @@ describe('uther items', async () => {
   });
 
   test('weapons', () => {
-    expect(c.weapons).toHaveLength(7);
-    expect(byName(c.weapons, 'Improvised Weapon (Light)')).toMatchObject({
+    expect(c.weapons).toHaveLength(2);
+    expect(byName(c.weapons, 'Club')).toMatchObject({
       damage: 'Str+d4',
       range: '3/6/12',
       minStr: 'd4',
@@ -73,7 +73,7 @@ describe('uther items', async () => {
   });
 
   test('gear and consumables, quantity in the name', () => {
-    expect(c.gear).toHaveLength(14);
+    expect(c.gear).toHaveLength(3);
     expect(byName(c.gear, 'Sling stones ×17')).toBeDefined();
     expect(byName(c.gear, 'Dried Herbs ×3')).toBeDefined();
     expect(byName(c.gear, 'Backpack')).toMatchObject({ weight: 2, cost: 50 });
@@ -82,13 +82,13 @@ describe('uther items', async () => {
 
 describe('powers', () => {
   test('duration kept as text, trapping in comments', async () => {
-    const healing = byName(foundryToCharacter(await sample('elloviel')).powers, 'Healing');
+    const healing = byName(foundryToCharacter(testHero()).powers, 'Healing');
     expect(healing).toMatchObject({ pp: '3', range: 'Touch', duration: 'Instant' });
     expect(healing?.comments).toBe('Trapping: Laying on hands');
   });
 
   test('numeric duration kept as text too', async () => {
-    const barrier = byName(foundryToCharacter(await sample('baba-yaga')).powers, 'Barrier');
+    const barrier = byName(foundryToCharacter(testHero()).powers, 'Barrier');
     expect(barrier?.duration).toBe('5');
   });
 });

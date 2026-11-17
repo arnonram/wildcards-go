@@ -1,14 +1,13 @@
 import { describe, expect, test } from 'bun:test';
-import { readdirSync } from 'node:fs';
 import { isCharacterData } from '../../dtos/sync';
 import { CoreSkills } from '../../dtos/wildcards-consts';
 import { computeParry, computeToughness } from '../armor-helpers';
 import { foundryKind, foundryToCharacter, halfDie } from './actor';
-import { SAMPLES_DIR as DIR, sample } from './samples.test-helper';
+import { localSamples, testHero } from './fixtures.test-helper';
 
 describe('foundryKind', () => {
   test('swade actor', async () => {
-    expect(foundryKind(await sample('uther'))).toBe('swade');
+    expect(foundryKind(testHero())).toBe('swade');
   });
 
   test('actor from another system', () => {
@@ -20,14 +19,14 @@ describe('foundryKind', () => {
     for (const value of [{}, [], null, 'x', { format: 'wild-cards-go' }]) {
       expect(foundryKind(value)).toBe('none');
     }
-    expect(foundryKind({ ...(await sample('uther')), type: 'vehicle' })).toBe('none');
+    expect(foundryKind({ ...testHero(), type: 'vehicle' })).toBe('none');
   });
 });
 
 describe('foundryToCharacter', () => {
-  test('uther core stats', async () => {
-    const c = foundryToCharacter(await sample('uther'));
-    expect(c.name).toBe('Uther');
+  test('core stats', async () => {
+    const c = foundryToCharacter(testHero());
+    expect(c.name).toBe('Test Hero');
     expect(c.attributes.map((a) => [a.name, a.dice])).toEqual([
       ['Agility', 'd8'],
       ['Smarts', 'd8'],
@@ -46,7 +45,7 @@ describe('foundryToCharacter', () => {
     }
     expect(c).toMatchObject({
       race: 'Orcs',
-      rank: 'Novice',
+      rank: 'Seasoned',
       parry: 6,
       parryMod: 1,
       toughness: 6,
@@ -54,31 +53,32 @@ describe('foundryToCharacter', () => {
       pace: 6,
       runDie: 'd6',
       bennies: 3,
-      wounds: 0,
+      wounds: 1,
       fatigue: 0,
-      foundrySource: { worldId: 'the-fouling-stone', uuid: 'Actor.gXSQDfi8fjmw48Jm' },
+      foundrySource: { worldId: 'test-world', uuid: 'Actor.testHero00000001' },
     });
   });
 
   test('ancestry item sets race', async () => {
-    expect(foundryToCharacter(await sample('colber-tarshin')).race).toBe('Human, Erenlander');
+    const actor = testHero();
+    actor.items.push({ type: 'ancestry', name: 'Human, Erenlander' });
+    expect(foundryToCharacter(actor).race).toBe('Human, Erenlander');
   });
 
   test('power points', async () => {
-    const c = foundryToCharacter(await sample('elloviel'));
+    const c = foundryToCharacter(testHero());
     expect(c).toMatchObject({ maxPowerPoints: 10, currentPowerPoints: 10 });
   });
 
   test('bio is plain text with archetype', async () => {
-    const bio = foundryToCharacter(await sample('colber-tarshin')).bio ?? '';
-    expect(bio.length).toBeGreaterThan(100);
+    const bio = foundryToCharacter(testHero()).bio ?? '';
+    expect(bio).toContain('Raised in the wolf’s den — “tough” ’nuff.\nKnows Soak rolls…');
     expect(bio).not.toMatch(/<|@UUID/);
-    expect(bio).toContain('Archetype: Run and Gun');
+    expect(bio).toContain('Archetype: Herbalist');
   });
 
-  test('every sample passes server validation', async () => {
-    for (const file of readdirSync(DIR)) {
-      const actor = JSON.parse(await Bun.file(`${DIR}/${file}`).text());
+  test('fixture and local samples pass server validation', async () => {
+    for (const actor of [testHero(), ...(await localSamples())]) {
       expect(isCharacterData(foundryToCharacter(actor))).toBe(true);
     }
   });
@@ -97,7 +97,7 @@ describe('foundryToCharacter', () => {
   });
 
   test('manual toughness and parry totals are kept, not added to again', async () => {
-    const actor = await sample('uther');
+    const actor = testHero();
     actor.system.details = {
       ...actor.system.details,
       autoCalcParry: false,
@@ -115,7 +115,7 @@ describe('foundryToCharacter', () => {
   });
 
   test('stored parry used when auto-calc is off', async () => {
-    const actor = await sample('uther');
+    const actor = testHero();
     actor.system.details = { ...actor.system.details, autoCalcParry: false };
     actor.system.stats = { ...actor.system.stats, parry: { value: 7, modifier: 0 } };
     expect(computeParry(foundryToCharacter(actor)).total).toBe(7);
