@@ -1,5 +1,5 @@
 import { Pin } from 'lucide-react';
-import { computeToughness } from '../../helpers/armor-helpers';
+import { computeParry, computeToughness } from '../../helpers/armor-helpers';
 import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
@@ -28,7 +28,7 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
   const pinLabel = t(pinned ? 'sheet.status.unpin' : 'sheet.status.pin');
 
   const pace = toNumber(wildcardData.pace) + toNumber(wildcardData.paceMod);
-  const parry = toNumber(wildcardData.parry) + toNumber(wildcardData.parryMod);
+  const parry = computeParry(wildcardData);
   const toughness = computeToughness(wildcardData);
   const woundFatiguePenalty = toNumber(wildcardData.wounds) + toNumber(wildcardData.fatigue);
 
@@ -87,11 +87,15 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
         />
         <Stat
           label={t('stat.parry')}
-          value={parry}
-          hint={t('sheet.status.baseHint', {
-            base: toNumber(wildcardData.parry),
-            mod: signed(toNumber(wildcardData.parryMod)),
-          })}
+          value={parry.shield > 0 ? `${parry.total} (${parry.shield})` : parry.total}
+          hint={
+            parry.shield > 0
+              ? t('sheet.status.parryHint', { base: parry.base, shield: parry.shield })
+              : t('sheet.status.baseHint', {
+                  base: toNumber(wildcardData.parry),
+                  mod: signed(toNumber(wildcardData.parryMod)),
+                })
+          }
         />
         <Stat
           label={t('stat.toughness')}
