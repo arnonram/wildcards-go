@@ -371,9 +371,6 @@ export function PrintSheet() {
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('common.notes')}</Heading>
-            {text(c.bio) && (
-              <p className="mb-1 line-clamp-4 whitespace-pre-line text-[8.5pt]">{text(c.bio)}</p>
-            )}
             {Array.from({ length: 3 }, (_, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: blank writing lines
               <div key={index} className="h-[18px] border-b border-neutral-400" />
