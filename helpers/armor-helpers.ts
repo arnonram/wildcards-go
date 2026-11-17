@@ -1,6 +1,7 @@
 import type { Armor } from '../dtos/Armor.dto';
 import type { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
 import { ArmorLocations } from '../dtos/wildcards-consts';
+import { signed } from './stat-hint';
 
 /**
  * Armor bonuses were stored as free text before this became numeric.
@@ -12,7 +13,7 @@ export function parseArmorBonus(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-/** True when the value is one of the four core locations, not custom text. */
+/** True when the value is one of the stock locations, not custom text. */
 export function isArmorLocationKnown(location?: string): location is ArmorLocations {
   return Object.values(ArmorLocations).includes(location as ArmorLocations);
 }
@@ -51,26 +52,66 @@ function toNumber(value: unknown): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
-/** Toughness before any armor, including Size and the character's Toughness Mod. */
-export function baseToughness(character: WildCardCharacter): number {
-  return (
-    toNumber(character.toughness) + toNumber(character.toughnessMod) + toNumber(character.size)
-  );
-}
-
-/** Only torso armor contributes to Toughness. */
-export function armorToughnessBonus(character: WildCardCharacter): number {
-  return armorBonusForLocation(character.armors, ArmorLocations.Torso);
-}
-
 export interface ToughnessBreakdown {
   total: number;
   base: number;
+  size: number;
+  mod: number;
+  /** Only torso armor counts. */
   armor: number;
 }
 
 export function computeToughness(character: WildCardCharacter): ToughnessBreakdown {
-  const base = baseToughness(character);
-  const armor = armorToughnessBonus(character);
-  return { total: base + armor, base, armor };
+  const base = toNumber(character.toughness);
+  const size = toNumber(character.size);
+  const mod = toNumber(character.toughnessMod);
+  const armor = armorBonusForLocation(character.armors, ArmorLocations.Torso);
+  return { total: base + size + mod + armor, base, size, mod, armor };
+}
+
+export interface ParryBreakdown {
+  total: number;
+  base: number;
+  mod: number;
+  shield: number;
+}
+
+/** A hero uses one shield, so equipped shields don't stack: the best one counts. */
+export function computeParry(character: WildCardCharacter): ParryBreakdown {
+  const base = toNumber(character.parry);
+  const mod = toNumber(character.parryMod);
+  const shield = Math.max(
+    0,
+    ...(character.armors ?? [])
+      .filter((armor) => armor.isEquipped && armor.locations === ArmorLocations.Shield)
+      .map((armor) => parseArmorBonus(armor.parry)),
+  );
+  return { total: base + mod + shield, base, mod, shield };
+}
+
+export function armorBonusText(
+  armor: Armor,
+  t: (key: 'stat.parry' | 'sheet.armor.cover') => string,
+): string {
+  const bonus = parseArmorBonus(armor.armorBonus);
+  if (armor.locations !== ArmorLocations.Shield) return `+${bonus}`;
+  return [
+    armor.parry != null ? `${t('stat.parry')} ${signed(parseArmorBonus(armor.parry))}` : null,
+    armor.cover != null
+      ? `${t('sheet.armor.cover')} ${signed(parseArmorBonus(armor.cover))}`
+      : null,
+    bonus > 0 ? `+${bonus}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+/** Carries the Bonus column value between `armorBonus` and `parry` so it doesn't vanish. */
+export function locationChange(armor: Armor, location: string): Partial<Armor> {
+  const wasShield = armor.locations === ArmorLocations.Shield;
+  const isShield = location === ArmorLocations.Shield;
+  if (wasShield === isShield) return { locations: location };
+  return isShield
+    ? { locations: location, parry: armor.armorBonus, armorBonus: undefined }
+    : { locations: location, armorBonus: armor.parry, parry: undefined };
 }

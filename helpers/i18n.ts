@@ -146,6 +146,7 @@ const armorLocationKeys: Record<ArmorLocations, MessageKey> = {
   [ArmorLocations.Torso]: 'armor.location.Torso',
   [ArmorLocations.Arms]: 'armor.location.Arms',
   [ArmorLocations.Legs]: 'armor.location.Legs',
+  [ArmorLocations.Shield]: 'armor.location.Shield',
 };
 
 /** Display name for a stored armor location; custom locations show as typed. */

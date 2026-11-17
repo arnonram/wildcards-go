@@ -2,6 +2,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Armor } from '../../../dtos/Armor.dto';
 import { ArmorLocations } from '../../../dtos/wildcards-consts';
+import { locationChange, parseArmorBonus } from '../../../helpers/armor-helpers';
 import { cn } from '../../../helpers/cn';
 import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
@@ -96,6 +97,8 @@ export default function Armors() {
           <tbody>
             {armors.map((armor) => {
               const isOpen = expanded.has(armor._id);
+              const isShield = armor.locations === ArmorLocations.Shield;
+              const bonusField = isShield ? 'parry' : 'armorBonus';
               return (
                 <Fragment key={armor._id}>
                   <Tr>
@@ -119,25 +122,32 @@ export default function Armors() {
                     </Td>
                     <Td className="hidden sm:table-cell">
                       <Field
-                        aria-label={t('sheet.armor.bonusLabel')}
+                        aria-label={t(
+                          isShield ? 'sheet.armor.parryLabel' : 'sheet.armor.bonusLabel',
+                        )}
                         placeholder="—"
                         type="number"
                         min={0}
                         variant="quiet"
-                        value={armor.armorBonus ?? ''}
+                        value={armor[bonusField] ?? ''}
                         onChange={(event) =>
                           update(armor._id, {
-                            armorBonus:
+                            [bonusField]:
                               event.target.value === '' ? undefined : Number(event.target.value),
                           })
                         }
                       />
+                      {isShield && (
+                        <span className="block text-center text-[10px] uppercase tracking-wider text-faint">
+                          {t('stat.parry')}
+                        </span>
+                      )}
                     </Td>
                     <Td>
                       <ArmorLocationSelect
                         id={`location-${armor._id}`}
                         value={armor.locations}
-                        onChange={(value) => update(armor._id, { locations: value })}
+                        onChange={(value) => update(armor._id, locationChange(armor, value))}
                       />
                     </Td>
                     <Td className="hidden sm:table-cell">
@@ -188,20 +198,53 @@ export default function Armors() {
                       >
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                           <Field
-                            label={t('sheet.armor.bonus')}
+                            label={t(isShield ? 'stat.parry' : 'sheet.armor.bonus')}
                             type="number"
                             min={0}
                             containerClassName="sm:hidden"
-                            value={armor.armorBonus ?? ''}
+                            value={armor[bonusField] ?? ''}
                             onChange={(event) =>
                               update(armor._id, {
-                                armorBonus:
+                                [bonusField]:
                                   event.target.value === ''
                                     ? undefined
                                     : Number(event.target.value),
                               })
                             }
                           />
+                          {isShield && (
+                            <>
+                              <Field
+                                label={t('sheet.armor.cover')}
+                                type="number"
+                                value={armor.cover ?? ''}
+                                onChange={(event) =>
+                                  update(armor._id, {
+                                    cover:
+                                      event.target.value === ''
+                                        ? undefined
+                                        : Number(event.target.value),
+                                  })
+                                }
+                              />
+                              {parseArmorBonus(armor.armorBonus) > 0 && (
+                                <Field
+                                  label={t('sheet.armor.bonusLabel')}
+                                  type="number"
+                                  min={0}
+                                  value={armor.armorBonus ?? ''}
+                                  onChange={(event) =>
+                                    update(armor._id, {
+                                      armorBonus:
+                                        event.target.value === ''
+                                          ? undefined
+                                          : Number(event.target.value),
+                                    })
+                                  }
+                                />
+                              )}
+                            </>
+                          )}
                           <Field
                             label={t('common.weight')}
                             type="number"

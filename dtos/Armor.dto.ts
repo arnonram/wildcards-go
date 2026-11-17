@@ -5,6 +5,9 @@ export class Armor extends BaseEntity {
   _id: string;
   isEquipped: boolean = false;
   armorBonus?: number = 0;
+  parry?: number;
+  /** Shields only; sign kept as entered. */
+  cover?: number;
   /**
    * One of `ArmorLocations`, or free text when the armor covers a custom area.
    * Stored as a single string so presets and custom values share one field.

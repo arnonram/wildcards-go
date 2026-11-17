@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import type { DiceValues } from '../../dtos/wildcards-consts';
 import { Ranks, STEPPED_DICE } from '../../dtos/wildcards-consts';
-import { computeToughness } from '../../helpers/armor-helpers';
+import { computeParry, computeToughness } from '../../helpers/armor-helpers';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { rankLabel } from '../../helpers/i18n';
@@ -74,6 +74,7 @@ export default function Basics() {
   const { wildcardData, update } = useWildcard();
   const { t } = useTranslation();
   const toughness = computeToughness(wildcardData);
+  const { shield } = computeParry(wildcardData);
   const size = toNumber(wildcardData.size);
   const toughnessHint =
     [
@@ -124,6 +125,7 @@ export default function Basics() {
           modLabel={t('sheet.basics.parryMod')}
           base={toNumber(wildcardData.parry)}
           mod={toNumber(wildcardData.parryMod)}
+          hint={shield > 0 ? t('sheet.basics.shieldHint', { shield }) : undefined}
           onBaseChange={(value) => update({ parry: value })}
           onModChange={(value) => update({ parryMod: value })}
         />

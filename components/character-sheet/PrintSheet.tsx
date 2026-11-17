@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Trait } from '../../dtos/Trait.dto';
 import { Ranks } from '../../dtos/wildcards-consts';
-import { computeToughness, parseArmorBonus } from '../../helpers/armor-helpers';
+import { armorBonusText, computeParry, computeToughness } from '../../helpers/armor-helpers';
 import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
@@ -133,7 +133,7 @@ export function PrintSheet() {
   const { t } = useTranslation();
   const toughness = computeToughness(c);
   const pace = toNumber(c.pace) + toNumber(c.paceMod);
-  const parry = toNumber(c.parry) + toNumber(c.parryMod);
+  const parry = computeParry(c).total;
   const maxPowerPoints = toNumber(c.maxPowerPoints);
   const hasPowers = (c.powers?.length ?? 0) > 0 || maxPowerPoints > 0;
   const attributeRows = [
@@ -300,7 +300,7 @@ export function PrintSheet() {
               ]}
               rows={(c.armors ?? []).map((armor) => [
                 text(armor.name),
-                `+${parseArmorBonus(armor.armorBonus)}`,
+                armorBonusText(armor, t),
                 armorLocationLabel(text(armor.locations), t),
                 armor.isEquipped ? '✓' : '',
               ])}
