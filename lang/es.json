@@ -184,6 +184,8 @@
   "sheet.armor.locationHeader": "Zona",
   "sheet.armor.name": "Nombre de la armadura",
   "sheet.armor.bonusLabel": "Bono de armadura",
+  "sheet.armor.parryLabel": "Bonificador de parada del escudo",
+  "sheet.armor.cover": "Cobertura",
   "sheet.armor.hideDetails": "Ocultar detalles de la armadura",
   "sheet.armor.showDetails": "Mostrar detalles de la armadura",
   "sheet.armor.armor": "armadura",

@@ -184,6 +184,8 @@
   "sheet.armor.locationHeader": "Location",
   "sheet.armor.name": "Armor name",
   "sheet.armor.bonusLabel": "Armor bonus",
+  "sheet.armor.parryLabel": "Shield parry bonus",
+  "sheet.armor.cover": "Cover",
   "sheet.armor.hideDetails": "Hide armor details",
   "sheet.armor.showDetails": "Show armor details",
   "sheet.armor.armor": "armor",

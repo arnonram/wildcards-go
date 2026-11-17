@@ -184,6 +184,8 @@
   "sheet.armor.locationHeader": "Zone",
   "sheet.armor.name": "Nom de l’armure",
   "sheet.armor.bonusLabel": "Bonus d’armure",
+  "sheet.armor.parryLabel": "Bonus de parade du bouclier",
+  "sheet.armor.cover": "Couverture",
   "sheet.armor.hideDetails": "Masquer les détails de l’armure",
   "sheet.armor.showDetails": "Afficher les détails de l’armure",
   "sheet.armor.armor": "armure",

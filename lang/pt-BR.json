@@ -184,6 +184,8 @@
   "sheet.armor.locationHeader": "Local",
   "sheet.armor.name": "Nome da armadura",
   "sheet.armor.bonusLabel": "Bônus de armadura",
+  "sheet.armor.parryLabel": "Bônus de aparar do escudo",
+  "sheet.armor.cover": "Cobertura",
   "sheet.armor.hideDetails": "Ocultar detalhes da armadura",
   "sheet.armor.showDetails": "Mostrar detalhes da armadura",
   "sheet.armor.armor": "armadura",

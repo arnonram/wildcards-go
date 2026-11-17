@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
+import type { Armor } from '../../dtos/Armor.dto';
 import type { Trait } from '../../dtos/Trait.dto';
-import { Ranks } from '../../dtos/wildcards-consts';
+import { ArmorLocations, Ranks } from '../../dtos/wildcards-consts';
 import { computeParry, computeToughness, parseArmorBonus } from '../../helpers/armor-helpers';
 import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
-import { armorLocationLabel, rankLabel, traitLabel } from '../../helpers/i18n';
+import { armorLocationLabel, type MessageKey, rankLabel, traitLabel } from '../../helpers/i18n';
 import { runDie } from '../../helpers/run-die';
 import { sheetOptionState } from '../../helpers/sheet-options';
 
@@ -126,6 +127,18 @@ const traitRows = (traits: Trait[] | undefined, label: (name: string) => string 
     <b key="die">{text(trait.dice)}</b>,
     text(trait.mod),
   ]);
+
+function armorBonusText(armor: Armor, t: (key: MessageKey) => string): string {
+  const bonus = parseArmorBonus(armor.armorBonus);
+  if (armor.locations !== ArmorLocations.Shield) return `+${bonus}`;
+  return [
+    `${t('stat.parry')} +${parseArmorBonus(armor.parry)}`,
+    armor.cover != null ? `${t('sheet.armor.cover')} ${armor.cover}` : null,
+    bonus > 0 ? `+${bonus}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
 
 /** Paper copy for the table: fixed values printed, values that change in play left to the pencil. */
 export function PrintSheet() {
@@ -300,7 +313,7 @@ export function PrintSheet() {
               ]}
               rows={(c.armors ?? []).map((armor) => [
                 text(armor.name),
-                `+${parseArmorBonus(armor.armorBonus)}`,
+                armorBonusText(armor, t),
                 armorLocationLabel(text(armor.locations), t),
                 armor.isEquipped ? '✓' : '',
               ])}

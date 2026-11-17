@@ -184,6 +184,8 @@
   "sheet.armor.locationHeader": "Bereich",
   "sheet.armor.name": "Name der Rüstung",
   "sheet.armor.bonusLabel": "Rüstungsbonus",
+  "sheet.armor.parryLabel": "Paradebonus des Schilds",
+  "sheet.armor.cover": "Deckung",
   "sheet.armor.hideDetails": "Details zur Rüstung ausblenden",
   "sheet.armor.showDetails": "Details zur Rüstung anzeigen",
   "sheet.armor.armor": "Rüstung",
