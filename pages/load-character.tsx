@@ -6,7 +6,7 @@ import LoadCharactersGrid from '../components/load-characters/LoadCharacterGrid'
 import { Button } from '../components/ui/Button';
 import { Dialog } from '../components/ui/Dialog';
 import { useCharacterList } from '../helpers/offline/hooks';
-import { downloadExport, importCharacters } from '../helpers/offline/transfer';
+import { downloadExport, importFiles } from '../helpers/offline/transfer';
 
 export default function LoadCharacter() {
   const router = useRouter();
@@ -16,10 +16,14 @@ export default function LoadCharacter() {
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
-    const file = input.files?.[0];
-    if (!file) return;
+    const files = [...(input.files ?? [])];
+    if (!files.length) return;
     try {
-      const count = await importCharacters(await file.text());
+      const count = await importFiles(
+        await Promise.all(
+          files.map(async (file) => ({ name: file.name, text: await file.text() })),
+        ),
+      );
       setNotice(`Imported ${count} ${count === 1 ? 'character' : 'characters'}.`);
     } catch (error) {
       console.error('Import failed:', error);
@@ -43,6 +47,7 @@ export default function LoadCharacter() {
           <input
             ref={fileInput}
             type="file"
+            multiple
             accept="application/json,.json"
             onChange={handleImport}
             className="sr-only"

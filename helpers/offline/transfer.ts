@@ -1,5 +1,6 @@
 import { isCharacterData } from '../../dtos/sync';
 import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
+import { type FoundryActor, foundryKind, foundryToCharacter } from '../foundry/actor';
 import { newId } from '../new-id';
 import { getActiveDb } from './active';
 import { changed } from './characters';
@@ -16,7 +17,8 @@ interface ExportFile {
   characters: { data: WildCardCharacter; portrait?: string }[];
 }
 
-const NOT_AN_EXPORT = 'This file is not a Wild Cards Go export.';
+const NOT_AN_EXPORT = 'Not a Wild Cards Go or Foundry SWADE export.';
+const NOT_SWADE = 'Foundry actor from a non-SWADE system.';
 const DAMAGED = 'This export is damaged, so nothing was imported.';
 const PORTRAIT = /^data:(image\/[\w.+-]+);base64,([A-Za-z0-9+/]*={0,2})$/;
 
@@ -58,25 +60,11 @@ export async function exportCharacters(
   return new Blob([JSON.stringify(file)], { type: 'application/json' });
 }
 
-/**
- * Adds every character in the file as a new one, so an import never
- * overwrites a character or races one already synced. All or nothing.
- * Returns how many were added.
- */
-export async function importCharacters(
-  text: string,
-  database: WcgDb = getActiveDb(),
-): Promise<number> {
-  let file: Partial<ExportFile>;
-  try {
-    file = JSON.parse(text);
-  } catch {
-    throw new Error(NOT_AN_EXPORT);
-  }
-  if (file?.format !== 'wild-cards-go' || file.version !== 1 || !Array.isArray(file.characters)) {
-    throw new Error(NOT_AN_EXPORT);
-  }
-
+function parseExport(file: Partial<ExportFile>): {
+  characters: LocalCharacter[];
+  portraits: LocalPortrait[];
+} {
+  if (file.version !== 1 || !Array.isArray(file.characters)) throw new Error(NOT_AN_EXPORT);
   const characters: LocalCharacter[] = [];
   const portraits: LocalPortrait[] = [];
   for (const entry of file.characters as unknown[]) {
@@ -90,14 +78,66 @@ export async function importCharacters(
       portraitRev = newId();
       portraits.push({ id, rev: portraitRev, blob, dirty: 1 });
     }
-    characters.push({
-      id,
-      data: { ...data, _id: id, portraitRev },
-      version: 0,
-      dirty: 1,
-      deleted: 0,
-      localUpdatedAt: Date.now(),
-    });
+    characters.push(localCharacter({ ...data, _id: id, portraitRev }));
+  }
+  return { characters, portraits };
+}
+
+function localCharacter(data: WildCardCharacter): LocalCharacter {
+  const id = data._id ?? newId();
+  return {
+    id,
+    data: { ...data, _id: id },
+    version: 0,
+    dirty: 1,
+    deleted: 0,
+    localUpdatedAt: Date.now(),
+  };
+}
+
+function parseFile(text: string): { characters: LocalCharacter[]; portraits: LocalPortrait[] } {
+  let json: unknown;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(NOT_AN_EXPORT);
+  }
+  if ((json as Partial<ExportFile> | null)?.format === 'wild-cards-go') {
+    return parseExport(json as Partial<ExportFile>);
+  }
+  switch (foundryKind(json)) {
+    case 'swade': {
+      const data = foundryToCharacter(json as FoundryActor);
+      data._id = newId();
+      return { characters: [localCharacter(data)], portraits: [] };
+    }
+    case 'other-system':
+      throw new Error(NOT_SWADE);
+    default:
+      throw new Error(NOT_AN_EXPORT);
+  }
+}
+
+/**
+ * Adds every character in the files (Wild Cards Go exports or Foundry SWADE
+ * actors) as new ones, so an import never overwrites a character or races one
+ * already synced. All or nothing. Returns how many were added.
+ */
+export async function importFiles(
+  files: { name: string; text: string }[],
+  database: WcgDb = getActiveDb(),
+): Promise<number> {
+  const characters: LocalCharacter[] = [];
+  const portraits: LocalPortrait[] = [];
+  for (const { name, text } of files) {
+    try {
+      const parsed = parseFile(text);
+      characters.push(...parsed.characters);
+      portraits.push(...parsed.portraits);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(name ? `${name}: ${message}` : message);
+    }
   }
 
   await database.transaction('rw', database.characters, database.portraits, async () => {
@@ -106,6 +146,10 @@ export async function importCharacters(
   });
   changed();
   return characters.length;
+}
+
+export function importCharacters(text: string, database: WcgDb = getActiveDb()): Promise<number> {
+  return importFiles([{ name: '', text }], database);
 }
 
 /**

@@ -1,7 +1,8 @@
-import { beforeEach, expect, test } from 'bun:test';
+import { beforeEach, describe, expect, test } from 'bun:test';
+import { sample } from '../foundry/samples.test-helper';
 import { createCharacter, deleteCharacter, saveCharacter, setPortrait } from './characters';
 import { openTestDb, type WcgDb } from './db';
-import { exportCharacters, importCharacters } from './transfer';
+import { exportCharacters, importCharacters, importFiles } from './transfer';
 
 let db: WcgDb;
 let other: WcgDb;
@@ -73,9 +74,11 @@ test('export can pick characters and skips deleted ones', async () => {
 });
 
 test('import rejects files that are not a Wild Cards Go export', async () => {
-  await expect(importCharacters('not json', db)).rejects.toThrow('not a Wild Cards Go export');
+  await expect(importCharacters('not json', db)).rejects.toThrow(
+    'Not a Wild Cards Go or Foundry SWADE export',
+  );
   await expect(importCharacters('{"characters":[]}', db)).rejects.toThrow(
-    'not a Wild Cards Go export',
+    'Not a Wild Cards Go or Foundry SWADE export',
   );
 });
 
@@ -90,4 +93,53 @@ test('import rejects a portrait that is not an image', async () => {
   const file = JSON.parse(await (await exportCharacters([await named(db, 'Ok')], db)).text());
   file.characters[0].portrait = 'data:text/html;base64,PGI+';
   await expect(importCharacters(JSON.stringify(file), other)).rejects.toThrow('damaged');
+});
+
+describe('foundry import', () => {
+  const uther = async () => ({
+    name: 'uther.json',
+    text: JSON.stringify(await sample('uther')),
+  });
+
+  test('foundry actor becomes a new character', async () => {
+    expect(await importFiles([await uther()], db)).toBe(1);
+    const [row] = await db.characters.toArray();
+    expect(row.data.name).toBe('Uther');
+    expect(row.data._id).toBe(row.id);
+    expect(row.dirty).toBe(1);
+    expect(row.data.foundrySource?.uuid).toBe('Actor.gXSQDfi8fjmw48Jm');
+  });
+
+  test('foundry and wild cards go files together', async () => {
+    await named(db, 'Red');
+    await named(db, 'Blue');
+    const own = { name: 'own.json', text: await (await exportCharacters(undefined, db)).text() };
+    expect(await importFiles([await uther(), own], other)).toBe(3);
+  });
+
+  test('same foundry file twice gives two characters', async () => {
+    const file = await uther();
+    expect(await importFiles([file, file], db)).toBe(2);
+    const ids = (await db.characters.toArray()).map((row) => row.id);
+    expect(new Set(ids).size).toBe(2);
+  });
+
+  test('one bad file adds nothing and names the file', async () => {
+    const result = importFiles([await uther(), { name: 'x.json', text: '{}' }], db);
+    await expect(result).rejects.toThrow('x.json: Not a Wild Cards Go or Foundry SWADE export.');
+    expect(await db.characters.count()).toBe(0);
+  });
+
+  test('foundry actor from another system', async () => {
+    const actor = { _stats: { systemId: 'dnd5e' }, type: 'character', system: {}, items: [] };
+    await expect(
+      importFiles([{ name: 'd.json', text: JSON.stringify(actor) }], db),
+    ).rejects.toThrow('non-SWADE');
+  });
+
+  test('invalid json names the file', async () => {
+    await expect(importFiles([{ name: 'bad.json', text: '{' }], db)).rejects.toThrow(
+      'bad.json: Not a Wild Cards Go or Foundry SWADE export.',
+    );
+  });
 });
