@@ -46,6 +46,8 @@ export class WildCardCharacter extends BaseEntity {
   weapons?: Weapon[];
   powers?: Power[];
   armors?: Armor[];
+  /** Where an imported character came from, to match it on a later re-import. */
+  foundrySource?: { worldId: string; uuid: string };
 
   constructor(name?: string) {
     super(name);
