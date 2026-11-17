@@ -23,7 +23,7 @@ const text = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 
 const label = 'text-[7pt] font-semibold uppercase tracking-[0.1em] text-neutral-600';
-const cell = 'border-b border-neutral-400 px-[3px] py-[3px] align-top';
+const cell = 'border-b border-neutral-400 px-[3px] py-[1.5px] align-top';
 const center = 'text-center';
 
 function Heading({ children }: { children: ReactNode }) {
@@ -38,14 +38,18 @@ function Table({
   headers,
   rows,
   blankRows,
+  maxRows = Number.POSITIVE_INFINITY,
   centered = [],
 }: {
   headers?: string[];
   rows: ReactNode[][];
   blankRows: number;
+  /** Blank rows only fill up to this total, so long lists don't grow the page. */
+  maxRows?: number;
   centered?: number[];
 }) {
   const width = headers?.length ?? rows[0]?.length ?? 1;
+  const blanks = Math.max(0, Math.min(blankRows, maxRows - rows.length));
   return (
     <table className="w-full border-collapse">
       {headers && (
@@ -78,12 +82,12 @@ function Table({
             ))}
           </tr>
         ))}
-        {Array.from({ length: blankRows }, (_, rowIndex) => (
+        {Array.from({ length: blanks }, (_, rowIndex) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: static print rows
           <tr key={`blank-${rowIndex}`}>
             {Array.from({ length: width }, (_, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: static print cells
-              <td key={index} className={cn(cell, 'h-[18px]')} />
+              <td key={index} className={cn(cell, 'h-[15px]')} />
             ))}
           </tr>
         ))}
@@ -248,6 +252,7 @@ export function PrintSheet() {
               headers={[t('common.name'), t('print.die'), t('print.mod')]}
               rows={traitRows(c.skills, (name) => traitLabel('skill', name, t))}
               blankRows={3}
+              maxRows={12}
               centered={[1, 2]}
             />
           </section>
@@ -261,11 +266,16 @@ export function PrintSheet() {
                 </div>,
               ])}
               blankRows={1}
+              maxRows={4}
             />
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('section.edges')}</Heading>
-            <Table rows={(c.edges ?? []).map((edge) => [text(edge.name)])} blankRows={2} />
+            <Table
+              rows={(c.edges ?? []).map((edge) => [text(edge.name)])}
+              blankRows={2}
+              maxRows={6}
+            />
           </section>
         </div>
 
@@ -303,6 +313,7 @@ export function PrintSheet() {
                 ),
               ])}
               blankRows={2}
+              maxRows={5}
               centered={[3, 4, 5]}
             />
           </section>
@@ -322,6 +333,7 @@ export function PrintSheet() {
                 armor.isEquipped ? '✓' : '',
               ])}
               blankRows={1}
+              maxRows={4}
               centered={[1, 3]}
             />
           </section>
@@ -342,6 +354,7 @@ export function PrintSheet() {
                   text(power.duration),
                 ])}
                 blankRows={1}
+                maxRows={5}
                 centered={[1, 3]}
               />
             </section>
@@ -352,13 +365,16 @@ export function PrintSheet() {
               headers={[t('common.name'), t('sheet.weapons.weightShort')]}
               rows={(c.gear ?? []).map((item) => [text(item.name), text(item.weight)])}
               blankRows={4}
+              maxRows={10}
               centered={[1]}
             />
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('common.notes')}</Heading>
-            {text(c.bio) && <p className="mb-1 whitespace-pre-line text-[8.5pt]">{text(c.bio)}</p>}
-            {Array.from({ length: 5 }, (_, index) => (
+            {text(c.bio) && (
+              <p className="mb-1 line-clamp-4 whitespace-pre-line text-[8.5pt]">{text(c.bio)}</p>
+            )}
+            {Array.from({ length: 3 }, (_, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: blank writing lines
               <div key={index} className="h-[18px] border-b border-neutral-400" />
             ))}
