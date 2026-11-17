@@ -1,6 +1,7 @@
 import { Trait } from '../../dtos/Trait.dto';
 import { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import { CoreSkills, DiceValues, Ranks, STEPPED_DICE } from '../../dtos/wildcards-consts';
+import { computeParry, computeToughness } from '../armor-helpers';
 import { mapItems } from './items';
 import { foundryText } from './text';
 
@@ -105,15 +106,9 @@ export function foundryToCharacter(actor: FoundryActor): WildCardCharacter {
   c.runDie = dice(system.pace?.running?.die ?? 6);
 
   const fighting = items.find((i) => i.type === 'skill' && i.name === 'Fighting')?.system?.die;
-  c.parry =
-    details.autoCalcParry === false
-      ? (num(stats.parry?.value) ?? 2)
-      : 2 + (fighting ? halfDie(num(fighting.sides) ?? 4, num(fighting.modifier)) : 0);
+  c.parry = 2 + (fighting ? halfDie(num(fighting.sides) ?? 4, num(fighting.modifier)) : 0);
   const vigor = system.attributes?.vigor?.die;
-  c.toughness =
-    details.autoCalcToughness === false
-      ? (num(stats.toughness?.value) ?? 2)
-      : 2 + (vigor ? halfDie(num(vigor.sides) ?? 4, num(vigor.modifier)) : 0);
+  c.toughness = 2 + (vigor ? halfDie(num(vigor.sides) ?? 4, num(vigor.modifier)) : 0);
   c.parryMod = num(stats.parry?.modifier) ?? 0;
   c.toughnessMod = num(stats.toughness?.modifier) ?? 0;
 
@@ -124,6 +119,16 @@ export function foundryToCharacter(actor: FoundryActor): WildCardCharacter {
   c.maxPowerPoints = num(system.powerPoints?.general?.max) ?? 0;
   c.bio = bio(details);
   Object.assign(c, mapItems(items));
+
+  // A hand-entered Foundry value is the final total; the sheet adds size, mods
+  // and gear on top of its base, so store the base that lands on that total.
+  const manualParry = details.autoCalcParry === false ? num(stats.parry?.value) : undefined;
+  if (manualParry !== undefined) c.parry = manualParry - (computeParry(c).total - c.parry);
+  const manualToughness =
+    details.autoCalcToughness === false ? num(stats.toughness?.value) : undefined;
+  if (manualToughness !== undefined) {
+    c.toughness = manualToughness - (computeToughness(c).total - (c.toughness ?? 0));
+  }
 
   const source = actor._stats?.exportSource;
   if (source?.worldId && source.uuid)

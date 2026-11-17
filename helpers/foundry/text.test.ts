@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { readdirSync } from 'node:fs';
+import { foundryToCharacter } from './actor';
 import { foundryDamage, foundryText } from './text';
 
 describe('foundryText', () => {
@@ -22,6 +24,20 @@ describe('foundryText', () => {
 
   test('entities decoded', () => {
     expect(foundryText('Tom &amp; Jerry&nbsp;x')).toBe('Tom & Jerry x');
+  });
+
+  test('typographic and numeric entities decoded', () => {
+    expect(
+      foundryText('Caroom&rsquo;s &ldquo;x&rdquo; &mdash; &minus;1&hellip; &#8217;&#x2019;'),
+    ).toBe('Caroom’s “x” — −1… ’’');
+  });
+
+  test('samples leave no entities behind', async () => {
+    const dir = `${import.meta.dir}/../../docs/import-samples-foundry`;
+    for (const file of readdirSync(dir)) {
+      const actor = JSON.parse(await Bun.file(`${dir}/${file}`).text());
+      expect(JSON.stringify(foundryToCharacter(actor))).not.toMatch(/&[#\w]+;/);
+    }
   });
 
   test('empty or non-text gives undefined', () => {

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { readdirSync } from 'node:fs';
 import { isCharacterData } from '../../dtos/sync';
 import { CoreSkills } from '../../dtos/wildcards-consts';
+import { computeParry, computeToughness } from '../armor-helpers';
 import { foundryKind, foundryToCharacter, halfDie } from './actor';
 import { SAMPLES_DIR as DIR, sample } from './samples.test-helper';
 
@@ -95,11 +96,29 @@ describe('foundryToCharacter', () => {
     expect(c.foundrySource).toBeUndefined();
   });
 
+  test('manual toughness and parry totals are kept, not added to again', async () => {
+    const actor = await sample('uther');
+    actor.system.details = {
+      ...actor.system.details,
+      autoCalcParry: false,
+      autoCalcToughness: false,
+    };
+    actor.system.stats = {
+      ...actor.system.stats,
+      size: 1,
+      toughness: { value: 10, armor: 2, modifier: 1 },
+      parry: { value: 9, modifier: 1, shield: 2 },
+    };
+    const c = foundryToCharacter(actor);
+    expect(computeToughness(c).total).toBe(10);
+    expect(computeParry(c).total).toBe(9);
+  });
+
   test('stored parry used when auto-calc is off', async () => {
     const actor = await sample('uther');
     actor.system.details = { ...actor.system.details, autoCalcParry: false };
     actor.system.stats = { ...actor.system.stats, parry: { value: 7, modifier: 0 } };
-    expect(foundryToCharacter(actor).parry).toBe(7);
+    expect(computeParry(foundryToCharacter(actor)).total).toBe(7);
   });
 });
 
