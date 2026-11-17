@@ -2,6 +2,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Armor } from '../../../dtos/Armor.dto';
 import { ArmorLocations } from '../../../dtos/wildcards-consts';
+import { parseArmorBonus } from '../../../helpers/armor-helpers';
 import { cn } from '../../../helpers/cn';
 import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
@@ -136,6 +137,11 @@ export default function Armors() {
                           })
                         }
                       />
+                      {isShield && (
+                        <span className="block text-center text-[10px] uppercase tracking-wider text-faint">
+                          {t('stat.parry')}
+                        </span>
+                      )}
                     </Td>
                     <Td>
                       <ArmorLocationSelect
@@ -222,20 +228,22 @@ export default function Armors() {
                                   })
                                 }
                               />
-                              <Field
-                                label={t('sheet.armor.bonusLabel')}
-                                type="number"
-                                min={0}
-                                value={armor.armorBonus ?? ''}
-                                onChange={(event) =>
-                                  update(armor._id, {
-                                    armorBonus:
-                                      event.target.value === ''
-                                        ? undefined
-                                        : Number(event.target.value),
-                                  })
-                                }
-                              />
+                              {parseArmorBonus(armor.armorBonus) > 0 && (
+                                <Field
+                                  label={t('sheet.armor.bonusLabel')}
+                                  type="number"
+                                  min={0}
+                                  value={armor.armorBonus ?? ''}
+                                  onChange={(event) =>
+                                    update(armor._id, {
+                                      armorBonus:
+                                        event.target.value === ''
+                                          ? undefined
+                                          : Number(event.target.value),
+                                    })
+                                  }
+                                />
+                              )}
                             </>
                           )}
                           <Field
