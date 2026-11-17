@@ -1,0 +1,155 @@
+import { Armor } from '../../dtos/Armor.dto';
+import { Edge } from '../../dtos/Edge';
+import { Gear } from '../../dtos/Gear.dto';
+import { Hindrance } from '../../dtos/Hindrance.dto';
+import { Power } from '../../dtos/Power.dto';
+import { Weapon } from '../../dtos/Weapon.dto';
+import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
+import { ArmorLocations, Ranks } from '../../dtos/wildcards-consts';
+import type { FoundryItem } from './actor';
+import { foundryDamage, foundryText } from './text';
+
+type Mapped = Required<
+  Pick<WildCardCharacter, 'edges' | 'hindrances' | 'powers' | 'weapons' | 'armors' | 'gear'>
+>;
+
+/** 0 means "not set" in Foundry's numeric item fields. */
+const nonZero = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) && value !== 0 ? value : undefined;
+
+const text = (value: unknown): string | undefined =>
+  typeof value === 'string' && value.trim() ? value.trim() : undefined;
+
+const lines = (...parts: (string | undefined)[]) => parts.filter(Boolean).join('\n') || undefined;
+
+const RANKS = Object.values(Ranks);
+// Most protective first: Torso is what feeds Toughness.
+const LOCATIONS = [
+  ['torso', ArmorLocations.Torso],
+  ['head', ArmorLocations.Head],
+  ['arms', ArmorLocations.Arms],
+  ['legs', ArmorLocations.Legs],
+] as const;
+
+function requirements(list: unknown): string | undefined {
+  if (!Array.isArray(list)) return undefined;
+  const parts = list
+    .map((r) => (r?.type === 'rank' ? RANKS[r.value] : text(r?.label)))
+    .filter(Boolean);
+  return parts.length ? parts.join(', ') : undefined;
+}
+
+function edge(item: FoundryItem, name: string, edgeType?: string): Edge {
+  const e = new Edge(name);
+  e.edgeType = edgeType;
+  e.requirements = requirements(item.system?.requirements);
+  e.description = foundryText(item.system?.description);
+  return e;
+}
+
+function armor(item: FoundryItem, name: string): Armor {
+  const s = item.system ?? {};
+  const a = new Armor(name);
+  a.isEquipped = (s.equipStatus ?? 0) >= 2;
+  a.weight = nonZero(s.weight);
+  a.cost = nonZero(s.price);
+  const description = foundryText(s.description);
+  if (item.type === 'shield') {
+    a.locations = ArmorLocations.Shield;
+    a.parry = nonZero(s.parry);
+    a.cover = nonZero(s.cover);
+    a.comments = description;
+    return a;
+  }
+  const covered = LOCATIONS.filter(([key]) => s.locations?.[key]).map(([, location]) => location);
+  a.locations = covered[0] ?? ArmorLocations.Torso;
+  a.armorBonus = nonZero(s.armor) ?? 0;
+  const others = covered.slice(1);
+  a.comments = lines(others.length ? `Also covers: ${others.join(', ')}` : undefined, description);
+  return a;
+}
+
+function power(item: FoundryItem, name: string): Power {
+  const s = item.system ?? {};
+  const p = new Power(name);
+  p.pp = s.pp === undefined || s.pp === null || s.pp === '' ? undefined : String(s.pp);
+  p.range = text(s.range);
+  const duration = text(s.duration);
+  const numeric = duration && /^\d+$/.test(duration) ? Number(duration) : undefined;
+  p.duration = numeric;
+  p.effect = foundryText(s.description);
+  p.comments = lines(
+    duration && numeric === undefined ? `Duration: ${duration}` : undefined,
+    text(s.trapping) && `Trapping: ${text(s.trapping)}`,
+  );
+  return p;
+}
+
+function weapon(item: FoundryItem, name: string): Weapon {
+  const s = item.system ?? {};
+  const w = new Weapon(name);
+  w.range = text(s.range);
+  w.damage = foundryDamage(s.damage);
+  w.ap = nonZero(s.ap);
+  w.rof = nonZero(s.rof);
+  w.shots = nonZero(s.shots);
+  w.minStr = text(s.minStr);
+  w.weight = nonZero(s.weight);
+  w.comments = foundryText(s.description);
+  return w;
+}
+
+function gear(item: FoundryItem, name: string): Gear {
+  const s = item.system ?? {};
+  const quantity = nonZero(s.quantity) ?? 1;
+  return new Gear(
+    quantity > 1 ? `${name} ×${quantity}` : name,
+    nonZero(s.weight),
+    nonZero(s.price),
+    foundryText(s.description),
+  );
+}
+
+export function mapItems(items: FoundryItem[]): Mapped {
+  const mapped: Mapped = {
+    edges: [],
+    hindrances: [],
+    powers: [],
+    weapons: [],
+    armors: [],
+    gear: [],
+  };
+  const sorted = [...items].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+  for (const item of sorted) {
+    const name = text(item.name);
+    if (!name) continue;
+    switch (item.type) {
+      case 'edge':
+        mapped.edges.push(edge(item, name, text(item.system?.category)));
+        break;
+      case 'ability':
+        mapped.edges.push(edge(item, name, 'Ability'));
+        break;
+      case 'hindrance':
+        mapped.hindrances.push(
+          new Hindrance(name, item.system?.major === true, foundryText(item.system?.description)),
+        );
+        break;
+      case 'power':
+        mapped.powers.push(power(item, name));
+        break;
+      case 'weapon':
+        mapped.weapons.push(weapon(item, name));
+        break;
+      case 'armor':
+      case 'shield':
+        mapped.armors.push(armor(item, name));
+        break;
+      case 'gear':
+      case 'consumable':
+        mapped.gear.push(gear(item, name));
+        break;
+    }
+  }
+  return mapped;
+}

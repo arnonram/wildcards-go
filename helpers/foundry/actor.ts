@@ -1,6 +1,7 @@
 import { Trait } from '../../dtos/Trait.dto';
 import { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import { CoreSkills, DiceValues, Ranks, STEPPED_DICE } from '../../dtos/wildcards-consts';
+import { mapItems } from './items';
 import { foundryText } from './text';
 
 interface FoundryDie {
@@ -122,6 +123,7 @@ export function foundryToCharacter(actor: FoundryActor): WildCardCharacter {
   c.currentPowerPoints = num(system.powerPoints?.general?.value) ?? 0;
   c.maxPowerPoints = num(system.powerPoints?.general?.max) ?? 0;
   c.bio = bio(details);
+  Object.assign(c, mapItems(items));
 
   const source = actor._stats?.exportSource;
   if (source?.worldId && source.uuid)
