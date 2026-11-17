@@ -171,15 +171,13 @@ export default function Powers() {
                       <Field
                         aria-label={t('sheet.powers.duration')}
                         placeholder="—"
-                        type="number"
                         variant="quiet"
                         className={compactField}
                         containerClassName={compactContainer}
                         value={power.duration ?? ''}
                         onChange={(event) =>
                           updatePower(power._id, {
-                            duration:
-                              event.target.value === '' ? undefined : Number(event.target.value),
+                            duration: event.target.value || undefined,
                           })
                         }
                       />
@@ -217,15 +215,11 @@ export default function Powers() {
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
                           <Field
                             label={t('sheet.powers.duration')}
-                            type="number"
                             containerClassName="col-span-2 hidden max-[379px]:block"
                             value={power.duration ?? ''}
                             onChange={(event) =>
                               updatePower(power._id, {
-                                duration:
-                                  event.target.value === ''
-                                    ? undefined
-                                    : Number(event.target.value),
+                                duration: event.target.value || undefined,
                               })
                             }
                           />

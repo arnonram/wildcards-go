@@ -81,16 +81,15 @@ describe('uther items', async () => {
 });
 
 describe('powers', () => {
-  test('text duration and trapping go to comments', async () => {
+  test('duration kept as text, trapping in comments', async () => {
     const healing = byName(foundryToCharacter(await sample('elloviel')).powers, 'Healing');
-    expect(healing).toMatchObject({ pp: '3', range: 'Touch', duration: undefined });
-    expect(healing?.comments).toContain('Instant');
-    expect(healing?.comments).toContain('Laying on hands');
+    expect(healing).toMatchObject({ pp: '3', range: 'Touch', duration: 'Instant' });
+    expect(healing?.comments).toBe('Trapping: Laying on hands');
   });
 
-  test('numeric duration kept as number', async () => {
+  test('numeric duration kept as text too', async () => {
     const barrier = byName(foundryToCharacter(await sample('baba-yaga')).powers, 'Barrier');
-    expect(barrier?.duration).toBe(5);
+    expect(barrier?.duration).toBe('5');
   });
 });
 

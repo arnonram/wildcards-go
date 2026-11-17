@@ -5,7 +5,8 @@ export class Power extends BaseEntity {
   _id: string;
   pp?: string;
   range?: string;
-  duration?: number;
+  /** Older characters may hold a number. */
+  duration?: string | number;
   effect?: string;
   comments?: string;
 

@@ -74,14 +74,9 @@ function power(item: FoundryItem, name: string): Power {
   const p = new Power(name);
   p.pp = s.pp === undefined || s.pp === null || s.pp === '' ? undefined : String(s.pp);
   p.range = text(s.range);
-  const duration = text(s.duration);
-  const numeric = duration && /^\d+$/.test(duration) ? Number(duration) : undefined;
-  p.duration = numeric;
+  p.duration = text(s.duration);
   p.effect = foundryText(s.description);
-  p.comments = lines(
-    duration && numeric === undefined ? `Duration: ${duration}` : undefined,
-    text(s.trapping) && `Trapping: ${text(s.trapping)}`,
-  );
+  p.comments = text(s.trapping) && `Trapping: ${text(s.trapping)}`;
   return p;
 }
 
