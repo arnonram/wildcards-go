@@ -6,6 +6,11 @@ import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { armorLocationLabel, rankLabel, traitLabel } from '../../helpers/i18n';
+import {
+  hasReference,
+  type ReferenceEntry,
+  referenceSections,
+} from '../../helpers/print-reference';
 import { runDie } from '../../helpers/run-die';
 import { sheetOptionState } from '../../helpers/sheet-options';
 
@@ -127,13 +132,31 @@ const traitRows = (traits: Trait[] | undefined, label: (name: string) => string 
     text(trait.mod),
   ]);
 
+function ReferenceGroup({ title, entries }: { title: string; entries: ReferenceEntry[] }) {
+  if (!entries.length) return null;
+  return (
+    <div className="mb-3">
+      <Heading>{title}</Heading>
+      {entries.map((entry, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static print rows
+        <div key={index} className="mb-1.5 break-inside-avoid text-[8.5pt]">
+          <b>{entry.name}</b>
+          {entry.meta && <span className="text-neutral-600"> · {entry.meta}</span>}
+          <div className="whitespace-pre-line">{entry.text}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Paper copy for the table: fixed values printed, values that change in play left to the pencil. */
 export function PrintSheet() {
   const { wildcardData: c } = useWildcard();
   const { t } = useTranslation();
   const toughness = computeToughness(c);
   const pace = toNumber(c.pace) + toNumber(c.paceMod);
-  const parry = computeParry(c).total;
+  const parry = computeParry(c);
+  const reference = referenceSections(c, t);
   const maxPowerPoints = toNumber(c.maxPowerPoints);
   const hasPowers = (c.powers?.length ?? 0) > 0 || maxPowerPoints > 0;
   const attributeRows = [
@@ -182,7 +205,10 @@ export function PrintSheet() {
           <div className="text-[16pt] font-bold leading-[1.1]">{pace}</div>
         </Box>
         <Box title={t('stat.parry')}>
-          <div className="text-[16pt] font-bold leading-[1.1]">{parry}</div>
+          <div className="text-[16pt] font-bold leading-[1.1]">
+            {parry.total}
+            {parry.shield > 0 && <span className="text-[9pt]"> ({parry.shield})</span>}
+          </div>
         </Box>
         <Box title={t('stat.toughness')}>
           <div className="text-[16pt] font-bold leading-[1.1]">
@@ -232,7 +258,6 @@ export function PrintSheet() {
                 <div key="h">
                   {text(hindrance.name)}
                   {hindrance.isMajor && <span> ({t('sheet.hindrances.major')})</span>}
-                  <Detail>{text(hindrance.description)}</Detail>
                 </div>,
               ])}
               blankRows={1}
@@ -240,15 +265,7 @@ export function PrintSheet() {
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('section.edges')}</Heading>
-            <Table
-              rows={(c.edges ?? []).map((edge) => [
-                <div key="e">
-                  {text(edge.name)}
-                  <Detail>{text(edge.description)}</Detail>
-                </div>,
-              ])}
-              blankRows={2}
-            />
+            <Table rows={(c.edges ?? []).map((edge) => [text(edge.name)])} blankRows={2} />
           </section>
         </div>
 
@@ -317,16 +334,12 @@ export function PrintSheet() {
                   t('sheet.powers.pp'),
                   t('common.range'),
                   t('sheet.powers.duration'),
-                  t('sheet.powers.effect'),
                 ]}
                 rows={(c.powers ?? []).map((power) => [
                   text(power.name),
                   text(power.pp),
                   text(power.range),
                   text(power.duration),
-                  <span key="e" className="text-[8pt]">
-                    {text(power.effect)}
-                  </span>,
                 ])}
                 blankRows={1}
                 centered={[1, 3]}
@@ -352,6 +365,26 @@ export function PrintSheet() {
           </section>
         </div>
       </div>
+      {hasReference(c, t) && (
+        <section className="hidden break-before-page [html[data-print=reference]_&]:block">
+          <header className="mb-2 border-b-[2.5pt] border-black pb-1">
+            <h1 className="text-[14pt] font-bold tracking-[0.02em]">
+              {text(c.name)} — {t('print.reference')}
+            </h1>
+          </header>
+          <div className="columns-2 gap-5">
+            <ReferenceGroup title={t('section.hindrances')} entries={reference.hindrances} />
+            <ReferenceGroup title={t('section.edges')} entries={reference.edges} />
+            <ReferenceGroup title={t('section.powers')} entries={reference.powers} />
+            {reference.bio && (
+              <div className="mb-3">
+                <Heading>{t('common.notes')}</Heading>
+                <p className="whitespace-pre-line text-[8.5pt]">{reference.bio}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
