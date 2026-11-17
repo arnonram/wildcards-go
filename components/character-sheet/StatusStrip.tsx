@@ -5,6 +5,7 @@ import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { runDie } from '../../helpers/run-die';
 import { sheetOptionState } from '../../helpers/sheet-options';
+import { statHint } from '../../helpers/stat-hint';
 import { Pips } from '../ui/Pips';
 import { Stat } from '../ui/Stat';
 import { ConvictionToggle } from './ConvictionToggle';
@@ -14,7 +15,6 @@ const toNumber = (value: unknown) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const signed = (value: number) => `${value >= 0 ? '+' : '−'}${Math.abs(value)}`;
 const negative = (value: number) => (value === 0 ? '0' : `-${value}`);
 
 export interface StatusStripProps {
@@ -80,27 +80,40 @@ export function StatusStrip({ pinned, onPinnedChange }: StatusStripProps) {
           label={t('stat.pace')}
           value={pace}
           hint={t('sheet.status.paceHint', {
-            base: toNumber(wildcardData.pace),
-            mod: signed(toNumber(wildcardData.paceMod)),
+            parts: statHint(
+              [
+                ['base', toNumber(wildcardData.pace)],
+                ['mod', toNumber(wildcardData.paceMod)],
+              ],
+              t,
+            ),
             run: runDie(wildcardData),
           })}
         />
         <Stat
           label={t('stat.parry')}
           value={parry.shield > 0 ? `${parry.total} (${parry.shield})` : parry.total}
-          hint={
-            parry.shield > 0
-              ? t('sheet.status.parryHint', { base: parry.base, shield: parry.shield })
-              : t('sheet.status.baseHint', {
-                  base: toNumber(wildcardData.parry),
-                  mod: signed(toNumber(wildcardData.parryMod)),
-                })
-          }
+          hint={statHint(
+            [
+              ['base', parry.base],
+              ['shield', parry.shield],
+              ['mod', parry.mod],
+            ],
+            t,
+          )}
         />
         <Stat
           label={t('stat.toughness')}
           value={toughness.armor > 0 ? `${toughness.total} (${toughness.armor})` : toughness.total}
-          hint={t('sheet.status.toughnessHint', { base: toughness.base, armor: toughness.armor })}
+          hint={statHint(
+            [
+              ['base', toughness.base],
+              ['size', toughness.size],
+              ['armor', toughness.armor],
+              ['mod', toughness.mod],
+            ],
+            t,
+          )}
         />
         {woundFatiguePenalty > 0 && (
           <Stat

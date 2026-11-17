@@ -217,7 +217,6 @@ export default function Armors() {
                               <Field
                                 label={t('sheet.armor.cover')}
                                 type="number"
-                                placeholder="−2"
                                 value={armor.cover ?? ''}
                                 onChange={(event) =>
                                   update(armor._id, {

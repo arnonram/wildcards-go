@@ -22,11 +22,11 @@ function character(armors: Armor[] = []): WildCardCharacter {
 
 describe('computeParry', () => {
   test('no shields', () => {
-    expect(computeParry(character())).toEqual({ total: 6, base: 6, shield: 0 });
+    expect(computeParry(character())).toEqual({ total: 6, base: 5, mod: 1, shield: 0 });
   });
 
   test('equipped shield adds its parry', () => {
-    expect(computeParry(character([shield(2)]))).toEqual({ total: 8, base: 6, shield: 2 });
+    expect(computeParry(character([shield(2)]))).toEqual({ total: 8, base: 5, mod: 1, shield: 2 });
   });
 
   test('unequipped shield adds nothing', () => {
@@ -49,7 +49,7 @@ describe('computeParry', () => {
     const c = character();
     c.parry = '5' as unknown as number;
     c.parryMod = '1' as unknown as number;
-    expect(computeParry(c).base).toBe(6);
+    expect(computeParry(c)).toMatchObject({ base: 5, mod: 1, total: 6 });
   });
 });
 
@@ -126,4 +126,17 @@ describe('locationChange', () => {
       locations: ArmorLocations.Shield,
     });
   });
+});
+
+test('toughness breakdown keeps base, size, mod and armor apart', () => {
+  const c = character();
+  c.toughness = 5;
+  c.size = 1;
+  c.toughnessMod = 1;
+  const jacket = new Armor('Jacket');
+  jacket.locations = ArmorLocations.Torso;
+  jacket.armorBonus = 2;
+  jacket.isEquipped = true;
+  c.armors = [jacket];
+  expect(computeToughness(c)).toEqual({ total: 9, base: 5, size: 1, mod: 1, armor: 2 });
 });
