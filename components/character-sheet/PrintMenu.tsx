@@ -1,16 +1,9 @@
 import { Printer } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from '../../helpers/context/locale-context';
+import { installPrintMode, printSheet } from '../../helpers/print-mode';
 import { Button } from '../ui/Button';
 import { Menu } from '../ui/Menu';
-
-/** Reference pages show only while `data-print="reference"` is set, so Ctrl+P prints the sheet alone. */
-function printSheet(withReference: boolean) {
-  const root = document.documentElement;
-  if (withReference) root.dataset.print = 'reference';
-  else delete root.dataset.print;
-  window.addEventListener('afterprint', () => delete root.dataset.print, { once: true });
-  window.print();
-}
 
 const item =
   'flex cursor-default select-none items-center gap-2 rounded-[calc(var(--radius)-1px)] px-2 py-1.5 text-sm text-ink outline-none data-[highlighted]:bg-surface-2';
@@ -18,8 +11,18 @@ const item =
 export function PrintMenu({ labelClassName }: { labelClassName?: string }) {
   const { t } = useTranslation();
   const label = t('sheet.header.print');
+  // Print once the menu has closed, so its popup and scroll lock are gone.
+  const pending = useRef<boolean | null>(null);
+  useEffect(() => installPrintMode(), []);
   return (
-    <Menu.Root>
+    <Menu.Root
+      onOpenChangeComplete={(open) => {
+        if (open || pending.current === null) return;
+        const withReference = pending.current;
+        pending.current = null;
+        printSheet(withReference);
+      }}
+    >
       <Menu.Trigger render={<Button variant="outline" size="sm" />} title={label}>
         <Printer size={13} />
         <span className={labelClassName}>{label}</span>
@@ -27,10 +30,10 @@ export function PrintMenu({ labelClassName }: { labelClassName?: string }) {
       <Menu.Portal>
         <Menu.Positioner sideOffset={6} align="end" className="z-50 print:hidden">
           <Menu.Popup className="ui-popup min-w-48 rounded-[var(--radius)] border border-line-strong bg-surface p-1 shadow-xl">
-            <Menu.Item className={item} onClick={() => printSheet(false)}>
+            <Menu.Item className={item} onClick={() => (pending.current = false)}>
               {t('print.sheet')}
             </Menu.Item>
-            <Menu.Item className={item} onClick={() => printSheet(true)}>
+            <Menu.Item className={item} onClick={() => (pending.current = true)}>
               {t('print.sheetWithReference')}
             </Menu.Item>
           </Menu.Popup>
