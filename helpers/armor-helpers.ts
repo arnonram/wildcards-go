@@ -112,3 +112,16 @@ export function armorBonusText(
     .filter(Boolean)
     .join(' · ');
 }
+
+/**
+ * Shields keep their table bonus in `parry`, armor in `armorBonus`. Moving a
+ * row across that line carries the number over so the column doesn't blank.
+ */
+export function locationChange(armor: Armor, location: string): Partial<Armor> {
+  const wasShield = armor.locations === ArmorLocations.Shield;
+  const isShield = location === ArmorLocations.Shield;
+  if (wasShield === isShield) return { locations: location };
+  return isShield
+    ? { locations: location, parry: armor.armorBonus, armorBonus: undefined }
+    : { locations: location, armorBonus: armor.parry, parry: undefined };
+}

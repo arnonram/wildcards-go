@@ -2,7 +2,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { Armor } from '../../../dtos/Armor.dto';
 import { ArmorLocations } from '../../../dtos/wildcards-consts';
-import { parseArmorBonus } from '../../../helpers/armor-helpers';
+import { locationChange, parseArmorBonus } from '../../../helpers/armor-helpers';
 import { cn } from '../../../helpers/cn';
 import { useTranslation } from '../../../helpers/context/locale-context';
 import { useWildcard } from '../../../helpers/context/wildcard-context';
@@ -147,7 +147,7 @@ export default function Armors() {
                       <ArmorLocationSelect
                         id={`location-${armor._id}`}
                         value={armor.locations}
-                        onChange={(value) => update(armor._id, { locations: value })}
+                        onChange={(value) => update(armor._id, locationChange(armor, value))}
                       />
                     </Td>
                     <Td className="hidden sm:table-cell">

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { Armor } from '../dtos/Armor.dto';
 import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
 import { ArmorLocations } from '../dtos/wildcards-consts';
-import { armorBonusText, computeParry, computeToughness } from './armor-helpers';
+import { armorBonusText, computeParry, computeToughness, locationChange } from './armor-helpers';
 
 function shield(parry: unknown, isEquipped = true): Armor {
   const armor = new Armor('Shield');
@@ -92,5 +92,38 @@ describe('armorBonusText', () => {
     const armor = shield(2);
     armor.armorBonus = 1;
     expect(armorBonusText(armor, t)).toBe('Parry +2 · +1');
+  });
+});
+
+describe('locationChange', () => {
+  test('armor to shield carries the bonus over as parry', () => {
+    const armor = new Armor('Buckler');
+    armor.armorBonus = 2;
+    expect(locationChange(armor, ArmorLocations.Shield)).toEqual({
+      locations: ArmorLocations.Shield,
+      parry: 2,
+      armorBonus: undefined,
+    });
+  });
+
+  test('shield to armor carries parry over as the bonus', () => {
+    expect(locationChange(shield(1), ArmorLocations.Torso)).toEqual({
+      locations: ArmorLocations.Torso,
+      armorBonus: 1,
+      parry: undefined,
+    });
+  });
+
+  test('between armor locations only the location changes', () => {
+    const armor = new Armor('Helm');
+    armor.locations = ArmorLocations.Head;
+    armor.armorBonus = 3;
+    expect(locationChange(armor, 'Tail')).toEqual({ locations: 'Tail' });
+  });
+
+  test('shield to shield only the location changes', () => {
+    expect(locationChange(shield(2), ArmorLocations.Shield)).toEqual({
+      locations: ArmorLocations.Shield,
+    });
   });
 });
