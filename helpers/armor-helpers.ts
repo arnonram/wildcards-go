@@ -89,7 +89,6 @@ export function computeParry(character: WildCardCharacter): ParryBreakdown {
   return { total: base + mod + shield, base, mod, shield };
 }
 
-/** The printed Bonus cell: armor bonus, or a shield's Parry and Cover. */
 export function armorBonusText(
   armor: Armor,
   t: (key: 'stat.parry' | 'sheet.armor.cover') => string,
@@ -107,10 +106,7 @@ export function armorBonusText(
     .join(' · ');
 }
 
-/**
- * Shields keep their table bonus in `parry`, armor in `armorBonus`. Moving a
- * row across that line carries the number over so the column doesn't blank.
- */
+/** Carries the Bonus column value between `armorBonus` and `parry` so it doesn't vanish. */
 export function locationChange(armor: Armor, location: string): Partial<Armor> {
   const wasShield = armor.locations === ArmorLocations.Shield;
   const isShield = location === ArmorLocations.Shield;
