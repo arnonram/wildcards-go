@@ -76,6 +76,17 @@ Characters can be saved to a `.json` file and loaded back, to keep a backup or m
 - Portraits are embedded as data URLs, so one file holds everything.
 - **Import** adds every character in the file as a new one with a fresh id, so it never overwrites or conflicts with an existing character. It is all or nothing: a damaged file imports nothing. Imported characters sync like any other edit.
 
+### From Foundry VTT
+
+**Import** also reads Foundry VTT actor exports (_Export Data_ on a character in Foundry) from the SWADE system, 6.x. Pick several files at once; Foundry writes one per actor. Foundry stays the source of truth: nothing is written back.
+
+- Attributes, skills, edges, hindrances, powers, weapons, armor, shields and gear come across. Racial and special abilities become edges of type _Ability_; consumables become gear.
+- Parry and Toughness are worked out from Fighting and Vigor, since Foundry stores 0 when it calculates them. A value typed in by hand in Foundry is kept as the total.
+- Rich text is turned into plain text; `@UUID[…]{Label}` links keep their label.
+- Portraits, active effects and Foundry actions are left out.
+- The Foundry world and actor id are kept on the character (`foundrySource`) for a later update-on-reimport. Importing the same actor again adds a second character for now.
+- Files that aren't SWADE actors are refused with a message naming the file, and nothing is imported.
+
 ## Printing
 
 **Print** on a character sheet opens the browser's print dialog with a one-page paper copy meant to be written on at the table. Print-only markup (`components/character-sheet/PrintSheet.tsx`) replaces the app on paper; the app chrome is hidden with `print:hidden`.

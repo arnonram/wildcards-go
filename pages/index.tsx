@@ -23,6 +23,7 @@ const FEATURES: [string, string][] = [
   ['Works offline', 'Install it like an app. No connection needed at the table.'],
   ['Sync across devices', 'Sign in to keep your characters up to date on every device.'],
   ['Export and import', 'Save a character to a file as a backup, or load it on another device.'],
+  ['Bring it from Foundry', 'Import your Foundry VTT SWADE character to play it at the table.'],
   ['Your language', 'English, Deutsch, Español, Français and Português (Brasil).'],
 ];
 
