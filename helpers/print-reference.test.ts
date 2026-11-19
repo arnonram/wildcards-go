@@ -59,7 +59,7 @@ test('bio trimmed', () => {
   expect(referenceSections(character(), t).bio).toBe('Born in the north.');
 });
 
-test('hasReference', () => {
-  expect(hasReference(character(), t)).toBe(true);
-  expect(hasReference(new WildCardCharacter('fresh'), t)).toBe(false);
+test('hasReference reads already built sections', () => {
+  expect(hasReference(referenceSections(character(), t))).toBe(true);
+  expect(hasReference(referenceSections(new WildCardCharacter('fresh'), t))).toBe(false);
 });

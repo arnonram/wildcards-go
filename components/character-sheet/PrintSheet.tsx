@@ -44,7 +44,7 @@ function Table({
   headers?: string[];
   rows: ReactNode[][];
   blankRows: number;
-  /** Blank rows only fill up to this total, so long lists don't grow the page. */
+  /** Blank rows stop once the table reaches this many rows; real rows are never cut. */
   maxRows?: number;
   centered?: number[];
 }) {
@@ -378,11 +378,11 @@ export function PrintSheet() {
           </section>
         </div>
       </div>
-      {hasReference(c, t) && (
+      {hasReference(reference) && (
         <section className="hidden break-before-page [html[data-print=reference]_&]:block">
           <header className="mb-2 border-b-[2.5pt] border-black pb-1">
             <h1 className="text-[14pt] font-bold tracking-[0.02em]">
-              {text(c.name)} — {t('print.reference')}
+              {text(c.name) || t('sheet.header.namePlaceholder')} — {t('print.reference')}
             </h1>
           </header>
           <div className="columns-2 gap-5">

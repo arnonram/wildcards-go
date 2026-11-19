@@ -7,14 +7,29 @@ export type PrintWindow = Pick<
 };
 
 // Reference pages print only while `<html data-print="reference">` is set.
-let armed = false;
+// One token per menu print, so a stale timer can't disarm a newer print.
+const armed = new WeakMap<PrintWindow, object>();
 
-export function printSheet(withReference: boolean, win: PrintWindow = window) {
+/** A print that never starts (blocked, no-op) must not leave reference on. */
+const DISARM_MS = 5000;
+
+export function printSheet(
+  withReference: boolean,
+  win: PrintWindow = window,
+  disarmMs = DISARM_MS,
+) {
   const { dataset } = win.document.documentElement;
   if (withReference) dataset.print = 'reference';
   else delete dataset.print;
-  armed = true;
+  const token = {};
+  armed.set(win, token);
   win.print();
+  if (armed.get(win) !== token) return;
+  setTimeout(() => {
+    if (armed.get(win) !== token) return;
+    armed.delete(win);
+    delete dataset.print;
+  }, disarmMs);
 }
 
 /**
@@ -24,11 +39,11 @@ export function printSheet(withReference: boolean, win: PrintWindow = window) {
 export function installPrintMode(win: PrintWindow = window): () => void {
   const { dataset } = win.document.documentElement;
   const before = () => {
-    if (armed) armed = false;
+    if (armed.has(win)) armed.delete(win);
     else delete dataset.print;
   };
   const after = () => {
-    armed = false;
+    armed.delete(win);
     delete dataset.print;
   };
   win.addEventListener('beforeprint', before);

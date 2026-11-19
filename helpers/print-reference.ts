@@ -42,7 +42,6 @@ export function referenceSections(c: WildCardCharacter, t: Translate): Reference
   };
 }
 
-export function hasReference(c: WildCardCharacter, t: Translate): boolean {
-  const { hindrances, edges, powers, bio } = referenceSections(c, t);
+export function hasReference({ hindrances, edges, powers, bio }: ReferenceSections): boolean {
   return hindrances.length + edges.length + powers.length > 0 || !!bio;
 }

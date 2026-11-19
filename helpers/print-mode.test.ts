@@ -62,3 +62,23 @@ test('uninstall removes listeners', () => {
   fire(win, 'beforeprint');
   expect(mode(win)).toBe('reference');
 });
+
+test('a print that never starts does not leave reference on for the next browser print', async () => {
+  const win = fakeWindow();
+  installPrintMode(win);
+  printSheet(true, win, 0);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  fire(win, 'beforeprint');
+  expect(mode(win)).toBe('sheet');
+});
+
+test('state is per window', () => {
+  const a = fakeWindow();
+  const b = fakeWindow();
+  installPrintMode(a);
+  installPrintMode(b);
+  printSheet(true, a);
+  b.document.documentElement.dataset.print = 'reference';
+  fire(b, 'beforeprint');
+  expect(mode(b)).toBe('sheet');
+});
