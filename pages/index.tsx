@@ -24,6 +24,10 @@ const FEATURES: [string, string][] = [
   ['Sync across devices', 'Sign in to keep your characters up to date on every device.'],
   ['Export and import', 'Save a character to a file as a backup, or load it on another device.'],
   ['Bring it from Foundry', 'Import your Foundry VTT SWADE character to play it at the table.'],
+  [
+    'Print a paper copy',
+    'One page for pencil and dice, with rules text on extra pages if you want it.',
+  ],
   ['Your language', 'English, Deutsch, Español, Français and Português (Brasil).'],
 ];
 

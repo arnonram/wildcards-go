@@ -1,4 +1,4 @@
-import { Camera, Download, Pencil, Printer, Trash2 } from 'lucide-react';
+import { Camera, Download, Pencil, Trash2 } from 'lucide-react';
 import { Ranks } from '../../dtos/wildcards-consts';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { type SaveState, useWildcard } from '../../helpers/context/wildcard-context';
@@ -9,6 +9,7 @@ import { usePortraitUrl } from '../../helpers/offline/hooks';
 import { downloadExport } from '../../helpers/offline/transfer';
 import { Button } from '../ui/Button';
 import { BackLink } from './BackLink';
+import { PrintMenu } from './PrintMenu';
 import { SheetOptionsMenu } from './SheetOptionsMenu';
 
 const saveLabels: Record<SaveState, { key: MessageKey; className: string }> = {
@@ -74,15 +75,7 @@ export function SheetHeader({ onDelete }: { onDelete: () => void }) {
               <Download size={13} />
               <span className={actionLabel}>{t('sheet.header.export')}</span>
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              title={t('sheet.header.print')}
-              onClick={() => window.print()}
-            >
-              <Printer size={13} />
-              <span className={actionLabel}>{t('sheet.header.print')}</span>
-            </Button>
+            <PrintMenu labelClassName={actionLabel} />
             <Button variant="outline" size="sm" title={t('common.delete')} onClick={onDelete}>
               <Trash2 size={13} />
               <span className={actionLabel}>{t('common.delete')}</span>

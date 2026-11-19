@@ -6,6 +6,11 @@ import { cn } from '../../helpers/cn';
 import { useTranslation } from '../../helpers/context/locale-context';
 import { useWildcard } from '../../helpers/context/wildcard-context';
 import { armorLocationLabel, rankLabel, traitLabel } from '../../helpers/i18n';
+import {
+  hasReference,
+  type ReferenceEntry,
+  referenceSections,
+} from '../../helpers/print-reference';
 import { runDie } from '../../helpers/run-die';
 import { sheetOptionState } from '../../helpers/sheet-options';
 
@@ -18,7 +23,7 @@ const text = (value: unknown) =>
   typeof value === 'string' || typeof value === 'number' ? String(value) : '';
 
 const label = 'text-[7pt] font-semibold uppercase tracking-[0.1em] text-neutral-600';
-const cell = 'border-b border-neutral-400 px-[3px] py-[3px] align-top';
+const cell = 'border-b border-neutral-400 px-[3px] py-[1.5px] align-top';
 const center = 'text-center';
 
 function Heading({ children }: { children: ReactNode }) {
@@ -33,14 +38,18 @@ function Table({
   headers,
   rows,
   blankRows,
+  maxRows = Number.POSITIVE_INFINITY,
   centered = [],
 }: {
   headers?: string[];
   rows: ReactNode[][];
   blankRows: number;
+  /** Blank rows stop once the table reaches this many rows; real rows are never cut. */
+  maxRows?: number;
   centered?: number[];
 }) {
   const width = headers?.length ?? rows[0]?.length ?? 1;
+  const blanks = Math.max(0, Math.min(blankRows, maxRows - rows.length));
   return (
     <table className="w-full border-collapse">
       {headers && (
@@ -73,12 +82,12 @@ function Table({
             ))}
           </tr>
         ))}
-        {Array.from({ length: blankRows }, (_, rowIndex) => (
+        {Array.from({ length: blanks }, (_, rowIndex) => (
           // biome-ignore lint/suspicious/noArrayIndexKey: static print rows
           <tr key={`blank-${rowIndex}`}>
             {Array.from({ length: width }, (_, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: static print cells
-              <td key={index} className={cn(cell, 'h-[18px]')} />
+              <td key={index} className={cn(cell, 'h-[15px]')} />
             ))}
           </tr>
         ))}
@@ -127,13 +136,41 @@ const traitRows = (traits: Trait[] | undefined, label: (name: string) => string 
     text(trait.mod),
   ]);
 
+function ReferenceGroup({ title, entries }: { title: string; entries: ReferenceEntry[] }) {
+  if (!entries.length) return null;
+  const entry = ({ name, meta, text }: ReferenceEntry) => (
+    <>
+      <b>{name}</b>
+      {meta && <span className="text-neutral-600"> · {meta}</span>}
+      <div className="whitespace-pre-line">{text}</div>
+    </>
+  );
+  const [first, ...rest] = entries;
+  return (
+    <div className="mb-3 text-[8.5pt]">
+      {/* Heading travels with its first entry so it never ends a column alone. */}
+      <div className="mb-1.5 break-inside-avoid">
+        <Heading>{title}</Heading>
+        {entry(first)}
+      </div>
+      {rest.map((item, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static print rows
+        <div key={index} className="mb-1.5 break-inside-avoid">
+          {entry(item)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** Paper copy for the table: fixed values printed, values that change in play left to the pencil. */
 export function PrintSheet() {
   const { wildcardData: c } = useWildcard();
   const { t } = useTranslation();
   const toughness = computeToughness(c);
   const pace = toNumber(c.pace) + toNumber(c.paceMod);
-  const parry = computeParry(c).total;
+  const parry = computeParry(c);
+  const reference = referenceSections(c, t);
   const maxPowerPoints = toNumber(c.maxPowerPoints);
   const hasPowers = (c.powers?.length ?? 0) > 0 || maxPowerPoints > 0;
   const attributeRows = [
@@ -182,7 +219,10 @@ export function PrintSheet() {
           <div className="text-[16pt] font-bold leading-[1.1]">{pace}</div>
         </Box>
         <Box title={t('stat.parry')}>
-          <div className="text-[16pt] font-bold leading-[1.1]">{parry}</div>
+          <div className="text-[16pt] font-bold leading-[1.1]">
+            {parry.total}
+            {parry.shield > 0 && <span className="text-[9pt]"> ({parry.shield})</span>}
+          </div>
         </Box>
         <Box title={t('stat.toughness')}>
           <div className="text-[16pt] font-bold leading-[1.1]">
@@ -222,6 +262,7 @@ export function PrintSheet() {
               headers={[t('common.name'), t('print.die'), t('print.mod')]}
               rows={traitRows(c.skills, (name) => traitLabel('skill', name, t))}
               blankRows={3}
+              maxRows={12}
               centered={[1, 2]}
             />
           </section>
@@ -232,22 +273,18 @@ export function PrintSheet() {
                 <div key="h">
                   {text(hindrance.name)}
                   {hindrance.isMajor && <span> ({t('sheet.hindrances.major')})</span>}
-                  <Detail>{text(hindrance.description)}</Detail>
                 </div>,
               ])}
               blankRows={1}
+              maxRows={4}
             />
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('section.edges')}</Heading>
             <Table
-              rows={(c.edges ?? []).map((edge) => [
-                <div key="e">
-                  {text(edge.name)}
-                  <Detail>{text(edge.description)}</Detail>
-                </div>,
-              ])}
+              rows={(c.edges ?? []).map((edge) => [text(edge.name)])}
               blankRows={2}
+              maxRows={6}
             />
           </section>
         </div>
@@ -286,6 +323,7 @@ export function PrintSheet() {
                 ),
               ])}
               blankRows={2}
+              maxRows={5}
               centered={[3, 4, 5]}
             />
           </section>
@@ -300,11 +338,14 @@ export function PrintSheet() {
               ]}
               rows={(c.armors ?? []).map((armor) => [
                 text(armor.name),
-                armorBonusText(armor, t),
+                <span key="b" className="whitespace-nowrap">
+                  {armorBonusText(armor, t)}
+                </span>,
                 armorLocationLabel(text(armor.locations), t),
                 armor.isEquipped ? '✓' : '',
               ])}
               blankRows={1}
+              maxRows={4}
               centered={[1, 3]}
             />
           </section>
@@ -317,19 +358,16 @@ export function PrintSheet() {
                   t('sheet.powers.pp'),
                   t('common.range'),
                   t('sheet.powers.duration'),
-                  t('sheet.powers.effect'),
                 ]}
                 rows={(c.powers ?? []).map((power) => [
                   text(power.name),
                   text(power.pp),
                   text(power.range),
                   text(power.duration),
-                  <span key="e" className="text-[8pt]">
-                    {text(power.effect)}
-                  </span>,
                 ])}
                 blankRows={1}
-                centered={[1, 3]}
+                maxRows={5}
+                centered={[1]}
               />
             </section>
           )}
@@ -339,19 +377,39 @@ export function PrintSheet() {
               headers={[t('common.name'), t('sheet.weapons.weightShort')]}
               rows={(c.gear ?? []).map((item) => [text(item.name), text(item.weight)])}
               blankRows={4}
+              maxRows={10}
               centered={[1]}
             />
           </section>
           <section className="break-inside-avoid">
             <Heading>{t('common.notes')}</Heading>
-            {text(c.bio) && <p className="mb-1 whitespace-pre-line text-[8.5pt]">{text(c.bio)}</p>}
-            {Array.from({ length: 5 }, (_, index) => (
+            {Array.from({ length: 3 }, (_, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: blank writing lines
               <div key={index} className="h-[18px] border-b border-neutral-400" />
             ))}
           </section>
         </div>
       </div>
+      {hasReference(reference) && (
+        <section className="hidden break-before-page [html[data-print=reference]_&]:block">
+          <header className="mb-2 border-b-[2.5pt] border-black pb-1">
+            <h1 className="text-[14pt] font-bold tracking-[0.02em]">
+              {text(c.name) || t('sheet.header.namePlaceholder')} — {t('print.reference')}
+            </h1>
+          </header>
+          <div className="columns-2 gap-5">
+            <ReferenceGroup title={t('section.hindrances')} entries={reference.hindrances} />
+            <ReferenceGroup title={t('section.edges')} entries={reference.edges} />
+            <ReferenceGroup title={t('section.powers')} entries={reference.powers} />
+            {reference.bio && (
+              <div className="mb-3">
+                <Heading>{t('common.notes')}</Heading>
+                <p className="whitespace-pre-line text-[8.5pt]">{reference.bio}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
