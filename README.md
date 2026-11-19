@@ -89,10 +89,13 @@ Characters can be saved to a `.json` file and loaded back, to keep a backup or m
 
 ## Printing
 
-**Print** on a character sheet opens the browser's print dialog with a one-page paper copy meant to be written on at the table. Print-only markup (`components/character-sheet/PrintSheet.tsx`) replaces the app on paper; the app chrome is hidden with `print:hidden`.
+**Print** on a character sheet offers two choices, and opens the browser's print dialog. Print-only markup (`components/character-sheet/PrintSheet.tsx`) replaces the app on paper; the app chrome is hidden with `print:hidden`.
 
-- Values that rarely change are printed: attributes, skills, hindrances, edges, weapons, armor, powers, gear, Pace (with run die), Parry and Toughness.
-- Values that change in play get space for a pencil: current power points beside the printed maximum, current shots beside each weapon's capacity, circles to cross out for wounds and fatigue, and blank rows to add skills, edges, gear and notes.
+- **Sheet**: a one-page paper copy meant to be written on at the table. Names only: no descriptions, power effects or bio, so even long imported characters fit one page.
+- **Sheet + descriptions**: the same page, then reference pages with hindrance, edge and ability descriptions, powers (PP, range, duration and effect) and the bio. Disabled when there is nothing to add.
+- The choice stays until the other one is picked, so the browser's own print (Ctrl+P) follows the last pick. A fresh page load starts on **Sheet**.
+- Values that rarely change are printed: attributes, skills, hindrances, edges, weapons, armor, powers, gear, Pace (with run die), Parry and Toughness. Equipped armor and shields show in brackets, as on screen: `8 (2)`.
+- Values that change in play get space for a pencil: current power points beside the printed maximum, current shots beside each weapon's capacity, circles to cross out for wounds and fatigue, and a few blank rows on short lists to add skills, edges, gear and notes.
 - Bennies are left off, since tables usually track them with tokens. Power points and Powers appear only when the character has powers or a power point maximum.
 - It is always black on white, whatever skin or mode is on screen, and fits A4 or Letter in portrait or landscape.
 - Stock attribute, skill and armor location names print in the app's language.
