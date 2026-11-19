@@ -1,0 +1,178 @@
+{
+  "name": "Test Hero",
+  "type": "character",
+  "_stats": {
+    "systemId": "swade",
+    "systemVersion": "6.0.4",
+    "exportSource": {
+      "worldId": "test-world",
+      "uuid": "Actor.testHero00000001",
+      "systemId": "swade",
+      "systemVersion": "6.0.4"
+    }
+  },
+  "system": {
+    "attributes": {
+      "agility": { "die": { "sides": 8, "modifier": 0 } },
+      "smarts": { "die": { "sides": 8, "modifier": 0 } },
+      "spirit": { "die": { "sides": 4, "modifier": 0 } },
+      "strength": { "die": { "sides": 10, "modifier": 0 } },
+      "vigor": { "die": { "sides": 8, "modifier": 0 } }
+    },
+    "stats": {
+      "toughness": { "value": 0, "armor": 0, "modifier": 0 },
+      "parry": { "value": 0, "modifier": 1, "shield": 0 },
+      "size": 0
+    },
+    "pace": { "ground": 6, "running": { "die": 6, "mod": 0 } },
+    "wounds": { "value": 1, "max": 3 },
+    "fatigue": { "value": 0, "max": 2 },
+    "bennies": { "value": 3, "max": 3 },
+    "powerPoints": { "general": { "value": 10, "max": 10 } },
+    "advances": { "rank": "Seasoned" },
+    "details": {
+      "autoCalcToughness": true,
+      "autoCalcParry": true,
+      "archetype": "Herbalist",
+      "appearance": "",
+      "goals": "",
+      "species": { "name": "@UUID[Compendium.world.races.abc123]{Orcs}" },
+      "biography": {
+        "value": "<p>Raised in the wolf&rsquo;s den &mdash; &ldquo;tough&rdquo; &#8217;nuff.</p><p>Knows @UUID[Compendium.x.y]{Soak rolls}&hellip;</p>"
+      }
+    }
+  },
+  "items": [
+    {
+      "name": "Notice",
+      "type": "skill",
+      "sort": 1,
+      "system": { "die": { "sides": 6, "modifier": -1 } }
+    },
+    {
+      "name": "Fighting",
+      "type": "skill",
+      "sort": 2,
+      "system": { "die": { "sides": 8, "modifier": 0 } }
+    },
+    {
+      "name": "Athletics",
+      "type": "skill",
+      "sort": 3,
+      "system": { "die": { "sides": 6, "modifier": 0 } }
+    },
+    {
+      "name": "Unskilled",
+      "type": "skill",
+      "sort": 4,
+      "system": { "die": { "sides": 4, "modifier": 0 } }
+    },
+    {
+      "name": "Iron Jaw",
+      "type": "edge",
+      "sort": 10,
+      "system": {
+        "category": "",
+        "requirements": [{ "type": "rank", "value": 0 }, { "type": "other", "label": "Vigor d8+" }],
+        "description": "<p>Adds +2 to @UUID[Compendium.swade.rules.soak]{Soak rolls}.</p>"
+      }
+    },
+    {
+      "name": "Block",
+      "type": "edge",
+      "sort": 11,
+      "system": {
+        "category": "Combat",
+        "requirements": [
+          { "type": "rank", "value": 1 },
+          { "type": "other", "label": "Fighting d8+" }
+        ]
+      }
+    },
+    { "name": "Infravision", "type": "ability", "sort": 12, "system": { "subtype": "special" } },
+    { "name": "Loyal", "type": "hindrance", "sort": 20, "system": { "major": false } },
+    { "name": "Vengeful", "type": "hindrance", "sort": 21, "system": { "major": true } },
+    {
+      "name": "Cap",
+      "type": "armor",
+      "sort": 30,
+      "system": {
+        "armor": 2,
+        "equipStatus": 3,
+        "locations": { "head": true, "torso": false, "arms": false, "legs": false }
+      }
+    },
+    {
+      "name": "Jacket",
+      "type": "armor",
+      "sort": 31,
+      "system": {
+        "armor": 2,
+        "equipStatus": 3,
+        "locations": { "head": false, "torso": true, "arms": true, "legs": false }
+      }
+    },
+    {
+      "name": "Chain Shirt",
+      "type": "armor",
+      "sort": 32,
+      "system": {
+        "armor": 3,
+        "equipStatus": 1,
+        "locations": { "head": false, "torso": true, "arms": true, "legs": false }
+      }
+    },
+    {
+      "name": "Medium Shield",
+      "type": "shield",
+      "sort": 33,
+      "system": { "parry": 2, "cover": -2, "equipStatus": 3, "weight": 8, "price": 100 }
+    },
+    {
+      "name": "Club",
+      "type": "weapon",
+      "sort": 40,
+      "system": {
+        "damage": "@str+d4",
+        "range": "3/6/12",
+        "minStr": "d4",
+        "ap": 0,
+        "rof": 0,
+        "shots": 0
+      }
+    },
+    {
+      "name": "Sword",
+      "type": "weapon",
+      "sort": 41,
+      "system": { "damage": "@str+d8", "minStr": "d8" }
+    },
+    {
+      "name": "Backpack",
+      "type": "gear",
+      "sort": 50,
+      "system": { "quantity": 1, "weight": 2, "price": 50 }
+    },
+    {
+      "name": "Sling stones",
+      "type": "gear",
+      "sort": 51,
+      "system": { "quantity": 17, "weight": 0.05 }
+    },
+    { "name": "Dried Herbs", "type": "consumable", "sort": 52, "system": { "quantity": 3 } },
+    {
+      "name": "Healing",
+      "type": "power",
+      "sort": 60,
+      "system": {
+        "pp": 3,
+        "range": "Touch",
+        "duration": "Instant",
+        "trapping": "Laying on hands",
+        "description": "<p>Heals a wound.</p>"
+      }
+    },
+    { "name": "Barrier", "type": "power", "sort": 61, "system": { "pp": 2, "duration": "5" } },
+    { "name": "Attack", "type": "action", "sort": 70, "system": {} }
+  ]
+}
