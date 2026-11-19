@@ -3,7 +3,7 @@ import { Edge } from '../dtos/Edge';
 import { Hindrance } from '../dtos/Hindrance.dto';
 import { Power } from '../dtos/Power.dto';
 import { WildCardCharacter } from '../dtos/WildCardCharacter.dto';
-import { hasReference, referenceSections } from './print-reference';
+import { characterHasReference, hasReference, referenceSections } from './print-reference';
 
 const t = (key: string) =>
   ({ 'sheet.hindrances.major': 'Major', 'sheet.powers.pp': 'PP' })[key] ?? key;
@@ -62,4 +62,13 @@ test('bio trimmed', () => {
 test('hasReference reads already built sections', () => {
   expect(hasReference(referenceSections(character(), t))).toBe(true);
   expect(hasReference(referenceSections(new WildCardCharacter('fresh'), t))).toBe(false);
+});
+
+test('characterHasReference checks raw fields without building sections', () => {
+  expect(characterHasReference(character())).toBe(true);
+  expect(characterHasReference(new WildCardCharacter('fresh'))).toBe(false);
+  const blank = new WildCardCharacter('blank');
+  blank.bio = '   ';
+  blank.edges = [new Edge('Block')];
+  expect(characterHasReference(blank)).toBe(false);
 });

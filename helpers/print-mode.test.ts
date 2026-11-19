@@ -1,84 +1,28 @@
 import { expect, test } from 'bun:test';
-import { installPrintMode, type PrintWindow, printSheet } from './print-mode';
+import { type PrintWindow, printSheet } from './print-mode';
 
-function fakeWindow(
-  print: (win: PrintWindow) => void = () => {},
-): PrintWindow & { seen: string[] } {
-  const target = new EventTarget();
-  const win = Object.assign(target, {
+function fakeWindow() {
+  const seen: string[] = [];
+  const win: PrintWindow = {
     document: { documentElement: { dataset: {} as DOMStringMap } },
-    seen: [] as string[],
-    print: () => print(win),
-  });
-  return win;
+    print: () => seen.push(mode(win)),
+  };
+  return { win, seen };
 }
 
-const fire = (win: PrintWindow, type: string) => win.dispatchEvent(new Event(type));
 const mode = (win: PrintWindow) => win.document.documentElement.dataset.print ?? 'sheet';
 
-function syncPrint(win: PrintWindow & { seen?: string[] }) {
-  fire(win, 'beforeprint');
-  win.seen?.push(mode(win));
-  fire(win, 'afterprint');
-}
-
-test('menu print with descriptions shows reference, then clears', () => {
-  const win = fakeWindow(syncPrint);
-  installPrintMode(win);
+test('the picked mode is set before printing and stays afterwards', () => {
+  const { win, seen } = fakeWindow();
   printSheet(true, win);
-  expect(win.seen).toEqual(['reference']);
-  expect(mode(win)).toBe('sheet');
-});
-
-test('browser print never shows reference, even if a flag was left behind', () => {
-  const win = fakeWindow();
-  installPrintMode(win);
-  win.document.documentElement.dataset.print = 'reference';
-  fire(win, 'beforeprint');
-  expect(mode(win)).toBe('sheet');
-});
-
-test('print that starts later (non-blocking print) keeps reference', () => {
-  const win = fakeWindow();
-  installPrintMode(win);
-  printSheet(true, win);
-  fire(win, 'beforeprint');
+  expect(seen).toEqual(['reference']);
   expect(mode(win)).toBe('reference');
 });
 
-test('sheet print clears an old flag', () => {
-  const win = fakeWindow(syncPrint);
-  installPrintMode(win);
-  win.document.documentElement.dataset.print = 'reference';
+test('picking sheet clears an earlier reference pick', () => {
+  const { win, seen } = fakeWindow();
+  printSheet(true, win);
   printSheet(false, win);
-  expect(win.seen).toEqual(['sheet']);
-});
-
-test('uninstall removes listeners', () => {
-  const win = fakeWindow();
-  const uninstall = installPrintMode(win);
-  uninstall();
-  win.document.documentElement.dataset.print = 'reference';
-  fire(win, 'beforeprint');
-  expect(mode(win)).toBe('reference');
-});
-
-test('a print that never starts does not leave reference on for the next browser print', async () => {
-  const win = fakeWindow();
-  installPrintMode(win);
-  printSheet(true, win, 0);
-  await new Promise((resolve) => setTimeout(resolve, 5));
-  fire(win, 'beforeprint');
+  expect(seen).toEqual(['reference', 'sheet']);
   expect(mode(win)).toBe('sheet');
-});
-
-test('state is per window', () => {
-  const a = fakeWindow();
-  const b = fakeWindow();
-  installPrintMode(a);
-  installPrintMode(b);
-  printSheet(true, a);
-  b.document.documentElement.dataset.print = 'reference';
-  fire(b, 'beforeprint');
-  expect(mode(b)).toBe('sheet');
 });

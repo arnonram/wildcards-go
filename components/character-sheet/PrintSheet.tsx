@@ -138,15 +138,25 @@ const traitRows = (traits: Trait[] | undefined, label: (name: string) => string 
 
 function ReferenceGroup({ title, entries }: { title: string; entries: ReferenceEntry[] }) {
   if (!entries.length) return null;
+  const entry = ({ name, meta, text }: ReferenceEntry) => (
+    <>
+      <b>{name}</b>
+      {meta && <span className="text-neutral-600"> · {meta}</span>}
+      <div className="whitespace-pre-line">{text}</div>
+    </>
+  );
+  const [first, ...rest] = entries;
   return (
-    <div className="mb-3">
-      <Heading>{title}</Heading>
-      {entries.map((entry, index) => (
+    <div className="mb-3 text-[8.5pt]">
+      {/* Heading travels with its first entry so it never ends a column alone. */}
+      <div className="mb-1.5 break-inside-avoid">
+        <Heading>{title}</Heading>
+        {entry(first)}
+      </div>
+      {rest.map((item, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: static print rows
-        <div key={index} className="mb-1.5 break-inside-avoid text-[8.5pt]">
-          <b>{entry.name}</b>
-          {entry.meta && <span className="text-neutral-600"> · {entry.meta}</span>}
-          <div className="whitespace-pre-line">{entry.text}</div>
+        <div key={index} className="mb-1.5 break-inside-avoid">
+          {entry(item)}
         </div>
       ))}
     </div>

@@ -45,3 +45,13 @@ export function referenceSections(c: WildCardCharacter, t: Translate): Reference
 export function hasReference({ hindrances, edges, powers, bio }: ReferenceSections): boolean {
   return hindrances.length + edges.length + powers.length > 0 || !!bio;
 }
+
+/** Cheap check for the print menu, which re-renders on every edit. */
+export function characterHasReference(c: WildCardCharacter): boolean {
+  return (
+    !!clean(c.bio) ||
+    (c.hindrances ?? []).some((h) => clean(h.description)) ||
+    (c.edges ?? []).some((e) => clean(e.description)) ||
+    (c.powers ?? []).some((p) => clean(p.effect))
+  );
+}
