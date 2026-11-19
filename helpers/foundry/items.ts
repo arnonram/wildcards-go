@@ -8,7 +8,7 @@ import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import { ArmorLocations, Ranks } from '../../dtos/wildcards-consts';
 import type { FoundryItem } from './actor';
 import { foundryDamage, foundryText } from './text';
-import { fromSwid, nonZero, str as text } from './values';
+import { fromSwid, nonZero, num, str as text } from './values';
 
 type Mapped = Required<
   Pick<WildCardCharacter, 'edges' | 'hindrances' | 'powers' | 'weapons' | 'armors' | 'gear'>
@@ -43,6 +43,10 @@ function requirement(r: any): string | undefined {
       return label;
   }
 }
+
+// biome-ignore lint/suspicious/noExplicitAny: loosely typed SWADE item data
+const isMajor = (s: any) =>
+  s?.severity === 'major' || (s?.severity !== 'minor' && s?.major === true);
 
 function requirements(list: unknown): string | undefined {
   if (!Array.isArray(list)) return undefined;
@@ -95,12 +99,12 @@ function power(item: FoundryItem, name: string): Power {
 /** Foundry keeps one row per stack; here the row carries the stack's totals. */
 function stack(item: FoundryItem, name: string) {
   const s = item.system ?? {};
-  const quantity = nonZero(s.quantity) ?? 1;
+  const quantity = num(s.quantity) ?? 1;
   const total = (value: unknown) => {
     const n = nonZero(value);
-    return n === undefined ? undefined : Math.round(n * quantity * 100) / 100;
+    return n === undefined || quantity === 0 ? undefined : Math.round(n * quantity * 100) / 100;
   };
-  return { name: quantity > 1 ? `${name} ×${quantity}` : name, total };
+  return { name: quantity === 1 ? name : `${name} ×${quantity}`, total };
 }
 
 function weapon(item: FoundryItem, name: string): Weapon {
@@ -146,7 +150,7 @@ export function mapItems(items: FoundryItem[]): Mapped {
         break;
       case 'hindrance':
         mapped.hindrances.push(
-          new Hindrance(name, item.system?.major === true, foundryText(item.system?.description)),
+          new Hindrance(name, isMajor(item.system), foundryText(item.system?.description)),
         );
         break;
       case 'power':

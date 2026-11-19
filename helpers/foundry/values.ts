@@ -10,7 +10,7 @@ export const nonZero = (value: unknown): number | undefined => {
 export const str = (value: unknown): string | undefined =>
   typeof value === 'string' && value.trim() ? value.trim() : undefined;
 
-const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+export const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 /** `fighting`, `common-knowledge` → `Fighting`, `Common Knowledge`. */
 export const fromSwid = (value: string) =>

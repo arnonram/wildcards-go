@@ -27,6 +27,10 @@ describe('foundryText', () => {
     expect(foundryText('roll [[1d6]] or [[/roll 1d8]]{Bite}')).toBe('roll 1d6 or Bite');
   });
 
+  test('entities with digits and accents decoded', () => {
+    expect(foundryText('&frac12; &sup2; caf&eacute;')).toBe('½ ² café');
+  });
+
   test('entities decoded', () => {
     expect(foundryText('Tom &amp; Jerry&nbsp;x')).toBe('Tom & Jerry x');
   });

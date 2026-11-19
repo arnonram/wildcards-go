@@ -4,7 +4,7 @@ import { CoreSkills, DiceValues, Ranks, STEPPED_DICE } from '../../dtos/wildcard
 import { computeParry, computeToughness } from '../armor-helpers';
 import { mapItems } from './items';
 import { foundryText } from './text';
-import { num, str } from './values';
+import { capitalize, num, str } from './values';
 
 interface FoundryDie {
   sides?: number;
@@ -37,9 +37,9 @@ export function foundryKind(json: unknown): FoundryKind {
   if (!isObject(json) || !isObject(json._stats) || typeof json._stats.systemId !== 'string') {
     return 'none';
   }
+  if (json._stats.systemId !== 'swade') return 'other-system';
   if (!(json.type === 'character' || json.type === 'npc')) return 'none';
-  if (!isObject(json.system) || !Array.isArray(json.items)) return 'none';
-  return json._stats.systemId === 'swade' ? 'swade' : 'other-system';
+  return isObject(json.system) && Array.isArray(json.items) ? 'swade' : 'none';
 }
 
 /** SWADE "half the die": a positive modifier adds half of itself, rounded down. */
@@ -65,7 +65,7 @@ function bio(details: Record<string, unknown> | undefined): string | undefined {
     foundryText((details.biography as { value?: unknown } | undefined)?.value),
     ...(['archetype', 'appearance', 'goals'] as const).map((key) => {
       const value = foundryText(details[key]);
-      return value && `${key[0].toUpperCase()}${key.slice(1)}: ${value}`;
+      return value && `${capitalize(key)}: ${value}`;
     }),
   ].filter(Boolean);
   return lines.length ? lines.join('\n\n') : undefined;

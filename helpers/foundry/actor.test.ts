@@ -10,6 +10,11 @@ describe('foundryKind', () => {
     expect(foundryKind(testHero())).toBe('swade');
   });
 
+  test('other system wins over an unknown actor type', () => {
+    const actor = { _stats: { systemId: 'pf2e' }, type: 'familiar', system: {}, items: [] };
+    expect(foundryKind(actor)).toBe('other-system');
+  });
+
   test('actor from another system', () => {
     const actor = { _stats: { systemId: 'dnd5e' }, type: 'character', system: {}, items: [] };
     expect(foundryKind(actor)).toBe('other-system');

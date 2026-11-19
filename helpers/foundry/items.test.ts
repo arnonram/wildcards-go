@@ -145,3 +145,21 @@ describe('review follow-ups', () => {
     expect(gear[0]).toMatchObject({ name: 'Torch ×5', weight: 5, cost: 25 });
   });
 });
+
+describe('second review follow-ups', () => {
+  test('hindrance severity wins over the major flag', () => {
+    const hindrances = mapItems([
+      { type: 'hindrance', name: 'Arrogant', system: { major: false, severity: 'major' } },
+      { type: 'hindrance', name: 'Loyal', system: { major: true, severity: 'minor' } },
+      { type: 'hindrance', name: 'Vow', system: { major: true, severity: 'either' } },
+    ]).hindrances;
+    expect(hindrances.map((h) => h.isMajor)).toEqual([true, false, true]);
+  });
+
+  test('used-up stack keeps the row with no weight or cost', () => {
+    const [herbs] = mapItems([
+      { type: 'consumable', name: 'Herbs', system: { quantity: 0, weight: 1, price: 5 } },
+    ]).gear;
+    expect(herbs).toMatchObject({ name: 'Herbs ×0', weight: undefined, cost: undefined });
+  });
+});
