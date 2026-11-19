@@ -338,7 +338,9 @@ export function PrintSheet() {
               ]}
               rows={(c.armors ?? []).map((armor) => [
                 text(armor.name),
-                armorBonusText(armor, t),
+                <span key="b" className="whitespace-nowrap">
+                  {armorBonusText(armor, t)}
+                </span>,
                 armorLocationLabel(text(armor.locations), t),
                 armor.isEquipped ? '✓' : '',
               ])}
@@ -365,7 +367,7 @@ export function PrintSheet() {
                 ])}
                 blankRows={1}
                 maxRows={5}
-                centered={[1, 3]}
+                centered={[1]}
               />
             </section>
           )}
