@@ -107,9 +107,10 @@ function parseFile(text: string): { characters: LocalCharacter[]; portraits: Loc
   }
   switch (foundryKind(json)) {
     case 'swade': {
-      const data = foundryToCharacter(json as FoundryActor);
-      data._id = newId();
-      return { characters: [localCharacter(data)], portraits: [] };
+      return {
+        characters: [localCharacter(foundryToCharacter(json as FoundryActor))],
+        portraits: [],
+      };
     }
     case 'other-system':
       throw new Error(NOT_SWADE);
@@ -146,10 +147,6 @@ export async function importFiles(
   });
   changed();
   return characters.length;
-}
-
-export function importCharacters(text: string, database: WcgDb = getActiveDb()): Promise<number> {
-  return importFiles([{ name: '', text }], database);
 }
 
 /**

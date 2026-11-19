@@ -108,3 +108,40 @@ test('unknown and action items ignored; no items gives empty lists', () => {
     gear: [],
   });
 });
+
+describe('review follow-ups', () => {
+  test('unlabelled attribute, skill and wild card requirements are spelled out', () => {
+    const [edge] = mapItems([
+      {
+        type: 'edge',
+        name: 'Iron Jaw',
+        system: {
+          requirements: [
+            { type: 'wildCard', value: true },
+            { type: 'rank', value: 0 },
+            { type: 'attribute', selector: 'vigor', value: 8 },
+            { type: 'skill', selector: 'fighting', value: 6 },
+            { type: 'edge', label: 'Brawny' },
+          ],
+        },
+      },
+    ]).edges;
+    expect(edge.requirements).toBe('Wild Card, Novice, Vigor d8+, Fighting d6+, Brawny');
+  });
+
+  test('shield armor bonus kept', () => {
+    const [shield] = mapItems([
+      { type: 'shield', name: 'Large Shield', system: { parry: 2, armor: 2 } },
+    ]).armors;
+    expect(shield.armorBonus).toBe(2);
+  });
+
+  test('quantity on weapons, carried weight and cost cover the whole stack', () => {
+    const { weapons, gear } = mapItems([
+      { type: 'weapon', name: 'Throwing Knife', system: { quantity: 6, weight: 1 } },
+      { type: 'gear', name: 'Torch', system: { quantity: 5, weight: 1, price: 5 } },
+    ]);
+    expect(weapons[0]).toMatchObject({ name: 'Throwing Knife ×6', weight: 6 });
+    expect(gear[0]).toMatchObject({ name: 'Torch ×5', weight: 5, cost: 25 });
+  });
+});

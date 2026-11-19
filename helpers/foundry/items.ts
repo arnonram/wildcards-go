@@ -8,17 +8,11 @@ import type { WildCardCharacter } from '../../dtos/WildCardCharacter.dto';
 import { ArmorLocations, Ranks } from '../../dtos/wildcards-consts';
 import type { FoundryItem } from './actor';
 import { foundryDamage, foundryText } from './text';
+import { fromSwid, nonZero, str as text } from './values';
 
 type Mapped = Required<
   Pick<WildCardCharacter, 'edges' | 'hindrances' | 'powers' | 'weapons' | 'armors' | 'gear'>
 >;
-
-/** 0 means "not set" in Foundry's numeric item fields. */
-const nonZero = (value: unknown): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) && value !== 0 ? value : undefined;
-
-const text = (value: unknown): string | undefined =>
-  typeof value === 'string' && value.trim() ? value.trim() : undefined;
 
 const lines = (...parts: (string | undefined)[]) => parts.filter(Boolean).join('\n') || undefined;
 
@@ -31,11 +25,28 @@ const LOCATIONS = [
   ['legs', ArmorLocations.Legs],
 ] as const;
 
+// biome-ignore lint/suspicious/noExplicitAny: SWADE requirement entries vary by type
+function requirement(r: any): string | undefined {
+  const label = text(r?.label);
+  const selector = text(r?.selector);
+  switch (r?.type) {
+    case 'rank':
+      return RANKS[r.value];
+    case 'wildCard':
+      return r.value === false ? undefined : 'Wild Card';
+    case 'attribute':
+    case 'skill': {
+      const name = label ?? (selector && fromSwid(selector));
+      return name && (r.value ? `${name} d${r.value}+` : name);
+    }
+    default:
+      return label;
+  }
+}
+
 function requirements(list: unknown): string | undefined {
   if (!Array.isArray(list)) return undefined;
-  const parts = list
-    .map((r) => (r?.type === 'rank' ? RANKS[r.value] : text(r?.label)))
-    .filter(Boolean);
+  const parts = list.map(requirement).filter(Boolean);
   return parts.length ? parts.join(', ') : undefined;
 }
 
@@ -58,6 +69,7 @@ function armor(item: FoundryItem, name: string): Armor {
     a.locations = ArmorLocations.Shield;
     a.parry = nonZero(s.parry);
     a.cover = nonZero(s.cover);
+    a.armorBonus = nonZero(s.armor) ?? 0;
     a.comments = description;
     return a;
   }
@@ -80,29 +92,36 @@ function power(item: FoundryItem, name: string): Power {
   return p;
 }
 
+/** Foundry keeps one row per stack; here the row carries the stack's totals. */
+function stack(item: FoundryItem, name: string) {
+  const s = item.system ?? {};
+  const quantity = nonZero(s.quantity) ?? 1;
+  const total = (value: unknown) => {
+    const n = nonZero(value);
+    return n === undefined ? undefined : Math.round(n * quantity * 100) / 100;
+  };
+  return { name: quantity > 1 ? `${name} ×${quantity}` : name, total };
+}
+
 function weapon(item: FoundryItem, name: string): Weapon {
   const s = item.system ?? {};
-  const w = new Weapon(name);
+  const { name: label, total } = stack(item, name);
+  const w = new Weapon(label);
   w.range = text(s.range);
   w.damage = foundryDamage(s.damage);
   w.ap = nonZero(s.ap);
   w.rof = nonZero(s.rof);
   w.shots = nonZero(s.shots);
   w.minStr = text(s.minStr);
-  w.weight = nonZero(s.weight);
+  w.weight = total(s.weight);
   w.comments = foundryText(s.description);
   return w;
 }
 
 function gear(item: FoundryItem, name: string): Gear {
   const s = item.system ?? {};
-  const quantity = nonZero(s.quantity) ?? 1;
-  return new Gear(
-    quantity > 1 ? `${name} ×${quantity}` : name,
-    nonZero(s.weight),
-    nonZero(s.price),
-    foundryText(s.description),
-  );
+  const { name: label, total } = stack(item, name);
+  return new Gear(label, total(s.weight), total(s.price), foundryText(s.description));
 }
 
 export function mapItems(items: FoundryItem[]): Mapped {

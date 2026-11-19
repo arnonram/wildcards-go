@@ -114,6 +114,12 @@ describe('foundryToCharacter', () => {
     expect(computeParry(c).total).toBe(9);
   });
 
+  test('fighting with stray spaces still sets parry', () => {
+    const actor = testHero();
+    for (const item of actor.items) if (item.name === 'Fighting') item.name = 'Fighting ';
+    expect(foundryToCharacter(actor).parry).toBe(6);
+  });
+
   test('stored parry used when auto-calc is off', async () => {
     const actor = testHero();
     actor.system.details = { ...actor.system.details, autoCalcParry: false };

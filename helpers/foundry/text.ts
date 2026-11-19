@@ -31,6 +31,10 @@ export function foundryText(html: unknown): string | undefined {
   if (typeof html !== 'string') return undefined;
   const text = html
     .replace(/@\w+\[[^\]]*\](?:\{([^}]*)\})?/g, (_, label?: string) => label ?? '')
+    .replace(
+      /\[\[(?:\/\w+\s+)?([^\]]*)\]\](?:\{([^}]*)\})?/g,
+      (_, formula: string, label?: string) => label ?? formula.trim(),
+    )
     .replace(/<br\s*\/?>|<\/(?:p|div|li|h\d)>/gi, '\n')
     .replace(/<[^>]*>/g, '')
     .replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, decodeEntity)

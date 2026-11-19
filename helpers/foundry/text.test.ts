@@ -22,6 +22,11 @@ describe('foundryText', () => {
     expect(foundryText('@Compendium[a.b.c]{Label}')).toBe('Label');
   });
 
+  test('inline rolls become their formula or label', () => {
+    expect(foundryText('deals [[/r 2d6]] damage')).toBe('deals 2d6 damage');
+    expect(foundryText('roll [[1d6]] or [[/roll 1d8]]{Bite}')).toBe('roll 1d6 or Bite');
+  });
+
   test('entities decoded', () => {
     expect(foundryText('Tom &amp; Jerry&nbsp;x')).toBe('Tom & Jerry x');
   });

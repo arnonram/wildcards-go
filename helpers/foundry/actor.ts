@@ -4,6 +4,7 @@ import { CoreSkills, DiceValues, Ranks, STEPPED_DICE } from '../../dtos/wildcard
 import { computeParry, computeToughness } from '../armor-helpers';
 import { mapItems } from './items';
 import { foundryText } from './text';
+import { num, str } from './values';
 
 interface FoundryDie {
   sides?: number;
@@ -46,12 +47,6 @@ export function halfDie(sides: number, modifier = 0): number {
   return sides / 2 + (modifier > 0 ? Math.floor(modifier / 2) : 0);
 }
 
-const num = (value: unknown): number | undefined =>
-  typeof value === 'number' && Number.isFinite(value) ? value : undefined;
-
-const str = (value: unknown): string | undefined =>
-  typeof value === 'string' && value.trim() ? value.trim() : undefined;
-
 export function dice(sides: unknown): DiceValues {
   const value = `d${sides}` as DiceValues;
   return STEPPED_DICE.includes(value) ? value : DiceValues.d4;
@@ -88,7 +83,7 @@ export function foundryToCharacter(actor: FoundryActor): WildCardCharacter {
   );
 
   const skillItems = items.filter(
-    (i) => i.type === 'skill' && str(i.name) && i.name !== 'Unskilled',
+    (i) => i.type === 'skill' && str(i.name) && str(i.name) !== 'Unskilled',
   );
   const skills = skillItems.map((i) => trait(str(i.name) as string, i.system?.die));
   const missingCore = Object.values(CoreSkills)
@@ -105,7 +100,7 @@ export function foundryToCharacter(actor: FoundryActor): WildCardCharacter {
   c.pace = num(system.pace?.ground) ?? 6;
   c.runDie = dice(system.pace?.running?.die ?? 6);
 
-  const fighting = items.find((i) => i.type === 'skill' && i.name === 'Fighting')?.system?.die;
+  const fighting = skillItems.find((i) => str(i.name) === 'Fighting')?.system?.die;
   c.parry = 2 + (fighting ? halfDie(num(fighting.sides) ?? 4, num(fighting.modifier)) : 0);
   const vigor = system.attributes?.vigor?.die;
   c.toughness = 2 + (vigor ? halfDie(num(vigor.sides) ?? 4, num(vigor.modifier)) : 0);
